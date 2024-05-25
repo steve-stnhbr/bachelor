@@ -26,6 +26,9 @@ async def start_server():
     server_socket.setblocking(False)
 
     cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)    # Needed to set exposure manually
+    cap.set(cv2.CAP_PROP_EXPOSURE, 900)          # 900ms exposure as per SOST
+    cap.set(cv2.CAP_PROP_FPS, (1/0.9))            # Sets FPS accordingly
     if not cap.isOpened():
         print("Camera not opened")  
         exit(1)
