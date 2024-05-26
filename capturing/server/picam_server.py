@@ -1,4 +1,3 @@
-import cv2
 import socket
 import pickle
 import struct
@@ -40,7 +39,6 @@ async def start_server():
     except KeyboardInterrupt:
         print("Server is shutting down...")
         server_socket.close()
-        cv2.destroyAllWindows()
 
 loop = asyncio.get_event_loop()
 loop.create_task(start_server())
