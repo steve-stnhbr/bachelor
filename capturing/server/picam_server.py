@@ -2,7 +2,7 @@ import socket
 import pickle
 import struct
 import asyncio
-from picamera2 import PiCamera
+from picamera2 import Picamera2
 import numpy as np
 
 async def handle_connection(client_socket, client_address, cam):
@@ -27,7 +27,7 @@ async def start_server():
     server_socket.listen(5)
     server_socket.setblocking(False)
 
-    cam = PiCamera()
+    cam = Picamera2()
     cam.resolution = (640, 480)
     cam.framerate = 4
     try:
