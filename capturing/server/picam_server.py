@@ -7,10 +7,9 @@ import numpy as np
 
 async def handle_connection(client_socket, client_address, cam):
     print(f"Connection from {client_address} accepted")
-    buf = np.empty((240, 320, 3), dtype=np.uint8)
     while True:
-        cam.capture(buf, 'rgb')
-        frame_data = pickle.dumps(buf)
+        frame = cam.capture_array()
+        frame_data = pickle.dumps(frame)
         try:
             await asyncio.gather(
                 loop.sock_sendall(client_socket, struct.pack("Q", len(frame_data))),
