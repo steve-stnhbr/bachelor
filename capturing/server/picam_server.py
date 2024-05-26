@@ -3,7 +3,7 @@ import socket
 import pickle
 import struct
 import asyncio
-from picamera import PiCamera
+from picamera2 import PiCamera
 import numpy as np
 
 async def handle_connection(client_socket, client_address, cam):
