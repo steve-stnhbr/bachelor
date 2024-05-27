@@ -1,11 +1,14 @@
 # Here's a codeblock just for fun. You should be able to upload an image here 
 # and have it classified without crashing
 import numpy as np
+import camclient
 import cv2
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import img_to_array
 from skimage import color as skimage_color
 import cai
+import cai.layers
+import asyncio
 
 def add_padding_to_make_img_array_squared(img):
   """ Adds padding to make the image squared.
@@ -38,7 +41,7 @@ def transform_image(img, target_size=(224,224), smart_resize=False, lab=False, r
             else:
                 img /= 255
     if (smart_resize):
-        img = img_to_array(img, dtype='float32')
+        #img = img_to_array(img, dtype='float32')
         if (lab):
             img /= 255
             img = skimage_color.rgb2lab(img)
@@ -48,19 +51,31 @@ def transform_image(img, target_size=(224,224), smart_resize=False, lab=False, r
         if ((img.shape[0] != target_size[0]) or (img.shape[1] != target_size[1])):
             img = cv2.resize(img, dsize=target_size, interpolation=cv2.INTER_NEAREST)
     else:
-        img = img_to_array(img, dtype='float32')
+        #img = img_to_array(img, dtype='float32')
         if (lab):
             img /= 255
             img = skimage_color.rgb2lab(img)
         if(rescale):
             local_rescale(img,  lab)
 
-model = tf.keras.models.load_model('/data/model/0.8_best.hdf5',custom_objects={'CopyChannels': cai.layers.CopyChannels})
+def main():
+    model = tf.keras.models.load_model('data/model/0.8_best.hdf5',custom_objects={'CopyChannels': cai.layers.CopyChannels})
+    model.summary()
 
+    
+    def predict(img):
+        imm_array = transform_image(img)
+        predictions = model.predict(imm_array)
+        prediction_score = tf.nn.softmax(predictions)
+        predicated_class = np.argmax(prediction_score)
+        print(predictions)
+        print(predicated_class)
 
-def predict(img):
-    imm_array = transform_image(img)
-    predictions = model.predict(imm_array)
-    prediction_score = tf.nn.softmax(predictions)
-    predicated_class = np.argmax(prediction_score)
-    print(prediction)
+    def input(frame):
+        print("Captured")
+        t_img = transform_image(frame)
+        predict(t_img)
+    asyncio.run(camclient.setup(input))
+
+if __name__ == '__main__':
+    main()
