@@ -8,7 +8,7 @@ import numpy as np
 async def handle_connection(client_socket, client_address, cam):
     print(f"Connection from {client_address} accepted")
     while True:
-        frame = cam.capture_array()
+        frame = cam.capture_array('rgb')
         frame_data = pickle.dumps(frame)
         try:
             await asyncio.gather(
