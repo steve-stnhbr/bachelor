@@ -1,10 +1,11 @@
-import camera_client
+import camclient
 import yaml
 import cv2
 import torch
 import models
 import numpy as np
 import colorsys
+import asyncio
 
 CHECKPOINT_FILE = "data/checkpoint.pt"
 CONFIG_FILE = "configs/maskrcnn_leaves.yaml"
@@ -24,7 +25,12 @@ def main():
             def step(frame: cv2.typing.MatLike):
                 i = 0
                 # TODO: probably conversion necessary
-                _, _, predictions = model.test_step(frame)
+                #_, _, predictions = model.test_step(frame)
+                t = torch.from_numpy(frame.astype(float) / 255)
+                print(t.shape)
+                t = t.reshape([1, 4, 640, 480])
+                
+                model.network(t)
 
                 size = item['image'][i].shape[1]
                 scores = predictions[i]['scores'].cpu().numpy()
@@ -55,5 +61,7 @@ def main():
                     cv2.rectangle(cv2_image_bbox, top_left, bottom_right, colorsys.hsv_to_rgb(j * HUE_STEP, 1, 1), 2)
                 cv2.imshow(cv2_image_bbox)
 
-            camera_client.setup(step)
+            asyncio.run(camclient.setup(step))
 
+if __name__ == "__main__":
+    main()

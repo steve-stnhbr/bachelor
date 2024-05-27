@@ -75,18 +75,26 @@ num_correct_pred = 0
 num_wrong_pred = 0
 data = map(lambda x: [x, 0, 0], diseases)
 df = pd.DataFrame(data, columns=['disease', 'total', 'correct'])
+print(df)
 
-for image, label in train_dl:
-    image.to(device)
-    print("Image size: {}".format(image.size()))
-    print("Label: {}".format(label[0]))
-    inference = model(image.cuda())
-    _, predicted_label = torch.max(inference, dim=1)
-    df[df.disease == diseases[label[0]]]['total'] += 1
-    print("Prediction: {}".format(predicted_label[0]))
-    if predicted_label[0] != label[0]:
-        num_wrong_pred += 1
-    else:
-        num_correct_pred += 1
-        df[df.disease == diseases[label[0]]]['correct'] += 1
+try:
+    for image, label in train_dl:
+        image.to(device)
+        print("Image size: {}".format(image.size()))
+        inference = model(image.cuda())
+        _, predicted_label = torch.max(inference, dim=1)
+        print("Prediction: {}".format(predicted_label[0]))
+        print("Actual: {}".format(label[0]))
+        df.at[int(label[0]), 'total'] += 1
+        if predicted_label[0] != label[0]:
+            num_wrong_pred += 1
+        else:
+            num_correct_pred += 1
+            df.at[int(label[0]), 'correct'] += 1
+except KeyboardInterrupt:
+    print("Accuracy: ", num_correct_pred / (num_correct_pred + num_wrong_pred))
+    df.to_csv("./out/result.csv")
 
+
+print("Accuracy: ", num_correct_pred / (num_correct_pred + num_wrong_pred))
+df.to_csv("./out/result.csv")

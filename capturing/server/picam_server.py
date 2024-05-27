@@ -29,6 +29,7 @@ async def start_server():
     cam = Picamera2()
     cam.resolution = (640, 480)
     cam.framerate = 4
+    cam.format = 'BGR888'
     cam.start()
     try:
         while True:
