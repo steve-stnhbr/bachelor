@@ -6,7 +6,8 @@ from torchvision.datasets import ImageFolder
 from torchsummary import summary
 import random 
 from torch.utils.data import DataLoader
-
+import pandas as pd
+import os
 
 # for moving data into GPU (if available)
 def get_default_device():
@@ -45,6 +46,7 @@ device = get_default_device()
 batch_size = 1
 
 train_dir = './data/train'
+diseases = os.listdir(train_dir)
 
 
 # datasets for validation and training
@@ -71,14 +73,20 @@ model.to(device)
 
 num_correct_pred = 0
 num_wrong_pred = 0
+data = map(lambda x: [x, 0, 0], diseases)
+df = pd.DataFrame(data, columns=['disease', 'total', 'correct'])
+
 for image, label in train_dl:
     image.to(device)
     print("Image size: {}".format(image.size()))
     print("Label: {}".format(label[0]))
     inference = model(image.cuda())
     _, predicted_label = torch.max(inference, dim=1)
+    df[df.disease == diseases[label[0]]]['total'] += 1
     print("Prediction: {}".format(predicted_label[0]))
     if predicted_label[0] != label[0]:
         num_wrong_pred += 1
     else:
         num_correct_pred += 1
+        df[df.disease == diseases[label[0]]]['correct'] += 1
+
