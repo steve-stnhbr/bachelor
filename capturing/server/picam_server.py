@@ -8,7 +8,7 @@ import numpy as np
 async def handle_connection(client_socket, client_address, cam):
     print(f"Connection from {client_address} accepted")
     while True:
-        frame = cam.capture_array("rgb")
+        frame = cam.capture_array()
         frame_data = pickle.dumps(frame)
         try:
             await asyncio.gather(
@@ -27,9 +27,8 @@ async def start_server():
     server_socket.setblocking(False)
 
     cam = Picamera2()
-    cam.resolution = (640, 480)
-    cam.framerate = 4
-    cam.format = 'BGR888'
+    config = cam.create_still_configuration({'format': 'BGR888'})
+    cam.configure(config)
     cam.start()
     try:
         while True:
