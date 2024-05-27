@@ -28,6 +28,7 @@ async def start_server():
 
     cam = Picamera2()
     config = cam.create_still_configuration(main={"size": (640, 480), 'format': 'BGR888'}, lores={"size": (640, 480)}, display="lores")
+    cam.set_controls({"AwbEnable": False})
     cam.configure(config)
     cam.start()
     try:
