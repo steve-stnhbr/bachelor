@@ -1,0 +1,5 @@
+setup.py
+camera_client.egg-info/PKG-INFO
+camera_client.egg-info/SOURCES.txt
+camera_client.egg-info/dependency_links.txt
+camera_client.egg-info/top_level.txt
