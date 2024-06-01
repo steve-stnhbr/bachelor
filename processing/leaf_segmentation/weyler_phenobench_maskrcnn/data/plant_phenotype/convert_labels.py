@@ -3,7 +3,7 @@ import cv2
 import os
 import tqdm
 
-INPUT_PATH = "labels_color"
+INPUT_PATH = "labels"
 OUTPUT_PATH = "leaf_instances"
 
 def main():

@@ -3,4 +3,5 @@ out
 run
 
 !data/**/*.py
+!data/**/*.md
 __pycache__
