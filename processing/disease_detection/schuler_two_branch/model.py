@@ -41,7 +41,7 @@ def transform_image(img, target_size=(224,224), smart_resize=False, lab=False, r
             else:
                 img /= 255
     if (smart_resize):
-        #img = img_to_array(img, dtype='float32')
+        img = img_to_array(img, dtype='float32')
         if (lab):
             img /= 255
             img = skimage_color.rgb2lab(img)
@@ -50,13 +50,15 @@ def transform_image(img, target_size=(224,224), smart_resize=False, lab=False, r
         img = add_padding_to_make_img_array_squared(img)
         if ((img.shape[0] != target_size[0]) or (img.shape[1] != target_size[1])):
             img = cv2.resize(img, dsize=target_size, interpolation=cv2.INTER_NEAREST)
+            print(img.shape)
     else:
-        #img = img_to_array(img, dtype='float32')
+        img = img_to_array(img, dtype='float32')
         if (lab):
             img /= 255
             img = skimage_color.rgb2lab(img)
         if(rescale):
             local_rescale(img,  lab)
+    return img
 
 def main():
     model = tf.keras.models.load_model('data/model/0.8_best.hdf5',custom_objects={'CopyChannels': cai.layers.CopyChannels})
@@ -64,18 +66,15 @@ def main():
 
     
     def predict(img):
-        imm_array = transform_image(img)
+        imm_array = transform_image(img, smart_resize=True, lab=True)
+        imm_array = np.expand_dims(imm_array, 0)
+        
         predictions = model.predict(imm_array)
-        prediction_score = tf.nn.softmax(predictions)
+        prediction_score = tf.math.reduce_mean(tf.nn.softmax(predictions)).numpy()
         predicated_class = np.argmax(prediction_score)
-        print(predictions)
-        print(predicated_class)
+        print(predicated_class, prediction_score)
 
-    def input(frame):
-        print("Captured")
-        t_img = transform_image(frame)
-        predict(t_img)
-    asyncio.run(camclient.setup(input))
+    asyncio.run(camclient.setup(predict))
 
 if __name__ == '__main__':
     main()

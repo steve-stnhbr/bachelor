@@ -5,19 +5,32 @@ import os
 from tqdm import tqdm
 
 class PlantsBase(Dataset):
-    def __init__(self, data_path, overfit=False, cfg=None, is_train=False):
+    def __init__(self, data_path, overfit=False, cfg=None, is_train=False, field_list=["images", "plant_instances", "leaf_instances", "semantics"]):
         super().__init__()
 
         self.data_path = data_path
         self.overfit = overfit
 
-        self.image_list = [
-                x for x in os.listdir(os.path.join(self.data_path, "images")) if ".png" in x
+        if type(data_path) is list:
+            self.image_list = [
+                os.path.join(path, "#field#", x) for path in data_path
+                  for x in os.listdir(os.path.join(path, "images")) 
+                  if ".png" in x 
             ]
+        else:
+            self.image_list = [
+                os.path.join(self.data_path, "#field#", x) for x in os.listdir(os.path.join(self.data_path, "images")) if ".png" in x
+            ]
+
+        print("Dataset consists of", self.image_list)
 
         self.len = len(self.image_list)
 
-        self.field_list = os.listdir(self.data_path)
+        # if type(self.data_path) is list:
+        #     self.field_list = os.listdir(self.data_path[0])
+        # else:
+        #     self.field_list = os.listdir(self.data_path)
+        self.field_list = field_list
 
     @staticmethod
     def load_data(data_path, image_list, field_list):
@@ -26,7 +39,8 @@ class PlantsBase(Dataset):
             data_frame[field] = []
             for image_name in tqdm(image_list):
                 image = cv2.imread(
-                    os.path.join(os.path.join(data_path, field), image_name),
+                    image_name.replace("#field#", field),
+                    #os.path.join(os.path.join(data_path, field), image_name),
                     cv2.IMREAD_UNCHANGED,
                 )
                 if len(image.shape) > 2:
@@ -44,9 +58,12 @@ class PlantsBase(Dataset):
         for field in field_list:
             image = image_list[idx]
             image = cv2.imread(
-                os.path.join(os.path.join(data_path, field), image),
+                image.replace("#field#", field),
+                #os.path.join(os.path.join(data_path, field), image),
                 cv2.IMREAD_UNCHANGED,
             )
+            if image is None:
+                raise FileNotFoundError("Image {} not found in {}".format(image_list[idx], field))
             if len(image.shape) > 2:
                 sample = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 sample = torch.tensor(sample).permute(2, 0, 1)

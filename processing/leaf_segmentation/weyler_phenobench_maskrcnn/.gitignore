@@ -1,3 +1,6 @@
 data
 out
 run
+
+!data/**/*.py
+__pycache__
