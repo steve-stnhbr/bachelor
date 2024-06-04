@@ -1,0 +1,25 @@
+Metadata-Version: 2.1
+Name: cai
+Version: 0.1.7
+Summary: K-CAI NEURAL API
+Home-page: https://github.com/joaopauloschuler/k-neural-api
+Author: Joao Paulo Schwarz Schuler
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Education
+Classifier: Intended Audience :: Science/Research
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Topic :: Software Development :: Libraries
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+License-File: LICENSE
+Requires-Dist: pandas>=0.22.0
+Requires-Dist: scikit-image>=0.15.0
+Requires-Dist: opencv-python>=4.1.2.30
+Requires-Dist: scikit-learn>=0.21.0
+Requires-Dist: numpy
+
+
+K-CAI NEURAL API is a Keras based neural network API that will allow you to prototype faster!
+This project is a subproject from a bigger and older project called CAI and is sister to the pascal based CAI NEURAL API.

@@ -1,0 +1,8 @@
+data
+out
+run
+
+!data/**/*.py
+!data/**/*.md
+runs
+__pycache__
