@@ -8,6 +8,9 @@ import random
 from torch.utils.data import DataLoader
 import pandas as pd
 import os
+from tqdm import tqdm
+
+VERBOSE = False
 
 # for moving data into GPU (if available)
 def get_default_device():
@@ -78,13 +81,15 @@ df = pd.DataFrame(data, columns=['disease', 'total', 'correct'])
 print(df)
 
 try:
-    for image, label in train_dl:
+    for image, label in tqdm(train_dl):
         image.to(device)
-        print("Image size: {}".format(image.size()))
+        if VERBOSE:
+            print("Image size: {}".format(image.size()))
         inference = model(image.cuda())
         _, predicted_label = torch.max(inference, dim=1)
-        print("Prediction: {}".format(predicted_label[0]))
-        print("Actual: {}".format(label[0]))
+        if VERBOSE:
+            print("Prediction: {}".format(predicted_label[0]))
+            print("Actual: {}".format(label[0]))
         df.at[int(label[0]), 'total'] += 1
         if predicted_label[0] != label[0]:
             num_wrong_pred += 1
