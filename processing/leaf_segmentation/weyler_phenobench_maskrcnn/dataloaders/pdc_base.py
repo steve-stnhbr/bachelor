@@ -41,7 +41,7 @@ class PlantsBase(Dataset):
                 image = cv2.imread(
                     image_name.replace("#field#", field),
                     #os.path.join(os.path.join(data_path, field), image_name),
-                    cv2.IMREAD_UNCHANGED,
+                    cv2.IMREAD_UNCHANGED if field == "images" else cv2.IMREAD_GRAYSCALE,
                 )
                 if len(image.shape) > 2:
                     sample = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -60,7 +60,7 @@ class PlantsBase(Dataset):
             image = cv2.imread(
                 image.replace("#field#", field),
                 #os.path.join(os.path.join(data_path, field), image),
-                cv2.IMREAD_UNCHANGED,
+                cv2.IMREAD_UNCHANGED if field == "images" else cv2.IMREAD_GRAYSCALE,
             )
             if image is None:
                 raise FileNotFoundError("Image {} not found in {}".format(image_list[idx], field))

@@ -1,2 +1,8 @@
 __pychache__
 *cache
+
+*/**.deb
+*.deb
+
+*tfevents*
+*.keras

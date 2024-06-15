@@ -1,5 +1,5 @@
 import cai.datasets
-from test_datagen import PlantLeafsDataGen
+from test_datagen import PlantLeafsDataGenBinary
 import cai
 import os
 import tensorflow as tf
@@ -19,15 +19,9 @@ def load_transform(paths):
 
 def main():
     print(tf.config.list_physical_devices())
-
-    model = keras.models.load_model("data/model/0.8_best.hdf5", custom_objects={'CopyChannels': cai.layers.CopyChannels})
-    opt = keras.optimizers.SGD(learning_rate=0.01, momentum=0.9, nesterov=True)
-    model.compile(
-        loss='categorical_crossentropy',
-        optimizer=opt,
-        metrics=['accuracy'])
+    model = cai.models.compiled_inception_v3(classes=2)
     
-    datagen = PlantLeafsDataGen(TRAIN_DATA_PATH, transforms=[load_transform], batch_size=128, workers=9, use_multiprocessing=True)
+    datagen = PlantLeafsDataGenBinary(TRAIN_DATA_PATH, transforms=[load_transform], batch_size=32, workers=9, use_multiprocessing=True)
 
     callbacks = [
         keras.callbacks.EarlyStopping(patience=2),
@@ -47,12 +41,12 @@ def main():
             imm_array = load_file(os.path.join(VAL_DATA_PATH, class_name, file))
             # create prediction
             predictions = model.predict(imm_array)
-            print(predictions, np.argmax(predictions, axis=1))
             # calculate prediction score
             prediction_score = tf.math.reduce_mean(tf.nn.softmax(predictions)).numpy()
             # determine class with highest confidence
             predicated_class = np.argmax(prediction_score)
-            print(predicated_class, prediction_score, i, i == predicated_class)
+            clazz = 1 if "healthy" in class_name else 0
+            print(predictions, np.argmax(predictions, axis=1), predicated_class, prediction_score, clazz, clazz == predicated_class)
     
     
 if __name__ == '__main__':

@@ -10,7 +10,9 @@ data:
     train: 
       - 'data/train'
       - 'data/plant_phenotype'
-    val: 'data/val'
+      - 'data/urban_street0_5'
+      - 'data/urban_street_combined'
+    val: 'data/test_own'
 
 ##Training
 train:

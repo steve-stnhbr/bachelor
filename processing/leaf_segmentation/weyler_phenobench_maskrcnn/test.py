@@ -107,6 +107,7 @@ def main(config, ckpt_file, out):
                         cv2.imwrite(os.path.join(out,'leafs_segmented_masked',"{}_{}.png".format(res_names[i].replace('.png', ''), j)), cv2_image_masked[low_y:high_y, low_x:high_x])
                     cv2.imwrite(os.path.join(out,'leaf_bboxes',res_names[i]), cv2_image_bbox)
                     cv2.imwrite(os.path.join(out,'leafs_masked',"{}_{}.png".format(res_names[i].replace('.png', ''), j)), cv2_image_masked)
+                    cv2.imshow("Preview", cv2_image_bbox)
 
                     # ready to be saved
                     pred_cls_box_score = np.hstack((labels.reshape(num_pred,1), 

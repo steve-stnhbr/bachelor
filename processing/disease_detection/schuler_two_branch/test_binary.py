@@ -32,9 +32,6 @@ def main():
         for file in os.listdir(os.path.join(TEST_DATA_PATH, class_name)):
             img = cv2.imread(os.path.join(TEST_DATA_PATH, class_name, file))
             imm_array = transform_image(img, smart_resize=True, lab=True)
-
-            cv2.imshow("Preview:", imm_array)
-            cv2.waitKey(1)
             
             imm_array = np.expand_dims(imm_array, 0)
 

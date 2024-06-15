@@ -11,7 +11,7 @@ from keras.utils import to_categorical
 import tensorflow as tf
 
 TEST_DATA_PATH = "data/test_data"
-MODEL_PATH = "two-path-inception-v6-False-0.8-best_result.hdf5"
+MODEL_PATH = "checkpoints/model.11.keras"
 
 def read_from_paths(paths):
     x=[]
@@ -102,7 +102,7 @@ def main():
     # load model
     model = tf.keras.models.load_model(MODEL_PATH, custom_objects={'CopyChannels': cai.layers.CopyChannels})
 
-    # model.summary()
+    model.summary()
     # iterate over all data classes
     for i, class_name in enumerate(os.listdir(TEST_DATA_PATH)):
         # iterate over all files in test class
@@ -111,6 +111,7 @@ def main():
             imm_array = load_file(os.path.join(TEST_DATA_PATH, class_name, file))
             # create prediction
             predictions = model.predict(imm_array)
+            print(predictions, np.argmax(predictions, axis=1))
             # calculate prediction score
             prediction_score = tf.math.reduce_mean(tf.nn.softmax(predictions)).numpy()
             # determine class with highest confidence
