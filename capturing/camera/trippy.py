@@ -3,8 +3,8 @@ import numpy as np
 import mmap
 import os
 import time
-import pygame
 import re
+import cv2
 
 import ioexpander as io
 # GPIO replaced by ioexpander
@@ -28,6 +28,17 @@ NAME_REGEX = r"IM_(\d*)\.jpg"
 # Calculate the screen size in bytes
 screensize = WIDTH * HEIGHT * (BPP // 8)
 
+def image_to_hex_array(image, rotate=False):
+    # rotate
+    image = np.transpose(image, (1, 0, 2))
+    
+    # Ensure the image is in the correct dtype
+    image = image.astype(np.uint32)
+    
+    # Use vectorized operations to convert RGB to a single hexadecimal value
+    hex_array = (image[:, :, 0] << 16) + (image[:, :, 1] << 8) + image[:, :, 2]
+    
+    return hex_array
 
 def main():
     os.putenv('SDL_FBDEV', FB_DEV)
@@ -44,14 +55,6 @@ def main():
     cam.configure(config)
     cam.start()
 
-    # Open the framebuffer device file
-    # initialise PyGame engine
-    pygame.init()
-    pygame.mouse.set_visible(False)
-    # set PyGame output to match dimensions of HyperPixel
-    size = width, height = WIDTH, HEIGHT
-    screen = pygame.display.set_mode(size)
-
     os.makedirs(SAVE_DIR, exist_ok=True)
     img_list = os.listdir(SAVE_DIR)
     if len(img_list) == 0:
@@ -60,22 +63,21 @@ def main():
         last_img = img_list[-1]
         last_index = int(re.match(NAME_REGEX, last_img).group(1))
     
-
-    while True:
-        start = time.time()
-        frame = cam.capture_array()
-        surf = pygame.surfarray.make_surface(frame)
-        screen.blit(surf, (0, 0))
-        pygame.display.update()
-        sleep = FRAME_TIME - (time.time() - start)
-        if ioe.input(14) == io.HIGH:
-            last_index += 1
-            name = os.path.join(SAVE_DIR, NAME_FORMAT.format(last_index))
-            cam.capture_file(name)
-            print("Capturing image", name)
-        if sleep > 0:
-            time.sleep(sleep)
-            #print("Lagging behind {} seconds".format(-sleep))
+    fb = np.memmap('/dev/fb0', dtype='uint16',mode='w+', shape=(WIDTH,HEIGHT))
+    if True:
+        while True:
+            start = time.time()
+            frame = cam.capture_array()
+            fb[:] = image_to_hex_array(frame, 0)
+            sleep = FRAME_TIME - (time.time() - start)
+            if ioe.input(14) == io.HIGH:
+                last_index += 1
+                name = os.path.join(SAVE_DIR, NAME_FORMAT.format(last_index))
+                cam.capture_file(name)
+                print("Capturing image", name)
+            if sleep > 0:
+                time.sleep(sleep)
+                #print("Lagging behind {} seconds".format(-sleep))
 
 
 if __name__ == '__main__':
