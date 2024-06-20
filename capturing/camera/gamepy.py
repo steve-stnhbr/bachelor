@@ -1,5 +1,6 @@
 import pygame, os, time, sys, time
 
+
 os.environ["SDL_FBDEV"] = "/dev/fb0"
 
 # HyperPixel screen dimensions
@@ -7,6 +8,8 @@ WIDTH = 480
 HEIGHT = 800
 
 def main():
+    ioe = io.IOE(i2c_addr=0x18)
+    ioe.set_mode(14, io.IN_PU)
     # initialise PyGame engine
     pygame.init()
     pygame.mouse.set_visible(False)

@@ -3,8 +3,8 @@ import numpy as np
 import mmap
 import os
 import time
-import pygame
 import re
+import cv2
 
 import ioexpander as io
 # GPIO replaced by ioexpander
@@ -28,6 +28,19 @@ NAME_REGEX = r"IM_(\d*)\.jpg"
 # Calculate the screen size in bytes
 screensize = WIDTH * HEIGHT * (BPP // 8)
 
+def image_to_565_hex_array(image):
+    # Ensure the image is in the correct dtype
+    image = image.astype(np.uint32)
+    # rotate
+    image = np.transpose(image, (1, 0, 2))
+
+    # code sourced from https://github.com/CommanderRedYT/rgb565-converter/blob/main/rgb565_converter/converter.py
+    r = (image[:,:,0] >> 3) & 0x1F
+    g = (image[:,:,1] >> 2) & 0x3F
+    b = (image[:,:,2] >> 3) & 0x1F
+    hex_array = r << 11 | g << 5 | b
+    
+    return hex_array
 
 def main():
     os.putenv('SDL_FBDEV', FB_DEV)
@@ -44,14 +57,6 @@ def main():
     cam.configure(config)
     cam.start()
 
-    # Open the framebuffer device file
-    # initialise PyGame engine
-    pygame.init()
-    pygame.mouse.set_visible(False)
-    # set PyGame output to match dimensions of HyperPixel
-    size = width, height = WIDTH, HEIGHT
-    screen = pygame.display.set_mode(size)
-
     os.makedirs(SAVE_DIR, exist_ok=True)
     img_list = os.listdir(SAVE_DIR)
     if len(img_list) == 0:
@@ -60,13 +65,12 @@ def main():
         last_img = img_list[-1]
         last_index = int(re.match(NAME_REGEX, last_img).group(1))
     
+    fb = np.memmap('/dev/fb0', dtype='uint16',mode='w+', shape=(WIDTH,HEIGHT))
 
     while True:
         start = time.time()
         frame = cam.capture_array()
-        surf = pygame.surfarray.make_surface(frame)
-        screen.blit(surf, (0, 0))
-        pygame.display.update()
+        fb[:] = image_to_565_hex_array(frame)
         sleep = FRAME_TIME - (time.time() - start)
         if ioe.input(14) == io.HIGH:
             last_index += 1
@@ -76,7 +80,6 @@ def main():
         if sleep > 0:
             time.sleep(sleep)
             #print("Lagging behind {} seconds".format(-sleep))
-
 
 if __name__ == '__main__':
     main()
