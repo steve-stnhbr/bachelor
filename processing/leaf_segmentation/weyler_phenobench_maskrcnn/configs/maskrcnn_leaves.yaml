@@ -10,7 +10,7 @@ data:
     train: 
       - 'data/train'
       - 'data/plant_phenotype'
-      - 'data/urban_street0_5'
+      - 'data/urban_street0_25'
       - 'data/urban_street_combined'
     val: 'data/test_own'
 

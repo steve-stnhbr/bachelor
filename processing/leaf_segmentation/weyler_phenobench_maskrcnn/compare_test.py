@@ -87,7 +87,7 @@ def main(ckpt_file, input):
             total = np.hstack(images)
 
             cv2.imshow("Prediction", total)
-            cv2.waitKey(1000) 
+            cv2.waitKey(0) 
 
 def step(model, frame: cv2.typing.MatLike):
     _, h, w = frame.shape
