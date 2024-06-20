@@ -16,8 +16,7 @@ def main(input_path, jpeg):
     files = [file for file in os.listdir(os.path.join(input_path, "images")) if ".jpg" in file or ".png" in file]
     print("Generating instances for {} files".format(len(files)))
 
-    os.makedirs(os.path.join(input_path, "plant_instances"), exist_ok=True)
-    os.makedirs(os.path.join(input_path, "leaf_instances"), exist_ok=True)
+    os.makedirs(os.path.join(input_path, "semantics"), exist_ok=True)
 
     with mp.Pool(mp.cpu_count()) as pool:
         p = list(tqdm(pool.imap_unordered(g, files), total=len(files)))
