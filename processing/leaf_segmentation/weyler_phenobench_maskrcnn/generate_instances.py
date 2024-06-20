@@ -14,8 +14,9 @@ from multiprocessing import Pool
 @click.option("--jpeg", "-j", default=False, is_flag=True)
 def main(input_path, jpeg):
     g = partial(generate, input_path, jpeg)
+    files = [file for file in os.listdir(input_path) if ".jpg" in file or ".png" in file]
     with mp.Pool(mp.cpu_count()) as pool:
-        tqdm(pool.imap_unordered(g, os.listdir(input_path)), total=len(os.listdir(input_path)))
+        tqdm(pool.imap_unordered(g, files), total=len(files))
         
 def generate(input_path, jpeg, file):
     if jpeg:
