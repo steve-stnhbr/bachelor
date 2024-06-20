@@ -20,7 +20,7 @@ def main(input_path, jpeg):
     os.makedirs(os.path.join(input_path, "leaf_instances"), exist_ok=True)
 
     with mp.Pool(mp.cpu_count()) as pool:
-        p = tqdm(pool.imap_unordered(g, files), total=len(files))
+        p = list(tqdm(pool.imap_unordered(g, files), total=len(files)))
         
 def generate(input_path, jpeg, file):
     print("Generate called")
