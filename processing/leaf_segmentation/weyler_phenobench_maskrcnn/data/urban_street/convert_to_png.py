@@ -8,16 +8,16 @@ import multiprocessing as mp
 import shutil
 
 def main():
-    g = partial(generate)
     shutil.move("images", "images_jpg")
     files = [file for file in os.listdir(os.path.join("images_jpg")) if ".jpg" in file]
+    print("Converting {} files".format(len(files)))
 
     with mp.Pool(mp.cpu_count()) as pool:
         p = list(tqdm(pool.imap_unordered(generate, files), total=len(files)))
         
 def generate(file):
     img = cv2.imread(os.path.join("images_jpg", file))
-    cv2.imwrite(os.path.join("images", file), img)
+    cv2.imwrite(os.path.join("images", file.replace(".jpg", ".png")), img)
 
 if __name__ == '__main__':
     main()
