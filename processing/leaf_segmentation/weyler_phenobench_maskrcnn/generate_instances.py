@@ -17,7 +17,7 @@ def main(input_path, jpeg):
     files = [file for file in os.listdir(os.path.join(input_path, "images")) if ".jpg" in file or ".png" in file]
     print("Generating instances for {} files".format(len(files)))
     with mp.Pool(mp.cpu_count()) as pool:
-        tqdm(pool.imap_unordered(g, files), total=len(files))
+        p = tqdm(pool.imap_unordered(g, files), total=len(files))
         
 def generate(input_path, jpeg, file):
     if jpeg:
