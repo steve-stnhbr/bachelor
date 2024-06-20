@@ -3,12 +3,11 @@ import os
 import numpy as np
 import click
 
-
 @click.command()
 @click.option("-i", 
               "--input_path",
               )
-@click.option("-j", default=False)
+@click.option("-j", default=False, is_flag=True)
 def main(path, jpg_images):
     for file in os.listdir(path + "/images"):
         if jpg_images:
