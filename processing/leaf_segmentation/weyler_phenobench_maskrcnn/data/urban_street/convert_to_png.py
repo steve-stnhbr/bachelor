@@ -8,9 +8,15 @@ import multiprocessing as mp
 import shutil
 
 def main():
-    os.mkdir("images_jpg")
+    try:
+        os.mkdir("images_jpg")
+    except FileExistsError:
+        pass
     shutil.move("images/*", "images_jpg")
-    os.mkdir("images")
+    try:
+        os.mkdir("images")
+    except FileExistsError:
+        pass
     files = [file for file in os.listdir(os.path.join("images_jpg")) if ".jpg" in file]
     print("Converting {} files".format(len(files)))
 
