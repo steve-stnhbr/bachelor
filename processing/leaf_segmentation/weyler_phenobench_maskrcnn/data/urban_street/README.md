@@ -1,0 +1,1 @@
+The data in this folder stems from the [leaf dataset](https://www.kaggle.com/datasets/erickendric/tree-dataset-of-urban-street-segmentation-leaf) shared on this [page](https://ytt917251944.github.io/dataset_jekyll/)
