@@ -39,10 +39,11 @@ def image_to_565_hex_array(image):
     g = (image[:,:,1] >> 2) & 0x3F
     b = (image[:,:,2] >> 3) & 0x1F
     hex_array = r << 11 | g << 5 | b
-    
+
     return hex_array
 
 def main():
+    print("Starting Camera")
     os.putenv('SDL_FBDEV', FB_DEV)
     ioe = io.IOE(i2c_addr=0x18)
     ioe.set_mode(PIN, io.PIN_MODE_IO)
@@ -56,7 +57,7 @@ def main():
     cam.set_controls({"AwbEnable": False})
     cam.configure(config)
     cam.start()
-
+    print("Initialized Camera")
     os.makedirs(SAVE_DIR, exist_ok=True)
     img_list = os.listdir(SAVE_DIR)
     if len(img_list) == 0:
@@ -64,9 +65,9 @@ def main():
     else:
         last_img = img_list[-1]
         last_index = int(re.match(NAME_REGEX, last_img).group(1))
-    
-    fb = np.memmap('/dev/fb0', dtype='uint16',mode='w+', shape=(WIDTH,HEIGHT))
 
+    fb = np.memmap('/dev/fb0', dtype='uint16',mode='w+', shape=(WIDTH,HEIGHT))
+    print("Initialized Framebuffer")
     while True:
         start = time.time()
         frame = cam.capture_array()
@@ -77,9 +78,11 @@ def main():
             name = os.path.join(SAVE_DIR, NAME_FORMAT.format(last_index))
             cam.capture_file(name)
             print("Capturing image", name)
+            fb[:] = 0xffff
         if sleep > 0:
             time.sleep(sleep)
-            #print("Lagging behind {} seconds".format(-sleep))
+        else:
+            print("Lagging behind {} seconds".format(-sleep))
 
 if __name__ == '__main__':
     main()
