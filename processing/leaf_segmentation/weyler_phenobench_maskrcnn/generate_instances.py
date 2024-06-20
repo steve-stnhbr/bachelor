@@ -7,7 +7,7 @@ import click
 @click.option("-i", 
               "--input_path",
               )
-@click.option("-j", default=False, is_flag=True)
+@click.option("--jpeg", "-j", default=False, is_flag=True)
 def main(path, jpg_images):
     for file in os.listdir(path + "/images"):
         if jpg_images:
