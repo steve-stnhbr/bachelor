@@ -13,11 +13,11 @@ def main():
     files = [file for file in os.listdir(os.path.join("images_jpg")) if ".jpg" in file]
 
     with mp.Pool(mp.cpu_count()) as pool:
-        p = list(tqdm(pool.imap_unordered(g, files), total=len(files)))
+        p = list(tqdm(pool.imap_unordered(generate, files), total=len(files)))
         
 def generate(file):
     img = cv2.imread(os.path.join("images_jpg", file))
-    cv2.imwrite(os.path.join("images", file))
+    cv2.imwrite(os.path.join("images", file), img)
 
 if __name__ == '__main__':
     main()
