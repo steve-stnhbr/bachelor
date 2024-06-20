@@ -15,6 +15,7 @@ from multiprocessing import Pool
 def main(input_path, jpeg):
     g = partial(generate, input_path, jpeg)
     files = [file for file in os.listdir(input_path) if ".jpg" in file or ".png" in file]
+    print("Generating instances for {} files".format(len(files)))
     with mp.Pool(mp.cpu_count()) as pool:
         tqdm(pool.imap_unordered(g, files), total=len(files))
         
