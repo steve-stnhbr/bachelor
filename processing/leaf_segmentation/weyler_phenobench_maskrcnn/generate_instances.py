@@ -24,6 +24,7 @@ def main(input_path, jpeg):
         p = tqdm(pool.imap_unordered(g, files), total=len(files))
         
 def generate(input_path, jpeg, file):
+    print("Generate called")
     if jpeg:
         file = file.replace(".jpg", ".png")
     img = cv2.imread(input_path + "/masks/" + file)
