@@ -8,11 +8,7 @@ import multiprocessing as mp
 import shutil
 
 def main():
-    try:
-        os.mkdir("images_jpg")
-    except FileExistsError:
-        pass
-    shutil.move("images/*", "images_jpg")
+    shutil.move("images", "images_jpg")
     try:
         os.mkdir("images")
     except FileExistsError:
