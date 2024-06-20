@@ -14,7 +14,7 @@ def main():
 
     files = os.listdir(FIELDS[0])
 
-    with Pool(12) as p:        
+    with Pool(12) as p:
         r = list(tqdm(p.imap(resize_file, files), total=len(files)))
     
 def resize_field(field):
