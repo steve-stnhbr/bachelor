@@ -28,6 +28,7 @@ def generate(input_path, jpeg, file):
     img = cv2.imread(input_path + "/masks/" + file)
     cv2.imwrite(input_path + "/plant_instances/" + file, np.where(img != 0, np.ones(img.shape), np.zeros(img.shape)))
     cv2.imwrite(input_path + "/leaf_instances/" + file, np.where(img != 0, np.ones(img.shape), np.zeros(img.shape)))
+    cv2.imwrite(input_path + "/semantics/" + file, np.where(img != 0, np.ones(img.shape) * 3, np.zeros(img.shape)))
 
 if __name__ == '__main__':
     main()
