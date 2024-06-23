@@ -1,7 +1,6 @@
 # Here's a codeblock just for fun. You should be able to upload an image here 
 # and have it classified without crashing
 import numpy as np
-import camclient
 import cv2
 import tensorflow as tf
 from skimage import color as skimage_color
