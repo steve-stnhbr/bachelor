@@ -108,7 +108,7 @@ def main(config, percentage, weights, data):
             name = os.path.join(model.ckpt_dir,'last.pt')
             save_model(model, e, optim, name)
             
-            model.network.ev^ation_step(item)
+            model.network.evaluation_step(item)
 
             ap_detection, ap_instance, iou = model.compute_metrics()
             model.writer.add_scalar('Metric/Val/mAP_detection', ap_detection['map'].item(), n_iter)

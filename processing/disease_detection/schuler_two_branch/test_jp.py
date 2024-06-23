@@ -16,7 +16,6 @@ CHKPT_PATH = "data/model/0.8_best.hdf5"
 MODEL_PATH = "data/model/two-path-inception-v2.8-False-0.2"
 KERAS_PATH = os.path.join("checkpoints", "model.11.keras")
 
-
 TEST_DATA_PATH = "data/test_data"
 
 def main():
