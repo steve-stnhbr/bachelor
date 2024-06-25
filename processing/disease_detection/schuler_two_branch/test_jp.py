@@ -16,7 +16,7 @@ CHKPT_PATH = "data/model/0.8_best.hdf5"
 MODEL_PATH = "data/model/two-path-inception-v2.8-False-0.2"
 KERAS_PATH = os.path.join("checkpoints", "model.11.keras")
 
-TEST_DATA_PATH = "data/test_data"
+TEST_DATA_PATH = "data/test"
 
 def main():
     input_shape=(128, 128, 3)
@@ -30,17 +30,14 @@ def main():
             img = load_img(os.path.join(TEST_DATA_PATH, class_name, file), target_size=input_shape[:2])
             imm_array = transform_image(img, smart_resize=True, lab=True)
 
-            cv2.imshow("Preview:", imm_array)
-            cv2.waitKey(1)
-            
-            imm_array = np.expand_dims(imm_array, 0)
-
             predictions = model.predict(imm_array)
             prediction_score = tf.math.reduce_mean(tf.nn.softmax(predictions)).numpy()
             predicated_class = np.argmax(prediction_score)
+            print(predictions, np.argmax(predictions))
             print(predicated_class, prediction_score, i, i == predicated_class)
             
-def transform_image(img, lab, bipolar, verbose):
+def transform_image(img, lab, bipolar=False, verbose=True, smart_resize=False):
+    img = np.array(img, dtype='float16')
     img = np.expand_dims(img, 0)
     if (lab):
         if (verbose):
