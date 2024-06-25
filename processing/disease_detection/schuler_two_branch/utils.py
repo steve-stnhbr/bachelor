@@ -1,6 +1,8 @@
 import os
 from tensorflow.keras.preprocessing.image import img_to_array
 import skimage
+from skimage import color as skimage_color
+import cv2
 
 def get_classes(paths):
     return [os.path.normpath(path).split(os.sep)[-2] for path in paths]

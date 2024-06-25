@@ -1,7 +1,6 @@
 # Here's a codeblock just for fun. You should be able to upload an image here 
 # and have it classified without crashing
 import numpy as np
-import camclient
 import cv2
 import tensorflow as tf
 from skimage import color as skimage_color
@@ -12,7 +11,7 @@ from utils import transform_image
 import keras
 
 # CHKPT_PATH = "data/model/two-path-inception-v6-False-0.8-best_result.hdf5"
-CHKPT_PATH = "data/model/0.8_best.hdf5"
+CHKPT_PATH = "data/model/self_trained.hdf5"
 MODEL_PATH = "data/model/two-path-inception-v2.8-False-0.2"
 KERAS_PATH = os.path.join("checkpoints", "model.11.keras")
 
@@ -23,15 +22,15 @@ def main():
     input_shape=(128, 128, 3)
     l_ratio = .6
     #model = cai.models.load_model(MODEL_PATH)
-    model = keras.models.load_model(KERAS_PATH)
+    #model = keras.models.load_model(KERAS_PATH)
 
-    # model = tf.keras.models.load_model('data/model/0.8_best.hdf5',custom_objects={'CopyChannels': cai.layers.CopyChannels})
+    model = tf.keras.models.load_model(CHKPT_PATH,custom_objects={'CopyChannels': cai.layers.CopyChannels})
     model.summary()
     
     for i, class_name in enumerate(os.listdir(TEST_DATA_PATH)):
         for file in os.listdir(os.path.join(TEST_DATA_PATH, class_name)):
             img = cv2.imread(os.path.join(TEST_DATA_PATH, class_name, file))
-            imm_array = transform_image(img, smart_resize=True, lab=True)
+            imm_array = transform_image(img, smart_resize=True, lab=True, rescale=True)
 
             cv2.imshow("Preview:", imm_array)
             cv2.waitKey(1)

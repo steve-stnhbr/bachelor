@@ -9,9 +9,13 @@ import random
 from sklearn.utils import class_weight
 from keras.utils import to_categorical
 import tensorflow as tf
+from utils import transform_image
+import cv2
 
 TEST_DATA_PATH = "data/test_data"
-MODEL_PATH = "checkpoints/model.11.keras"
+#MODEL_PATH = "checkpoints/model.11.keras"
+#MODEL_PATH ="data/model/self_trained.hdf5"
+MODEL_PATH ="data/model/0.8_best.hdf5"
 
 def read_from_paths(paths):
     x=[]
@@ -107,11 +111,15 @@ def main():
     for i, class_name in enumerate(os.listdir(TEST_DATA_PATH)):
         # iterate over all files in test class
         for file in os.listdir(os.path.join(TEST_DATA_PATH, class_name)):
+            img = cv2.imread(os.path.join(TEST_DATA_PATH, class_name, file))
+            imm_array = transform_image(img, smart_resize=True, lab=True, rescale=True)
+            imm_array = np.expand_dims(imm_array, 0)
             # load and convert file
-            imm_array = load_file(os.path.join(TEST_DATA_PATH, class_name, file))
+            # imm_array = load_file(os.path.join(TEST_DATA_PATH, class_name, file))
             # create prediction
             predictions = model.predict(imm_array)
-            print(predictions, np.argmax(predictions, axis=1))
+            max_class = np.argmax(predictions, axis=1)
+            print(predictions, max_class, i == max_class)
             # calculate prediction score
             prediction_score = tf.math.reduce_mean(tf.nn.softmax(predictions)).numpy()
             # determine class with highest confidence
