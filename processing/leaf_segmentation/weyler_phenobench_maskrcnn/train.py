@@ -108,29 +108,25 @@ def main(config, percentage, weights, data):
             name = os.path.join(model.ckpt_dir,'last.pt')
             save_model(model, e, optim, name)
             
-            # model.network.eval()
-            # model.on_validation_start()
-            # for idx, item in enumerate(tqdm(val_loader)):
-            #     with torch.no_grad():
-            #         model.validation_step(item)
+            model.network.evaluation_step(item)
 
             ap_detection, ap_instance, iou = model.compute_metrics()
             model.writer.add_scalar('Metric/Val/mAP_detection', ap_detection['map'].item(), n_iter)
             model.writer.add_scalar('Metric/Val/mAP_instance', ap_instance['map'].item(), n_iter)
             model.writer.add_scalar('Metric/Val/mIoU', iou.item(), n_iter)
             
-            # if model.log_val_predictions:
-            #     from matplotlib import cm
-            #     ins = model.img_with_masks[:4]
-            #     bbs = model.img_with_box[:4]
-            #     sem = model.img_with_sem[:4]
-            #     for batch_idx in range(len(ins)):
-            #         colormap = cm.get_cmap('tab20b')
-            #         ins_transformed = colormap(ins[batch_idx].long().cpu())[:, :, :3]
-            #         sem_transformed = colormap(sem[batch_idx].long().cpu())[:, :, :3]
-            #         model.writer.add_image("Instances/" + "b" + str(batch_idx), ins_transformed, n_iter, dataformats='HWC')
-            #         model.writer.add_image("Semantics/" + "b" + str(batch_idx), sem_transformed, n_iter, dataformats='HWC')
-            #         model.writer.add_image("Boxes/" + "b" + str(batch_idx), bbs[batch_idx], n_iter, dataformats='HWC')
+            if model.log_val_predictions:
+                from matplotlib import cm
+                ins = model.img_with_masks[:4]
+                bbs = model.img_with_box[:4]
+                sem = model.img_with_sem[:4]
+                for batch_idx in range(len(ins)):
+                    colormap = cm.get_cmap('tab20b')
+                    ins_transformed = colormap(ins[batch_idx].long().cpu())[:, :, :3]
+                    sem_transformed = colormap(sem[batch_idx].long().cpu())[:, :, :3]
+                    model.writer.add_image("Instances/" + "b" + str(batch_idx), ins_transformed, n_iter, dataformats='HWC')
+                    model.writer.add_image("Semantics/" + "b" + str(batch_idx), sem_transformed, n_iter, dataformats='HWC')
+                    model.writer.add_image("Boxes/" + "b" + str(batch_idx), bbs[batch_idx], n_iter, dataformats='HWC')
 
             # checking improvements on validation set
             if ap_detection['map'].item() >= best_map_det:

@@ -5,7 +5,6 @@ import click
 from tqdm import tqdm
 from functools import partial
 import multiprocessing as mp
-from multiprocessing import Pool
 
 @click.command()
 @click.option("-i", 
@@ -19,18 +18,18 @@ def main(input_path, jpeg):
 
     os.makedirs(os.path.join(input_path, "plant_instances"), exist_ok=True)
     os.makedirs(os.path.join(input_path, "leaf_instances"), exist_ok=True)
+    os.makedirs(os.path.join(input_path, "semantics"), exist_ok=True)
 
     with mp.Pool(mp.cpu_count()) as pool:
-        p = tqdm(pool.imap(g, files), total=len(files))
+        p = list(tqdm(pool.imap_unordered(g, files), total=len(files)))
         
 def generate(input_path, jpeg, file):
-    print("Generate called")
     if jpeg:
         file = file.replace(".jpg", ".png")
     img = cv2.imread(input_path + "/masks/" + file)
     cv2.imwrite(input_path + "/plant_instances/" + file, np.where(img != 0, np.ones(img.shape), np.zeros(img.shape)))
     cv2.imwrite(input_path + "/leaf_instances/" + file, np.where(img != 0, np.ones(img.shape), np.zeros(img.shape)))
-
+    cv2.imwrite(input_path + "/semantics/" + file, np.where(img != 0, np.ones(img.shape) * 3, np.zeros(img.shape)))
 
 if __name__ == '__main__':
     main()

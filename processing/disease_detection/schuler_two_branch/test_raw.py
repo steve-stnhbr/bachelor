@@ -41,7 +41,7 @@ def load_data(path=TEST_DATA_PATH, lab=True, verbose=True, bipolar=False):
     if (lab):
         # LAB datasets are cached
         if (verbose):
-            print("Converting RGB to LAB")         
+            print("Converting RGB to LAB")
         train_x /= 255
         if (verbose):
             print("Converting training.")
@@ -107,6 +107,8 @@ def main():
     model = tf.keras.models.load_model(MODEL_PATH, custom_objects={'CopyChannels': cai.layers.CopyChannels})
 
     model.summary()
+    total = 0
+    rightly_predicted = 0
     # iterate over all data classes
     for i, class_name in enumerate(os.listdir(TEST_DATA_PATH)):
         # iterate over all files in test class
@@ -118,14 +120,15 @@ def main():
             # imm_array = load_file(os.path.join(TEST_DATA_PATH, class_name, file))
             # create prediction
             predictions = model.predict(imm_array)
-            max_class = np.argmax(predictions, axis=1)
-            print(predictions, max_class, i == max_class)
-            # calculate prediction score
-            prediction_score = tf.math.reduce_mean(tf.nn.softmax(predictions)).numpy()
-            # determine class with highest confidence
-            predicated_class = np.argmax(prediction_score)
-            print(predicated_class, prediction_score, i, i == predicated_class)
+            
+            predicted = np.argmax(predictions, 0)
+            
+            if predicted == i:
+                rightly_predicted += 1
 
+            total += 1
+    
+    print("Total: {}, Correct: {}, Accuracy: {}".format(total, rightly_predicted, rightly_predicted/total))
 
 if __name__ == '__main__':
     main()

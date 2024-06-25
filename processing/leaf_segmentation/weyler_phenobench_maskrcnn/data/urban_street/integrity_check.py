@@ -20,7 +20,7 @@ def main():
             src_path = os.path.join(folder, file)
             dst_path = os.path.join(folder + "_disc", file)
             shutil.move(src_path, dst_path)
-            print(f"Moved {file} from {folder} to {folder + "_disc"}")
+            print(f"Moved {file} from {folder} to {folder}_disc")
 
     print("Integrity check complete. Discrepant files moved to the discarded folder.")
 
