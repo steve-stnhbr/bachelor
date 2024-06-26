@@ -1,4 +1,6 @@
-
+import pandas as pd
+import os
+from tqdm import tqdm
 from keras.preprocessing.image import load_img, img_to_array
 import cai
 import os
@@ -11,11 +13,12 @@ from keras.utils import to_categorical
 import tensorflow as tf
 from utils import transform_image
 import cv2
+import tensorflow as tf
+from itertools import cycle
 
-TEST_DATA_PATH = "../_data/test"
-#MODEL_PATH = "checkpoints/model.11.keras"
-#MODEL_PATH ="data/model/self_trained.hdf5"
-MODEL_PATH ="data/model/0.8_best.hdf5"
+VERBOSE = False
+MODEL_PATH = "data/model/self_trained.hdf5"
+DATA_PATH = "../_data/test"
 
 def read_from_paths(paths):
     x=[]
@@ -25,7 +28,7 @@ def read_from_paths(paths):
       x.append(img)
     return x
 
-def load_data(path=TEST_DATA_PATH, lab=True, verbose=True, bipolar=False):
+def load_data(path=DATA_PATH, lab=True, verbose=True, bipolar=False):
     classes = os.listdir(path)
     classes = sorted(classes)
     train_path = []
@@ -37,7 +40,7 @@ def load_data(path=TEST_DATA_PATH, lab=True, verbose=True, bipolar=False):
       cat_total = len(paths)
       train_path.extend(paths[:int(cat_total*0.6)])
       train_y.extend([i]*int(cat_total*0.6))
-    train_x = np.array(read_from_paths(TEST_DATA_PATH), dtype='float16')
+    train_x = np.array(read_from_paths(DATA_PATH), dtype='float16')
     if (lab):
         # LAB datasets are cached
         if (verbose):
@@ -103,33 +106,47 @@ def load_file(path, lab=True, verbose=True, bipolar=False):
     return train_x
 
 def main():
+    diseases = os.listdir(DATA_PATH)
+
     # load model
     model = tf.keras.models.load_model(MODEL_PATH, custom_objects={'CopyChannels': cai.layers.CopyChannels})
 
     model.summary()
-    total = 0
-    rightly_predicted = 0
-    # iterate over all data classes
-    for i, class_name in enumerate(os.listdir(TEST_DATA_PATH)):
-        # iterate over all files in test class
-        for file in os.listdir(os.path.join(TEST_DATA_PATH, class_name)):
-            img = cv2.imread(os.path.join(TEST_DATA_PATH, class_name, file))
-            imm_array = transform_image(img, smart_resize=True, lab=True, rescale=True)
-            imm_array = np.expand_dims(imm_array, 0)
-            # load and convert file
-            # imm_array = load_file(os.path.join(TEST_DATA_PATH, class_name, file))
-            # create prediction
-            predictions = model.predict(imm_array)
-            
-            predicted = np.argmax(predictions)
-            print("Predicted:", predicted, i == predicted)
-            
-            if predicted == i:
-                rightly_predicted += 1
 
-            total += 1
-    
-    print("Total: {}, Correct: {}, Accuracy: {}".format(total, rightly_predicted, rightly_predicted/total))
+    num_correct_pred = 0
+    num_wrong_pred = 0
+    data = map(lambda x: [x, 0, 0, 0], diseases)
+    df = pd.DataFrame(data, columns=['disease', 'amount', 'predicted', 'correct'])
+
+    eval = [(i, os.path.join(DATA_PATH, disease, file)) for i, disease in enumerate(diseases) for i, file in zip(cycle([i]), os.listdir(os.path.join(DATA_PATH, disease)))]
+
+    try:
+        for label, image_file in tqdm(eval):
+            image = cv2.imread(image_file)
+            image = transform_image(image, smart_resize=True, lab=True, rescale=True)
+            image = np.expand_dims(image, 0)
+            if VERBOSE:
+                print("Image size: {}".format(image.size()))
+            predictions = model.predict(image)
+            predicted_label = np.argmax(predictions)
+            if VERBOSE:
+                print("Prediction: {}".format(predicted_label))
+                print("Actual: {}".format(label))
+            df.at[label, 'amount'] += 1
+            df.at[predicted_label, 'predicted'] += 1
+            if predicted_label != label:
+                num_wrong_pred += 1
+            else:
+                num_correct_pred += 1
+                df.at[label, 'correct'] += 1
+    except KeyboardInterrupt:
+        print("Accuracy: ", num_correct_pred / (num_correct_pred + num_wrong_pred))
+        df.to_csv("./out/result.csv")
+
+
+    print("Accuracy: ", num_correct_pred / (num_correct_pred + num_wrong_pred))
+    df.to_csv("./out/result.csv")
+    print(df)
 
 if __name__ == '__main__':
     main()

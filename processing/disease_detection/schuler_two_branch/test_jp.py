@@ -9,7 +9,7 @@ import cai.layers
 import os
 from utils import transform_image
 import keras
-from keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
+from keras.preprocessing.image import load_img
 
 # CHKPT_PATH = "data/model/two-path-inception-v6-False-0.8-best_result.hdf5"
 CHKPT_PATH = "data/model/0.8_best.hdf5"
@@ -24,6 +24,9 @@ def main():
 
     # model = tf.keras.models.load_model('data/model/0.8_best.hdf5',custom_objects={'CopyChannels': cai.layers.CopyChannels})
     model.summary()
+
+    total = 0
+    rightly_predicted = 0
     
     for i, class_name in enumerate(os.listdir(TEST_DATA_PATH)):
         for file in os.listdir(os.path.join(TEST_DATA_PATH, class_name)):
@@ -31,10 +34,14 @@ def main():
             imm_array = transform_image(img, smart_resize=True, lab=True)
 
             predictions = model.predict(imm_array)
-            prediction_score = tf.math.reduce_mean(tf.nn.softmax(predictions)).numpy()
-            predicated_class = np.argmax(prediction_score)
-            print(predictions, np.argmax(predictions))
-            print(predicated_class, prediction_score, i, i == predicated_class)
+            
+            predicted = np.argmax(predictions)[0]
+            print("Predicted:", predicted)
+            
+            if predicted == i:
+                rightly_predicted += 1
+
+            total += 1
             
 def transform_image(img, lab, bipolar=False, verbose=True, smart_resize=False):
     img = np.array(img, dtype='float16')

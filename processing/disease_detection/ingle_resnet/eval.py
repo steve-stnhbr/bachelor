@@ -48,7 +48,7 @@ print("Cuda {}available".format("" if torch.cuda.is_available() else "un"))
 device = get_default_device()
 batch_size = 1
 
-train_dir = './data/train'
+train_dir = '../_data/test'
 diseases = os.listdir(train_dir)
 
 
@@ -103,3 +103,4 @@ except KeyboardInterrupt:
 
 print("Accuracy: ", num_correct_pred / (num_correct_pred + num_wrong_pred))
 df.to_csv("./out/result.csv")
+print(df)

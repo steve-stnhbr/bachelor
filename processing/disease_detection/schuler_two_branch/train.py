@@ -44,7 +44,7 @@ def main():
         # iterate over all files in test class
         for file in os.listdir(os.path.join(VAL_DATA_PATH, class_name)):
             # load and convert file
-            imm_array = load_file(os.path.join(VAL_DATA_PATH, class_name, file))
+            imm_array = load_transform([os.path.join(VAL_DATA_PATH, class_name, file)])
             # create prediction
             predictions = model.predict(imm_array)
             print(predictions, np.argmax(predictions, axis=1))
