@@ -10,7 +10,9 @@ class PlantLeafsDataGen(PyDataset):
         self.shuffle = shuffle
         self.on_epoch_end()
 
-        self.classes = os.listdir(path)
+        # self.classes = os.listdir(path)
+        with open(os.path.join(path, "labels.txt")) as f: label_text = f.read()
+        self.classes = label_text.split(os.linesep)
         self.num_classes = len(self.classes)
 
         self.file_paths = []

@@ -17,8 +17,9 @@ import tensorflow as tf
 from itertools import cycle
 
 VERBOSE = False
-MODEL_PATH = "data/model/self_trained.hdf5"
+MODEL_PATH = "data/model/model.24.keras"
 DATA_PATH = "../_data/test"
+INPUT_SHAPE = (224, 224, 3)
 
 def read_from_paths(paths):
     x=[]
@@ -105,8 +106,18 @@ def load_file(path, lab=True, verbose=True, bipolar=False):
     
     return train_x
 
+def get_image(file):
+    return cai.datasets.load_images_from_files([file], target_size=INPUT_SHAPE[:2], lab=True, rescale=True, smart_resize=True)
+
+    image = cv2.imread(file)
+    image = transform_image(image, smart_resize=True, lab=True, rescale=True)
+    image = np.expand_dims(image, 0)
+    return image
+
+
 def main():
-    diseases = os.listdir(DATA_PATH)
+    with open(os.path.join(DATA_PATH, "labels.txt")) as f: label_text = f.read()
+    diseases= label_text.split(os.linesep)
 
     # load model
     model = tf.keras.models.load_model(MODEL_PATH, custom_objects={'CopyChannels': cai.layers.CopyChannels})
@@ -122,9 +133,7 @@ def main():
 
     try:
         for label, image_file in tqdm(eval):
-            image = cv2.imread(image_file)
-            image = transform_image(image, smart_resize=True, lab=True, rescale=True)
-            image = np.expand_dims(image, 0)
+            image = get_image(image_file)
             if VERBOSE:
                 print("Image size: {}".format(image.size()))
             predictions = model.predict(image)
