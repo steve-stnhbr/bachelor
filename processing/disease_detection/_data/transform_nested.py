@@ -25,7 +25,8 @@ def main(input, output):
 
     for plant in os.listdir(input):
         for clazz in os.listdir(os.path.join(input, plant)):
-            shutil.copy(os.path.join(input, plant, clazz), os.path.join(output, f"{plant}__{clazz}"))
+            for file in os.listdir(os.path.join(input, plant, clazz)):
+                shutil.copy(os.path.join(input, plant, clazz, file), os.path.join(output, f"{plant}__{clazz}", file))
 
 if __name__ == '__main__':
     main()
