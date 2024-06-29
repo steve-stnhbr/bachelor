@@ -7,7 +7,7 @@ import shutil
 @click.option("-i", "--input")
 @click.option('-o', '--output')
 @click.option('-s', '--split', default=None)
-@click.option('-r', '--ratio')
+@click.option('-r', '--ratio', type=float)
 def main(input, output, split, ratio):
     
     files = []
