@@ -43,7 +43,7 @@ class PlantLeafsDataGen(PyDataset):
         
 
 class PlantLeafsDataGenBinary(PyDataset):
-    def __init__(self, path, batch_size=32, shuffle=True, transforms=None, **kwargs):
+    def __init__(self, path, batch_size=32, shuffle=True, transforms=None, determine_healthy=None, **kwargs):
         super().__init__(**kwargs)
         'Initialization'
         self.batch_size = batch_size
@@ -61,6 +61,11 @@ class PlantLeafsDataGenBinary(PyDataset):
             import random
             random.shuffle(self.file_paths)
         
+        if determine_healthy is not None:
+            self.determine_healthy = self.is_healthy
+        else:
+            self.determine_healthy = determine_healthy
+        
         self.transforms = transforms
 
     
@@ -72,10 +77,13 @@ class PlantLeafsDataGenBinary(PyDataset):
         'Generate one batch of data'
         paths = self.file_paths[index*self.batch_size:(index+1)*self.batch_size]
         class_names = get_classes(paths)
-        classes = [1 if "healthy" in clazz else 0 for clazz in class_names]
+        classes = [1 if self.determine_healthy(clazz) else 0 for clazz in class_names]
         if self.transforms is not None and len(self.transforms) > 0:
             for transform in self.transforms:
                 paths = transform(paths)
 
         return paths, to_categorical(classes, num_classes=self.num_classes)
+    
+    def is_healthy(clazz):
+        return "healthy" in clazz
         
