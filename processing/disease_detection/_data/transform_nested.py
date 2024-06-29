@@ -25,6 +25,7 @@ def main(input, output):
 
     for plant in os.listdir(input):
         for clazz in os.listdir(os.path.join(input, plant)):
+            os.makedirs(os.path.join(output, f"{plant}__{clazz}"), exist_ok=True)
             for file in os.listdir(os.path.join(input, plant, clazz)):
                 shutil.copy(os.path.join(input, plant, clazz, file), os.path.join(output, f"{plant}__{clazz}", file))
 
