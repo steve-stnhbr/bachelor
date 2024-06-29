@@ -19,9 +19,11 @@ def main(input, output, split, ratio):
     if split is not None:
         files = list(set(files).difference(set(sampled)))
         for file in files:
+            os.makedirs(os.path.dirname(file), exist_ok=True)
             shutil.copy(os.path.join(input, file), os.path.join(split, file))
 
     for file in sampled:
+        os.makedirs(os.path.dirname(file), exist_ok=True)
         shutil.copy(os.path.join(input, file), os.path.join(output, file))
     
     
