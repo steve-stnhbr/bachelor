@@ -84,6 +84,6 @@ class PlantLeafsDataGenBinary(PyDataset):
 
         return paths, to_categorical(classes, num_classes=self.num_classes)
     
-    def is_healthy(clazz):
-        return "healthy" in clazz
+    def is_healthy(self, clazz: str):
+        return "healthy" in clazz.lower()
         
