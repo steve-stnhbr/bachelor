@@ -18,9 +18,9 @@ def main(input, output):
     and will transform it into the following strucure
 
     - data
-      - plant_type__<class>
       - plant_type__healthy
       - plant_type__diseased
+      - plant_type__<class>
     '''
 
     for plant in os.listdir(input):
