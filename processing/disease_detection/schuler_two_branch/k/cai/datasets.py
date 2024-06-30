@@ -1006,8 +1006,8 @@ def load_images_from_files(file_names, target_size=(224,224), dtype='float32', s
         x.append(img)
       except UnidentifiedImageError:
         print("Error reading image, will pad this with existing data")
-      x = x.extend(x)[:cnt]
-    return np.array(x, dtype=dtype)
+      x = x.extend(x)
+    return np.array(x[:cnt], dtype=dtype)
 
 def load_images_from_folders(seed=None, root_dir=None, lab=False, 
   verbose=True, bipolar=False, base_model_name='plant_leaf',
