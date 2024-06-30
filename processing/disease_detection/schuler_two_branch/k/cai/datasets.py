@@ -1005,7 +1005,8 @@ def load_images_from_files(file_names, target_size=(224,224), dtype='float32', s
                 local_rescale(img,  lab)
         x.append(img)
       except UnidentifiedImageError:
-         cnt = cnt - 1
+        print("Error reading image, will pad this with existing data")
+      x = x.extend(x)[:cnt]
     return np.array(x, dtype=dtype)
 
 def load_images_from_folders(seed=None, root_dir=None, lab=False, 
