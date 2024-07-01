@@ -12,8 +12,8 @@ def main(input, output, indicator, negative):
         negative = "not_" + indicator
     pos_out = os.path.join(output, indicator)
     neg_out = os.path.join(output, negative)
-    os.makedirs(pos_out)
-    os.makedirs(neg_out)
+    os.makedirs(pos_out, exist_ok=True)
+    os.makedirs(neg_out, exist_ok=True)
     for dir in os.listdir(input):
         if os.path.isfile(os.path.join(input, dir)):
             continue
