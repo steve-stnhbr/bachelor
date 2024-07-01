@@ -7,7 +7,8 @@ import shutil
 @click.option('-o', '--output', type=str)
 @click.option('-d', '--indicator', type=str)
 @click.option('-n', '--negative', type=str, default=None)
-def main(input, output, indicator, negative):
+@click.option('-c', '--casesensitive', is_flag=True)
+def main(input, output, indicator, negative, case):
     if negative is None:
         negative = "not_" + indicator
     pos_out = os.path.join(output, indicator)
@@ -17,7 +18,10 @@ def main(input, output, indicator, negative):
     for dir in os.listdir(input):
         if os.path.isfile(os.path.join(input, dir)):
             continue
-        out = pos_out if indicator in dir else neg_out
+        if case:
+            out = pos_out if indicator.lower() in dir.lower() else neg_out
+        else:
+            out = pos_out if indicator in dir else neg_out
         for file in os.listdir(os.path.join(input, dir)):
             file_path = os.path.join(input, dir, file)
             if os.path.isdir(file_path):
