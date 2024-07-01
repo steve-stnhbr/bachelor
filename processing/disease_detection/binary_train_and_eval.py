@@ -51,35 +51,47 @@ def execute(model, name=None, lab=False, batch_size=32, workers=16):
 
 def main():
     models = [
-        keras.applications.ResNet152V2(
-            include_top = True,
-            input_shape=INPUT_SHAPE,
-            classes=CLASSES,
-            weights=None,
+        (
+            keras.applications.ResNet152V2(
+                include_top = True,
+                input_shape=INPUT_SHAPE,
+                classes=CLASSES,
+                weights=None,
+            ),
+            "ResNet152V2"
         ),
-        keras.applications.InceptionV3(
-            include_top=True,
-            input_shape=INPUT_SHAPE,
-            classes=CLASSES,
-            weights=None,
+        (
+            keras.applications.InceptionV3(
+                include_top=True,
+                input_shape=INPUT_SHAPE,
+                classes=CLASSES,
+                weights=None,
+            ),
+            "InceptionV3"
         ),
-        keras.applications.MobileNetV3Large(
-            include_top=True,
-            input_shape=INPUT_SHAPE,
-            classes=CLASSES,
-            weights=None,
+        (
+            keras.applications.MobileNetV3Large(
+                include_top=True,
+                input_shape=INPUT_SHAPE,
+                classes=CLASSES,
+                weights=None,
+            ),
+            "MobileNetV3Large"
         ),
-        keras.applications.ConvNeXtLarge(
-            include_top=True,
-            input_shape=INPUT_SHAPE,
-            classes=CLASSES,
-            weights=None,
+        (
+            keras.applications.ConvNeXtLarge(
+                include_top=True,
+                input_shape=INPUT_SHAPE,
+                classes=CLASSES,
+                weights=None,
+            ),
+            "ConvNeXtLarge"
         )
     ]
 
-    for model in models:
+    for name, model in models:
         for lab in [True, False]:
-            execute(model, f"{ type(model).__name__}_{'lab' if lab else 'rgb'}", lab)
+            execute(model, f"{name}_{'lab' if lab else 'rgb'}", lab)
 
 if __name__ == '__main__':
     main()
