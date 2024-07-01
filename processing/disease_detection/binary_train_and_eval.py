@@ -46,7 +46,7 @@ def execute(model, name=None, lab=False, batch_size=32, workers=16):
 
     test = train_datagen.take(5).as_numpy_iterator()
     for el in test:
-        print(el.shape)
+        print(el[0].shape, el[1].shape)
 
     print("Dataset sizes [train, val, test]", len(train_datagen), len(val_datagen), len(test_datagen))
 
