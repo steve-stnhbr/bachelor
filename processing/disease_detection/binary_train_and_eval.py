@@ -89,7 +89,7 @@ def main():
         )
     ]
 
-    for name, model in models:
+    for model, name in models:
         for lab in [True, False]:
             execute(model, f"{name}_{'lab' if lab else 'rgb'}", lab)
 
