@@ -34,6 +34,8 @@ def execute(model, name=None, lab=False, batch_size=32, workers=16):
     val_datagen = PlantLeafsDataGenBinary(VAL_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
     test_datagen = PlantLeafsDataGenBinary(TEST_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
 
+    print("Dataset sizes [train, val, test]", len(train_datagen), len(val_datagen), len(test_datagen))
+
     callbacks = [
         keras.callbacks.EarlyStopping(patience=2),
         keras.callbacks.ModelCheckpoint(filepath='checkpoints/model##name##.{epoch:02d}.keras'.replace("##name##", name)),
