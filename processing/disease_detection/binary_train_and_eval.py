@@ -1,5 +1,5 @@
 import cai.datasets
-from schuler_two_branch.test_datagen import PlantLeafsDataGen
+from schuler_two_branch.test_datagen import PlantLeafsDataGenBinary
 import cai
 import os
 from tensorflow import keras
@@ -30,9 +30,9 @@ def execute(model, name=None, lab=False, batch_size=32, workers=16):
     )
     
     print("Creating datagen")
-    train_datagen = PlantLeafsDataGen(TRAIN_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
-    val_datagen = PlantLeafsDataGen(VAL_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
-    test_datagen = PlantLeafsDataGen(TEST_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
+    train_datagen = PlantLeafsDataGenBinary(TRAIN_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
+    val_datagen = PlantLeafsDataGenBinary(VAL_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
+    test_datagen = PlantLeafsDataGenBinary(TEST_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
 
     callbacks = [
         keras.callbacks.EarlyStopping(patience=2),
