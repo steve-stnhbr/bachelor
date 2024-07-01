@@ -36,9 +36,9 @@ def execute(model, name=None, lab=False, batch_size=32, workers=16):
     # val_datagen = PlantLeafsDataGenBinary(VAL_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
     # test_datagen = PlantLeafsDataGenBinary(TEST_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
     
-    train_datagen = keras.utils.image_dataset_from_directory(TRAIN_DATA_PATH, batch_size=batch_size, image_size=INPUT_SHAPE)
-    val_datagen = keras.utils.image_dataset_from_directory(VAL_DATA_PATH, batch_size=batch_size, image_size=INPUT_SHAPE)
-    test_datagen = keras.utils.image_dataset_from_directory(TEST_DATA_PATH, batch_size=batch_size, image_size=INPUT_SHAPE)
+    train_datagen = keras.utils.image_dataset_from_directory(TRAIN_DATA_PATH, batch_size=batch_size, image_size=INPUT_SHAPE, crop_to_aspect_ratio=True)
+    val_datagen = keras.utils.image_dataset_from_directory(VAL_DATA_PATH, batch_size=batch_size, image_size=INPUT_SHAPE, crop_to_aspect_ratio=True)
+    test_datagen = keras.utils.image_dataset_from_directory(TEST_DATA_PATH, batch_size=batch_size, image_size=INPUT_SHAPE, crop_to_aspect_ratio=True)
 
     print("Dataset sizes [train, val, test]", len(train_datagen), len(val_datagen), len(test_datagen))
 
