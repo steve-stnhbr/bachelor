@@ -6,18 +6,20 @@ import tensorflow as tf
 from tensorflow import keras
 from test_raw import load_file
 import numpy as np
+from custom_utils import get_random_word
 
 L_RATIO = .8
 TWO_PATHS_SECOND_BLOCK = True
 INPUT_SHAPE = (224, 224, 3)
 
-TRAIN_DATA_PATH = os.path.join("2.8", "plant_leaf", "Plant_leave_diseases_dataset_without_augmentation")
+TRAIN_DATA_PATH = os.path.join("..", "_data", "test")
 VAL_DATA_PATH = os.path.join("data", "test_data")
 
 def load_transform(paths):
     return cai.datasets.load_images_from_files(paths, target_size=INPUT_SHAPE[:2], lab=True, rescale=True, smart_resize=True)
 
 def main():
+    name = get_random_word()
     print(tf.config.list_physical_devices())
 
     model = keras.models.load_model("data/model/0.8_best.hdf5", custom_objects={'CopyChannels': cai.layers.CopyChannels})
@@ -31,9 +33,10 @@ def main():
 
     callbacks = [
         keras.callbacks.EarlyStopping(patience=2),
-        keras.callbacks.ModelCheckpoint(filepath='checkpoints/model.{epoch:02d}.keras'),
+        keras.callbacks.ModelCheckpoint(filepath='checkpoints/model##name##.{epoch:02d}.keras'.replace("##name##", name)),
         keras.callbacks.TensorBoard(log_dir='./logs'),
     ]
+    print(f"Beginning training of model {name}")
 
     model.fit(datagen, epochs=4, callbacks=callbacks)
 

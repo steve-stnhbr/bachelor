@@ -116,9 +116,6 @@ def get_image(file):
 
 
 def main():
-    with open(os.path.join(DATA_PATH, "labels.txt")) as f: label_text = f.read()
-    diseases= label_text.split(os.linesep)
-
     # load model
     model = tf.keras.models.load_model(MODEL_PATH, custom_objects={'CopyChannels': cai.layers.CopyChannels})
 
@@ -126,10 +123,11 @@ def main():
 
     num_correct_pred = 0
     num_wrong_pred = 0
+    eval = [(clazz, "healthy" in clazz.lower(), os.path.join(DATA_PATH, clazz, file)) for clazz in os.listdir(DATA_PATH) for file in os.listdir(os.path.join(DATA_PATH, clazz))]
+
+    diseases = list(set(eval[0]))
     data = map(lambda x: [x, 0, 0, 0], diseases)
     df = pd.DataFrame(data, columns=['disease', 'amount', 'predicted', 'correct'])
-
-    eval = [(i, os.path.join(DATA_PATH, disease, file)) for i, disease in enumerate(diseases) for i, file in zip(cycle([i]), os.listdir(os.path.join(DATA_PATH, disease)))]
 
     try:
         for label, image_file in tqdm(eval):
