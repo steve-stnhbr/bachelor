@@ -54,22 +54,26 @@ def main():
         keras.applications.ResNet152V2(
             include_top = True,
             input_shape=INPUT_SHAPE,
-            classes=CLASSES
+            classes=CLASSES,
+            weights=None,
         ),
         keras.applications.InceptionV3(
             include_top=True,
             input_shape=INPUT_SHAPE,
-            classes=CLASSES
+            classes=CLASSES,
+            weights=None,
         ),
         keras.applications.MobileNetV3Large(
             include_top=True,
             input_shape=INPUT_SHAPE,
-            classes=CLASSES
+            classes=CLASSES,
+            weights=None,
         ),
         keras.applications.ConvNeXtLarge(
             include_top=True,
             input_shape=INPUT_SHAPE,
-            classes=CLASSES
+            classes=CLASSES,
+            weights=None,
         )
     ]
 
