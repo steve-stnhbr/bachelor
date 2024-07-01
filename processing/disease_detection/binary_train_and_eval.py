@@ -29,11 +29,19 @@ def execute(model, name=None, lab=False, batch_size=32, workers=16):
         optimizer=opt,
         metrics=['accuracy']
     )
+
     
     print("Creating datagen")
-    train_datagen = PlantLeafsDataGenBinary(TRAIN_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
-    val_datagen = PlantLeafsDataGenBinary(VAL_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
-    test_datagen = PlantLeafsDataGenBinary(TEST_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
+    # train_datagen = PlantLeafsDataGenBinary(TRAIN_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
+    # val_datagen = PlantLeafsDataGenBinary(VAL_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
+    # test_datagen = PlantLeafsDataGenBinary(TEST_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
+    class_names = [dir for dir in os.listdir(TRAIN_DATA_PATH) if os.path.isdir(os.path.join(TRAIN_DATA_PATH, dir))]
+    healthy = [class_name for class_name in class_names if "healthy" in class_name.lower()]
+    not_healthy = [class_name for class_name in class_names if "healthy" not in class_name.lower()]
+    class_names = healthy + not_healthy
+    
+    train_datagen = keras.utils.image_dataset_from_directory(TRAIN_DATA_PATH, batch_size=batch_size, image_size=INPUT_SHAPE)
+    train_datagen.apply()
 
     print("Dataset sizes [train, val, test]", len(train_datagen), len(val_datagen), len(test_datagen))
 
