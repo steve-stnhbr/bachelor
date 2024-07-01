@@ -44,7 +44,7 @@ def execute(model, name=None, lab=False, batch_size=32, workers=16):
     test_datagen = keras.utils.image_dataset_from_directory(TEST_DATA_PATH, batch_size=batch_size, image_size=INPUT_SHAPE[:2], crop_to_aspect_ratio=True, labels="inferred", label_mode="binary")
     test_datagen = test_datagen.map(lambda x, y: (tf.expand_dims(x, 0), y)).prefetch(tf.data.AUTOTUNE)
 
-    test = train_datagen.range(5).as_numpy_iterator()
+    test = train_datagen.take(5).as_numpy_iterator()
     for el in test:
         print(el)
 
