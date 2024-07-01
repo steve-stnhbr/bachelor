@@ -7,7 +7,7 @@ import shutil
 @click.option('-o', '--output', type=str)
 @click.option('-d', '--indicator', type=str)
 @click.option('-n', '--negative', type=str, default=None)
-@click.option('-c', '--casesensitive', is_flag=True)
+@click.option('-c', '--case', is_flag=True)
 def main(input, output, indicator, negative, case):
     if negative is None:
         negative = "not_" + indicator
