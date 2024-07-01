@@ -15,10 +15,14 @@ def main(input, output, indicator, negative):
     os.makedirs(pos_out)
     os.makedirs(neg_out)
     for dir in os.listdir(input):
-        if not os.path.isdir(dir):
+        if os.path.isfile(os.path.join(input, dir)):
             continue
         out = pos_out if indicator in dir else neg_out
-        shutil.copy(os.path.join(input, dir), out)
+        for file in os.listdir(os.path.join(input, dir)):
+            file_path = os.path.join(input, dir, file)
+            if os.path.isdir(file_path):
+                continue
+            shutil.copy(file_path, out)
 
 if __name__ == '__main__':
     main()
