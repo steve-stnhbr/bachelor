@@ -76,6 +76,7 @@ def main(workers, batch_size):
                 input_shape=INPUT_SHAPE,
                 classes=CLASSES,
                 weights=None,
+                pooling='max',
             ),
             "ResNet152V2"
         ),
@@ -85,6 +86,7 @@ def main(workers, batch_size):
                 input_shape=INPUT_SHAPE,
                 classes=CLASSES,
                 weights=None,
+                pooling='max',
             ),
             "InceptionV3"
         ),
@@ -94,6 +96,7 @@ def main(workers, batch_size):
                 input_shape=INPUT_SHAPE,
                 classes=CLASSES,
                 weights=None,
+                pooling='max',
             ),
             "MobileNetV3Large"
         ),
@@ -103,6 +106,7 @@ def main(workers, batch_size):
                 input_shape=INPUT_SHAPE,
                 classes=CLASSES,
                 weights=None,
+                pooling='max',
             ),
             "ConvNeXtLarge"
         )
