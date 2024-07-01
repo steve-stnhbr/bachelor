@@ -3,7 +3,7 @@ from schuler_two_branch.test_datagen import PlantLeafsDataGen
 import cai
 import os
 from tensorflow import keras
-import keras.appications
+import keras.applications
 
 L_RATIO = .8
 TWO_PATHS_SECOND_BLOCK = True
