@@ -17,7 +17,7 @@ import tensorflow as tf
 from itertools import cycle
 
 VERBOSE = False
-MODEL_PATH = "data/model/model.12.keras"
+MODEL_PATH = "data/model/model.11_b.keras"
 DATA_PATH = "../_data/test"
 INPUT_SHAPE = (224, 224, 3)
 
@@ -123,14 +123,20 @@ def main():
 
     num_correct_pred = 0
     num_wrong_pred = 0
-    eval = [(clazz, "healthy" in clazz.lower(), os.path.join(DATA_PATH, clazz, file)) for clazz in os.listdir(DATA_PATH) for file in os.listdir(os.path.join(DATA_PATH, clazz))]
 
-    diseases = list(set(eval[0]))
+    classes = [(clazz, os.path.join(DATA_PATH, clazz)) for clazz in os.listdir(DATA_PATH) if os.path.isdir(os.path.join(DATA_PATH, clazz))]
+    print(classes)
+
+    print("Building dataset")
+    eval = [(1 if "healthy" in clazz[0].lower() else 0, clazz, os.path.join(clazz[1], file)) for clazz in classes for file in os.listdir(clazz[1]) if os.path.isfile(os.path.join(clazz[1], file))]
+    print(eval)
+
+    diseases = [clazz[0] for clazz in classes]
     data = map(lambda x: [x, 0, 0, 0], diseases)
     df = pd.DataFrame(data, columns=['disease', 'amount', 'predicted', 'correct'])
 
     try:
-        for label, image_file in tqdm(eval):
+        for label, clazz, image_file in tqdm(eval):
             image = get_image(image_file)
             if VERBOSE:
                 print("Image size: {}".format(image.size()))
@@ -139,13 +145,13 @@ def main():
             if VERBOSE:
                 print("Prediction: {}".format(predicted_label))
                 print("Actual: {}".format(label))
-            df.at[label, 'amount'] += 1
-            df.at[predicted_label, 'predicted'] += 1
+            df.loc[df["disease"] == clazz, 'amount'] += 1
+            df.loc[df["disease"] == clazz, 'predicted'] += 1
             if predicted_label != label:
                 num_wrong_pred += 1
             else:
                 num_correct_pred += 1
-                df.at[label, 'correct'] += 1
+                df.loc[df["disease"] == clazz, 'correct'] += 1
     except KeyboardInterrupt:
         print("Accuracy: ", num_correct_pred / (num_correct_pred + num_wrong_pred))
         df.to_csv("./out/result.csv")

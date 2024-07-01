@@ -30,18 +30,19 @@ def main():
         metrics=['accuracy'])
     
     datagen = PlantLeafsDataGen(TRAIN_DATA_PATH, transforms=[load_transform], batch_size=128, workers=9, use_multiprocessing=True)
+    val_datagen = PlantLeafsDataGen(TRAIN_DATA_PATH, transforms=[load_transform], batch_size=128, workers=9, use_multiprocessing=True)
 
     callbacks = [
         keras.callbacks.EarlyStopping(patience=2),
         keras.callbacks.ModelCheckpoint(filepath='checkpoints/model##name##.{epoch:02d}.keras'.replace("##name##", name)),
         keras.callbacks.TensorBoard(log_dir='./logs'),
+        keras.callbacks.ModelCheckpoint(filepath='out/best##name##.keras'.replace('##name##', name), save_best_only=True, mode='max', monitor='val_accuracy')
     ]
     print(f"Beginning training of model {name}")
 
-    model.fit(datagen, epochs=4, callbacks=callbacks)
+    model.fit(datagen, epochs=15, callbacks=callbacks, validation_data=val_datagen)
 
     print("Training finished, starting evaluation")
-
 
     for i, class_name in enumerate(os.listdir(VAL_DATA_PATH)):
         # iterate over all files in test class
@@ -56,7 +57,6 @@ def main():
             # determine class with highest confidence
             predicated_class = np.argmax(prediction_score)
             print(predicated_class, prediction_score, i, i == predicated_class)
-    
-    
+
 if __name__ == '__main__':
     main()
