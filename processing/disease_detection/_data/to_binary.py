@@ -19,3 +19,6 @@ def main(input, output, indicator, negative):
             continue
         out = pos_out if indicator in dir else neg_out
         shutil.copy(os.path.join(input, dir), out)
+
+if __name__ == '__main__':
+    main()
