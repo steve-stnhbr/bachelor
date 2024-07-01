@@ -6,6 +6,7 @@ from tensorflow import keras
 import keras.applications
 import click
 import tensorflow as tf
+from tensorflow.keras.utils import to_categorical
 
 L_RATIO = .8
 TWO_PATHS_SECOND_BLOCK = True
@@ -38,11 +39,11 @@ def execute(model, name=None, lab=False, batch_size=32, workers=16):
     # test_datagen = PlantLeafsDataGenBinary(TEST_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
     
     train_datagen = keras.utils.image_dataset_from_directory(TRAIN_DATA_PATH, batch_size=batch_size, image_size=INPUT_SHAPE[:2], crop_to_aspect_ratio=True, labels="inferred", label_mode="binary")
-    train_datagen = train_datagen.map(lambda x, y: (tf.expand_dims(x, 0), y)).prefetch(tf.data.AUTOTUNE)
+    train_datagen = train_datagen.map(lambda x, y: (tf.expand_dims(x, 0), to_categorical(y, num_classes=2))).prefetch(tf.data.AUTOTUNE)
     val_datagen = keras.utils.image_dataset_from_directory(VAL_DATA_PATH, batch_size=batch_size, image_size=INPUT_SHAPE[:2], crop_to_aspect_ratio=True, labels="inferred", label_mode="binary")
-    val_datagen = val_datagen.map(lambda x, y: (tf.expand_dims(x, 0), y)).prefetch(tf.data.AUTOTUNE)
+    val_datagen = val_datagen.map(lambda x, y: (tf.expand_dims(x, 0), to_categorical(y, num_classes=2))).prefetch(tf.data.AUTOTUNE)
     test_datagen = keras.utils.image_dataset_from_directory(TEST_DATA_PATH, batch_size=batch_size, image_size=INPUT_SHAPE[:2], crop_to_aspect_ratio=True, labels="inferred", label_mode="binary")
-    test_datagen = test_datagen.map(lambda x, y: (tf.expand_dims(x, 0), y)).prefetch(tf.data.AUTOTUNE)
+    test_datagen = test_datagen.map(lambda x, y: (tf.expand_dims(x, 0), to_categorical(y, num_classes=2))).prefetch(tf.data.AUTOTUNE)
 
     test = train_datagen.take(5).as_numpy_iterator()
     for el in test:
