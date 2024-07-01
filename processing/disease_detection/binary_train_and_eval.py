@@ -40,12 +40,15 @@ def execute(model, name=None, lab=False, batch_size=32, workers=16):
     # test_datagen = PlantLeafsDataGenBinary(TEST_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
     
     train_datagen = keras.utils.image_dataset_from_directory(TRAIN_DATA_PATH, batch_size=batch_size, image_size=INPUT_SHAPE[:2], crop_to_aspect_ratio=True, labels="inferred", label_mode="binary")
-    train_datagen = train_datagen.map(lambda x, y: (tf.expand_dims(x, 0) if np.isscalar(x) else x, to_categorical(y, num_classes=2))).prefetch(tf.data.AUTOTUNE)
+    train_datagen = train_datagen.map(lambda x, y: (x, to_categorical(y, num_classes=2))).prefetch(tf.data.AUTOTUNE)
     val_datagen = keras.utils.image_dataset_from_directory(VAL_DATA_PATH, batch_size=batch_size, image_size=INPUT_SHAPE[:2], crop_to_aspect_ratio=True, labels="inferred", label_mode="binary")
-    val_datagen = val_datagen.map(lambda x, y: (tf.expand_dims(x, 0) if np.isscalar(x) else x, to_categorical(y, num_classes=2))).prefetch(tf.data.AUTOTUNE)
+    val_datagen = val_datagen.map(lambda x, y: (x, to_categorical(y, num_classes=2))).prefetch(tf.data.AUTOTUNE)
     test_datagen = keras.utils.image_dataset_from_directory(TEST_DATA_PATH, batch_size=batch_size, image_size=INPUT_SHAPE[:2], crop_to_aspect_ratio=True, labels="inferred", label_mode="binary")
-    test_datagen = test_datagen.map(lambda x, y: (tf.expand_dims(x, 0) if np.isscalar(x) else x, to_categorical(y, num_classes=2))).prefetch(tf.data.AUTOTUNE)
+    test_datagen = test_datagen.map(lambda x, y: (x, to_categorical(y, num_classes=2))).prefetch(tf.data.AUTOTUNE)
 
+    test = train_datagen.take(5).as_numpy_iterator()
+    for el in test:
+        print(el[0].shape, el[1].shape)
 
     print("Dataset sizes [train, val, test]", len(train_datagen), len(val_datagen), len(test_datagen))
 
