@@ -12,9 +12,9 @@ TWO_PATHS_SECOND_BLOCK = True
 INPUT_SHAPE = (224, 224, 3)
 CLASSES = 2
 
-TRAIN_DATA_PATH = os.path.join("_data", "train")
-VAL_DATA_PATH = os.path.join("_data", "val")
-TEST_DATA_PATH = os.path.join("_data", "test")
+TRAIN_DATA_PATH = os.path.join("_data", "train_b")
+VAL_DATA_PATH = os.path.join("_data", "val_b")
+TEST_DATA_PATH = os.path.join("_data", "test_b")
 
 def load_transform(paths):
     return cai.datasets.load_images_from_files(paths, target_size=INPUT_SHAPE[:2], lab=True, rescale=True, smart_resize=True)
