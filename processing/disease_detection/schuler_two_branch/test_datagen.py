@@ -50,7 +50,7 @@ class PlantLeafsDataGenBinary(PyDataset):
         self.shuffle = shuffle
         self.on_epoch_end()
 
-        self.classes = [dir for dir in os.listdir(path) if os.path.isdir(dir)]
+        self.classes = [dir for dir in os.listdir(path) if os.path.isdir(os.path.join(path, dir))]
         self.num_classes = 2
 
         self.file_paths = []
