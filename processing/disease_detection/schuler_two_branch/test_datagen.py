@@ -61,7 +61,7 @@ class PlantLeafsDataGenBinary(PyDataset):
             import random
             random.shuffle(self.file_paths)
         
-        if determine_healthy is not None:
+        if determine_healthy is None:
             self.determine_healthy = self.is_healthy
         else:
             self.determine_healthy = determine_healthy
