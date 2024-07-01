@@ -22,6 +22,7 @@ import multiprocessing
 import math
 import random
 import shutil
+from PIL import UnidentifiedImageError
 
 def rgb2lab(r, g, b):
     """Converts RGB values to LAB.
@@ -979,29 +980,32 @@ def load_images_from_files(file_names, target_size=(224,224), dtype='float32', s
     x=[]
     cnt = 0
     for file_name in file_names:
-      cnt = cnt + 1
-      if (cnt % 1000 == 0):
-          gc.collect()
-      if (smart_resize):
-        img = load_img(file_name)
-        img = img_to_array(img, dtype='float32')
-        if (lab):
-            img /= 255
-            img = skimage_color.rgb2lab(img)
-        if(rescale):
-            local_rescale(img,  lab)
-        img = add_padding_to_make_img_array_squared(img)
-        if ((img.shape[0] != target_size[0]) or (img.shape[1] != target_size[1])):
-            img = cv2.resize(img, dsize=target_size, interpolation=cv2.INTER_NEAREST)
-      else:
-        img = load_img(file_name, target_size=target_size)
-        img = img_to_array(img, dtype='float32')
-        if (lab):
-            img /= 255
-            img = skimage_color.rgb2lab(img)
-        if(rescale):
-            local_rescale(img,  lab)
-      x.append(img)
+      try:
+        cnt = cnt + 1
+        if (cnt % 1000 == 0):
+            gc.collect()
+        if (smart_resize):
+            img = load_img(file_name)
+            img = img_to_array(img, dtype='float32')
+            if (lab):
+                img /= 255
+                img = skimage_color.rgb2lab(img)
+            if(rescale):
+                local_rescale(img,  lab)
+            img = add_padding_to_make_img_array_squared(img)
+            if ((img.shape[0] != target_size[0]) or (img.shape[1] != target_size[1])):
+                img = cv2.resize(img, dsize=target_size, interpolation=cv2.INTER_NEAREST)
+        else:
+            img = load_img(file_name, target_size=target_size)
+            img = img_to_array(img, dtype='float32')
+            if (lab):
+                img /= 255
+                img = skimage_color.rgb2lab(img)
+            if(rescale):
+                local_rescale(img,  lab)
+        x.append(img)
+      except UnidentifiedImageError:
+         cnt = cnt - 1
     return np.array(x, dtype=dtype)
 
 def load_images_from_folders(seed=None, root_dir=None, lab=False, 
