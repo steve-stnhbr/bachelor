@@ -1,6 +1,6 @@
 from keras.utils import PyDataset, to_categorical
 import os
-from utils import get_classes
+from custom_utils import get_classes
 
 class PlantLeafsDataGen(PyDataset):
     def __init__(self, path, batch_size=32, shuffle=True, transforms=None, **kwargs):
