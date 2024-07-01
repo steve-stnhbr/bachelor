@@ -4,6 +4,7 @@ import cai
 import os
 from tensorflow import keras
 import keras.applications
+import click
 
 L_RATIO = .8
 TWO_PATHS_SECOND_BLOCK = True
@@ -51,7 +52,10 @@ def execute(model, name=None, lab=False, batch_size=32, workers=16):
     result = model.eval(test_datagen)
     print(result)
 
-def main():
+@click.command()
+@click.option("-w", "--workers", type=int)
+@click.option("-b", "--batch_size", type=int)
+def main(workers, batch_size):
     models = [
         (
             keras.applications.ResNet152V2(
@@ -93,7 +97,7 @@ def main():
 
     for model, name in models:
         for lab in [True, False]:
-            execute(model, f"{name}_{'lab' if lab else 'rgb'}", lab)
+            execute(model, f"{name}_{'lab' if lab else 'rgb'}", lab, workers=workers, batch_size=batch_size)
 
 if __name__ == '__main__':
     main()
