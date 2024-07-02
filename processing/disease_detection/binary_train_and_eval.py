@@ -11,6 +11,7 @@ import numpy as np
 from functools import partial
 import skimage.color as skimage_color
 import cv2
+from .models import alexnet_model, vgg19_model, lenet_model
 
 L_RATIO = .8
 TWO_PATHS_SECOND_BLOCK = True
@@ -53,7 +54,7 @@ def execute(model, name=None, lab=False, batch_size=32, workers=16):
     print("Dataset sizes [train, val, test]", len(train_datagen), len(val_datagen), len(test_datagen))
 
     callbacks = [
-        keras.callbacks.EarlyStopping(patience=2),
+        keras.callbacks.EarlyStopping(patience=5),
         keras.callbacks.ModelCheckpoint(filepath='checkpoints/model##name##.{epoch:02d}.keras'.replace("##name##", name)),
         keras.callbacks.TensorBoard(log_dir='./logs'),
         keras.callbacks.ModelCheckpoint(filepath='out/best##name##.keras'.replace('##name##', name), save_best_only=True, mode='max', monitor='val_accuracy')
@@ -122,6 +123,30 @@ def main(workers, batch_size):
                 pooling='max',
             ),
             "ConvNeXtLarge"
+        ),
+        (
+            alexnet_model(
+                img_shape=INPUT_SHAPE, 
+                n_classes=CLASSES, 
+                weights=None
+            ),
+            "AlexNet"
+        ),
+        (
+            lenet_model(
+                img_shape=INPUT_SHAPE, 
+                n_classes=CLASSES, 
+                weights=None
+            ),
+            "LeNet"
+        ),
+        (
+            vgg19_model(
+                img_shape=INPUT_SHAPE, 
+                n_classes=CLASSES, 
+                weights=None
+            ),
+            "VGG19"
         )
     ]
 
