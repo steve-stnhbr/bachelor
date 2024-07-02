@@ -72,7 +72,7 @@ def gen_dataset(path, batch_size, lab):
     datagen = keras.utils.image_dataset_from_directory(path, batch_size=batch_size, image_size=INPUT_SHAPE[:2], crop_to_aspect_ratio=True, labels="inferred", label_mode="binary")
     if lab:
         datagen = datagen.map(
-            lambda x, y: (tf.py_function(partial(transform, lab=lab, smart_resize=True, rescale=True), inp=[x], Tout=[tf.Tensor]), y)
+            lambda x, y: (tf.py_function(partial(transform, lab=lab, smart_resize=True, rescale=True), inp=[x], Tout=tf.float32), y)
         )
     datagen = datagen.map(map_data, num_parallel_calls=tf.data.AUTOTUNE, deterministic=False).prefetch(tf.data.AUTOTUNE)
     return datagen
