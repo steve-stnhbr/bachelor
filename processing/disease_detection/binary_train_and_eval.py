@@ -131,7 +131,7 @@ def main(workers, batch_size):
 
 
 def transform(img, target_size=(224,224), smart_resize=False, lab=False, rescale=False, bipolar=False):
-    img = img.numpy()
+    img = img.numpy().astype(np.float32)
     def local_rescale(img,  lab):
         if (lab):
             # JP prefers bipolar input [-2,+2]
@@ -177,7 +177,7 @@ def transform(img, target_size=(224,224), smart_resize=False, lab=False, rescale
             img = skimage_color.rgb2lab(img)
         if(rescale):
             local_rescale(img,  lab)
-    return tf.Tensor(img)
+    return tf.convert_to_tensor(img, dtype=tf.float32)
 
 if __name__ == '__main__':
     main()
