@@ -61,7 +61,7 @@ def execute(model, name=None, lab=False, batch_size=32, workers=16):
 
     print("Training finished, starting test evaluation")
 
-    result = model.eval(test_datagen)
+    result = model.evaluate(test_datagen)
     print(result)
 
 def gen_dataset(path, batch_size):
