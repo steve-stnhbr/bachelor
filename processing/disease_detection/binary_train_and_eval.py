@@ -11,7 +11,7 @@ import numpy as np
 from functools import partial
 import skimage.color as skimage_color
 import cv2
-from .models import alexnet_model, vgg19_model, lenet_model
+from models import alexnet_model, vgg19_model, lenet_model
 
 L_RATIO = .8
 TWO_PATHS_SECOND_BLOCK = True
