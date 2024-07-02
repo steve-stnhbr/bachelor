@@ -66,7 +66,7 @@ def execute(model, name=None, lab=False, batch_size=32, workers=16):
 
 def gen_dataset(path, batch_size):
     def map_data(x, y):
-        (x, to_categorical(y, num_classes=2))
+        return (x, to_categorical(y, num_classes=2))
     datagen = keras.utils.image_dataset_from_directory(path, batch_size=batch_size, image_size=INPUT_SHAPE[:2], crop_to_aspect_ratio=True, labels="inferred", label_mode="binary")
     datagen = datagen.map(map_data, num_parallel_calls=tf.data.AUTOTUNE, deterministic=False).prefetch(tf.data.AUTOTUNE)
     return datagen
