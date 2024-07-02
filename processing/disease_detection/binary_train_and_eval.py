@@ -160,7 +160,7 @@ def transform(img, target_size=(224,224), smart_resize=False, lab=False, rescale
             maxsize = np.max([sizex, sizey])
             padx = (maxsize - sizex) // 2
             pady = (maxsize - sizey) // 2
-            return np.pad(img, pad_width=((padx,padx),(pady,pady),(0,0)))
+            return np.pad(img, pad_width=((padx, maxsize - sizex - padx), (pady, maxsize - sizey - pady), (0, 0)))
             #return tf.pad(img, [[padx, padx], [pady, pady]])
     if (smart_resize):
         if (lab):
