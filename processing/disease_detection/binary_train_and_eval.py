@@ -8,8 +8,8 @@ import click
 import tensorflow as tf
 from tensorflow.keras.utils import to_categorical
 import numpy as np
-import cv2 
-import skimage_color
+import cv2
+from skimage import color as skimage_color
 from functools import partial
 
 L_RATIO = .8
