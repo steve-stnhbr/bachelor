@@ -9,7 +9,8 @@ import tensorflow as tf
 from tensorflow.keras.utils import to_categorical
 import numpy as np
 from functools import partial
-import tensorflow_io as tfio
+import skimage.color as skimage_color
+import cv2
 
 L_RATIO = .8
 TWO_PATHS_SECOND_BLOCK = True
@@ -130,6 +131,7 @@ def main(workers, batch_size):
 
 
 def transform(img, target_size=(224,224), smart_resize=False, lab=False, rescale=False, bipolar=False):
+    img = img.numpy()
     def local_rescale(img,  lab):
         if (lab):
             # JP prefers bipolar input [-2,+2]
@@ -158,25 +160,24 @@ def transform(img, target_size=(224,224), smart_resize=False, lab=False, rescale
             maxsize = np.max([sizex, sizey])
             padx = (maxsize - sizex) // 2
             pady = (maxsize - sizey) // 2
-            #return np.pad(img, pad_width=((padx,padx),(pady,pady),(0,0)))
-            return tf.pad(img, [[padx, padx], [pady, pady]])
+            return np.pad(img, pad_width=((padx,padx),(pady,pady),(0,0)))
+            #return tf.pad(img, [[padx, padx], [pady, pady]])
     if (smart_resize):
         if (lab):
             img /= 255
-            img = tfio.experimental.color.rgb_to_lab(img)
+            img = skimage_color.rgb2lab(img)
         if(rescale):
             local_rescale(img,  lab)
         img = add_padding_to_make_img_array_squared(img)
         if ((img.shape[0] != target_size[0]) or (img.shape[1] != target_size[1])):
-            #img = cv2.resize(img, dsize=target_size, interpolation=cv2.INTER_NEAREST)
-            img = tf.image.resize(img, dsize=target_size)
+            img = cv2.resize(img, dsize=target_size, interpolation=cv2.INTER_NEAREST)
     else:
         if (lab):
             img /= 255
-            img = tfio.experimental.color.rgb_to_lab(img)
+            img = skimage_color.rgb2lab(img)
         if(rescale):
             local_rescale(img,  lab)
-    return img
+    return tf.Tensor(img)
 
 if __name__ == '__main__':
     main()
