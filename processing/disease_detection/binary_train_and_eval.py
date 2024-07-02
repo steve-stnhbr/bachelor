@@ -137,16 +137,16 @@ def transform(img, target_size=(224,224), smart_resize=False, lab=False, rescale
             # JP prefers bipolar input [-2,+2]
             if (bipolar):
                 img[:,:,0:3] /= [25, 50, 50]
-                img[:,:,0] -= 2
+                img[:,:,0] -= 2.
             else:
                 img[:,:,0:3] /= [100, 200, 200]
                 img[:,:,1:3] += 0.5
         else:
             if (bipolar):
-                img /= 64
-                img -= 2
+                img /= 64.
+                img -= 2.
             else:
-                img /= 255
+                img /= 255.
     def add_padding_to_make_img_array_squared(img):
         """ Adds padding to make the image squared.
         # Arguments
@@ -173,7 +173,7 @@ def transform(img, target_size=(224,224), smart_resize=False, lab=False, rescale
             img = cv2.resize(img, dsize=target_size, interpolation=cv2.INTER_NEAREST)
     else:
         if (lab):
-            img /= 255
+            img /= 255.
             img = skimage_color.rgb2lab(img)
         if(rescale):
             local_rescale(img,  lab)
