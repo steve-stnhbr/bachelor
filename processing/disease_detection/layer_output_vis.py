@@ -24,7 +24,6 @@ def main(model, input, output, lab):
 def handle_model(model, input, output, lab):
     model_name = os.path.basename(model)
     model = keras.models.load_model(model)
-    model.predict()
 
     if os.path.isdir(input):
         for file in os.listdir(input):
@@ -34,17 +33,24 @@ def handle_model(model, input, output, lab):
 
 def visualize(model, model_name, file, output, lab=False):
     # create output dir
-    folder = os.path.join(output, model_name, file[:file.index('.')])
+    file_name = os.path.basename(file)
+    folder = os.path.join(output, model_name[:model_name.index('.')], file_name[:file_name.index('.')])
     os.makedirs(folder, exist_ok=True)
 
     # read input
     img = cv2.imread(file)
     img = transform(img, lab=lab, rescale=True, smart_resize=True)
 
+    # Ensure the image has the right shape for the model
+    img = img.reshape((1, *img.shape))  # Adding batch dimension
+
+    # Build the model by calling it on an example input
+    model.build(img.shape)
+
     # create output function
     inp = model.input                                           # input placeholder
     outputs = [layer.output for layer in model.layers]          # all layer outputs
-    functor = K.function([inp, K.learning_phase()], outputs )   # evaluation function
+    functor = K.function([inp, K.learning_phase()], outputs)   # evaluation function
 
     # calculating outputs
     layer_outs = functor([img, 1.])
