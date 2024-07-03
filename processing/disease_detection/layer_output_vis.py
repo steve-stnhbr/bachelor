@@ -24,6 +24,7 @@ def main(model, input, output, lab):
 def handle_model(model, input, output, lab):
     model_name = os.path.basename(model)
     model = keras.models.load_model(model)
+    model.predict()
 
     if os.path.isdir(input):
         for file in os.listdir(input):
