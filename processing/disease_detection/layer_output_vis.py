@@ -1,9 +1,11 @@
 import os
 import click
 import keras
-from keras import backend as K
+from tensorflow.keras import backend as K
+from keras import Function as k_func
 import cv2
 from custom_utils import transform
+import tensorflow as tf
 
 @click.command()
 @click.option('-m', '--model')
@@ -42,19 +44,34 @@ def visualize(model, model_name, file, output, lab=False):
     img = transform(img, lab=lab, rescale=True, smart_resize=True)
 
     # Build the model by calling it on an example input
-    model.build((None,) + img.shape)
-    #model.predict(img)
+    input_shape = (None,) + img.shape
+    
+    model(keras.Input(img.shape))
 
     # Ensure the image has the right shape for the model
     img = img.reshape((1, *img.shape))  # Adding batch dimension
 
-    # create output function
-    inp = model.input                                           # input placeholder
-    outputs = [layer.output for layer in model.layers]          # all layer outputs
-    functor = K.function([inp, K.learning_phase()], outputs)   # evaluation function
+    # # create output function
+    # inp = model.input                                           # input placeholder
+    # outputs = [layer.output for layer in model.layers]          # all layer outputs
+    # functor = k_func([inp], outputs)   # evaluation function
 
-    # calculating outputs
-    layer_outs = functor([img, 1.])
+    # # calculating outputs
+    # layer_outs = functor([img])
+     # Get the outputs of each layer
+    layer_outputs = [layer.output for layer in model.layers]
+    
+    # Create a new model that will return these outputs
+    intermediate_model = tf.keras.models.Model(inputs=model.input, outputs=layer_outputs)
+    
+    # Get the outputs for the input tensor
+    outputs = intermediate_model(img)
+    
+    # Evaluate the tensors if using TensorFlow v2.x
+    # If using TF v1.x or eager execution is disabled, use K.get_session().run(outputs)
+    if not isinstance(outputs, list):
+        outputs = [outputs]
+    layer_outs = [output.numpy() for output in outputs]
 
     for layer, output in zip(model.layers, layer_outs):
         name = layer.name
