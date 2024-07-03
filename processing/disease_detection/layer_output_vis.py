@@ -22,17 +22,18 @@ def main(model, input, output, lab):
         handle_model(model, input, output, lab)
 
 def handle_model(model, input, output, lab):
+    model_name = os.path.basename(model)
     model = keras.models.load_model(model)
 
     if os.path.isdir(input):
         for file in os.listdir(input):
-            visualize(model, os.path.join(input, file), output, lab)
+            visualize(model, model_name, os.path.join(input, file), output, lab)
     else:
-        visualize(model, input, output, lab)
+        visualize(model, model_name, input, output, lab)
 
-def visualize(model, file, output, lab=False):
+def visualize(model, model_name, file, output, lab=False):
     # create output dir
-    folder = os.path.join(output, model, file[:file.index('.')])
+    folder = os.path.join(output, model_name, file[:file.index('.')])
     os.makedirs(folder, exist_ok=True)
 
     # read input
