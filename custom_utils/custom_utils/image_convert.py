@@ -4,7 +4,7 @@ import skimage.color as skimage_color
 import cv2
 
 def transform(img, target_size=(224,224), smart_resize=False, lab=False, rescale=False, bipolar=False):
-    img = img.numpy().astype(np.float32)
+    img = img.astype(np.float32)
     def local_rescale(img,  lab):
         if (lab):
             # JP prefers bipolar input [-2,+2]
