@@ -41,12 +41,12 @@ def visualize(model, model_name, file, output, lab=False):
     img = cv2.imread(file)
     img = transform(img, lab=lab, rescale=True, smart_resize=True)
 
+    # Build the model by calling it on an example input
+    model.build((None,) + img.shape)
+    #model.predict(img)
+
     # Ensure the image has the right shape for the model
     img = img.reshape((1, *img.shape))  # Adding batch dimension
-
-    # Build the model by calling it on an example input
-    model.build((None,) + img.shape[:1])
-    #model.predict(img)
 
     # create output function
     inp = model.input                                           # input placeholder
