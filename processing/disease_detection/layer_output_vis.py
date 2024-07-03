@@ -46,6 +46,7 @@ def visualize(model, model_name, file, output, lab=False):
 
     # Build the model by calling it on an example input
     #model.build(img.shape)
+    model.predict(img)
 
     # create output function
     inp = model.input                                           # input placeholder
