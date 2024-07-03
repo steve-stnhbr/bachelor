@@ -37,7 +37,7 @@ def visualize(model, model_name, file, output, lab=False):
     os.makedirs(folder, exist_ok=True)
 
     # read input
-    img = cv2.imread(input)
+    img = cv2.imread(file)
     img = transform(img, lab=lab, rescale=True, smart_resize=True)
 
     # create output function
