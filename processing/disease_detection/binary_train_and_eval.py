@@ -220,11 +220,15 @@ def transform(img, target_size=(224,224), smart_resize=False, lab=False, rescale
             local_rescale(img,  lab)
     return tf.convert_to_tensor(img, dtype=tf.float32)
 
-def transform_wrapper(img, target_size=(224,224), smart_resize=False, lab=False, rescale=False, bipolar=False):
-    p = partial(transform, target_size=target_size, smart_resize=smart_resize, lab=lab, rescale=rescale, bipolar=bipolar)
-    img = tf.py_function(func=p, inp=[img], Tout=tf.float32)
-    img.set_shape(target_size + (3,))
-    return img
+def transform_wrapper(imgs, target_size=(224,224), smart_resize=False, lab=False, rescale=False, bipolar=False):
+    out = np.ndarray()
+    for i in range(imgs.shape()[0]):
+        img = imgs[i]
+        p = partial(transform, target_size=target_size, smart_resize=smart_resize, lab=lab, rescale=rescale, bipolar=bipolar)
+        img = tf.py_function(func=p, inp=[img], Tout=tf.float32)
+        img.set_shape(target_size + (3,))
+        out[i] = img
+    return out
 
 if __name__ == '__main__':
     main()
