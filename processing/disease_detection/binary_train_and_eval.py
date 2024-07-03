@@ -160,7 +160,6 @@ def transform(imgs, target_size=(224,224), smart_resize=False, lab=False, rescal
     for i in range(imgs.shape[0]):
         img = imgs[i]
         img = img.numpy().astype(np.float32)
-        print("TARGET_SIZE=", target_size)
         def local_rescale(img,  lab):
             if (lab):
                 # JP prefers bipolar input [-2,+2]
@@ -212,8 +211,6 @@ def transform(imgs, target_size=(224,224), smart_resize=False, lab=False, rescal
                 local_rescale(img,  lab)
             img = pad_to_square(img)
             if ((img.shape[0] != target_size[0]) or (img.shape[1] != target_size[1])):
-                print("TARGET_SIZE_2=", target_size, type(target_size))
-                print("IMG_SIZE=", img.shape)
                 img = cv2.resize(img, target_size, interpolation=cv2.INTER_NEAREST)
         else:
             if (lab):
