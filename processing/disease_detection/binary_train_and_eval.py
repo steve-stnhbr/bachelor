@@ -74,7 +74,7 @@ def gen_dataset(path, batch_size, lab):
     datagen = keras.utils.image_dataset_from_directory(path, batch_size=batch_size, image_size=INPUT_SHAPE[:2], crop_to_aspect_ratio=True, labels="inferred", label_mode="binary")
     if lab:
         datagen = datagen.map(
-            lambda x, y: (transform(x, rescale=True, smart_resize=True, lab=True), y)
+            lambda x, y: (transform_wrapper(x, rescale=True, smart_resize=True, lab=True), y)
         )
     datagen = datagen.map(map_data, num_parallel_calls=tf.data.AUTOTUNE, deterministic=False).prefetch(tf.data.AUTOTUNE)
     return datagen
@@ -150,7 +150,7 @@ def main(workers, batch_size):
         )
     ]
 
-    for lab in [False, True]:
+    for lab in [True]:
         for model, name in models:
             execute(model, f"{name}_{'lab' if lab else 'rgb'}", lab, workers=workers, batch_size=batch_size)
 
@@ -203,6 +203,11 @@ def transform(img, target_size=(224,224), smart_resize=False, lab=False, rescale
         if(rescale):
             local_rescale(img,  lab)
     return tf.convert_to_tensor(img, dtype=tf.float32)
+
+def transform_wrapper(img, target_size=(224,224), smart_resize=False, lab=False, rescale=False, bipolar=False):
+    img = tf.py_function(func=transform, inp=[img, target_size, smart_resize, lab, rescale, bipolar], Tout=tf.float32)
+    img.set_shape(target_size + (3,))
+    return img
 
 if __name__ == '__main__':
     main()
