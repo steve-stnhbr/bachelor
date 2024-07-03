@@ -210,7 +210,7 @@ def transform(img, target_size=(224,224), smart_resize=False, lab=False, rescale
         img = pad_to_square(img)
         if ((img.shape[0] != target_size[0]) or (img.shape[1] != target_size[1])):
             print("TARGET_SIZE_2=", target_size, type(target_size))
-            img = cv2.resize(img, dsize=target_size, interpolation=cv2.INTER_NEAREST)
+            img = cv2.resize(img, target_size, interpolation=cv2.INTER_NEAREST)
     else:
         if (lab):
             img /= 255.
