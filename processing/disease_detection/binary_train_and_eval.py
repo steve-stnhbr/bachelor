@@ -157,7 +157,7 @@ def main(workers, batch_size):
 
 def transform(imgs, target_size=(224,224), smart_resize=False, lab=False, rescale=False, bipolar=False):
     arr = []
-    for i in range(imgs.shape()[0]):
+    for i in range(imgs.shape[0]):
         img = imgs[i]
         img = img.numpy().astype(np.float32)
         print("TARGET_SIZE=", target_size)
@@ -225,7 +225,7 @@ def transform(imgs, target_size=(224,224), smart_resize=False, lab=False, rescal
     return tf.convert_to_tensor(np.stack(arr), dtype=tf.float32)
 
 def transform_wrapper(imgs, target_size=(224,224), smart_resize=False, lab=False, rescale=False, bipolar=False):
-    size = imgs.shape()[0]
+    size = imgs.shape[0]
     p = partial(transform, target_size=target_size, smart_resize=smart_resize, lab=lab, rescale=rescale, bipolar=bipolar)
     imgs = tf.py_function(func=p, inp=[imgs], Tout=tf.float32)
     imgs.set_shape((size,) + target_size + (3,))
