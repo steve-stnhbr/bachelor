@@ -157,6 +157,7 @@ def main(workers, batch_size):
 
 def transform(img, target_size=(224,224), smart_resize=False, lab=False, rescale=False, bipolar=False):
     img = img.numpy().astype(np.float32)
+    print("TARGET_SIZE=", target_size)
     def local_rescale(img,  lab):
         if (lab):
             # JP prefers bipolar input [-2,+2]
