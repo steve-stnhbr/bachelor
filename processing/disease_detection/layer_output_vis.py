@@ -22,7 +22,7 @@ def main(model, input, output, lab):
         handle_model(model, input, output, lab)
 
 def handle_model(model, input, output, lab):
-    model = keras.saving.load_model(model)
+    model = keras.models.load_model(model)
 
     if os.path.isdir(input):
         for file in os.listdir(input):
