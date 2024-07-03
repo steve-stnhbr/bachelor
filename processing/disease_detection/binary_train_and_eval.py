@@ -218,7 +218,8 @@ def transform(img, target_size=(224,224), smart_resize=False, lab=False, rescale
     return tf.convert_to_tensor(img, dtype=tf.float32)
 
 def transform_wrapper(img, target_size=(224,224), smart_resize=False, lab=False, rescale=False, bipolar=False):
-    img = tf.py_function(func=transform, inp=[img, target_size, smart_resize, lab, rescale, bipolar], Tout=tf.float32)
+    p = partial(transform, target_size=target_size, smart_resize=smart_resize, lab=lab, rescale=rescale, bipolar=bipolar)
+    img = tf.py_function(func=p, inp=[img], Tout=tf.float32)
     img.set_shape(target_size + (3,))
     return img
 
