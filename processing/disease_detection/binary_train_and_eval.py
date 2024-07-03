@@ -199,7 +199,7 @@ def transform(img, target_size=(224,224), smart_resize=False, lab=False, rescale
         # Pad the image to make it square
         squared_img = tf.image.resize_with_crop_or_pad(img, target_height=max_dim, target_width=max_dim)
 
-        return squared_img
+        return squared_img.numpy()
     if (smart_resize):
         if (lab):
             img /= 255
