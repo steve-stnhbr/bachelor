@@ -45,7 +45,7 @@ def visualize(model, model_name, file, output, lab=False):
     img = img.reshape((1, *img.shape))  # Adding batch dimension
 
     # Build the model by calling it on an example input
-    model.build(img.shape)
+    #model.build(img.shape)
 
     # create output function
     inp = model.input                                           # input placeholder
@@ -55,7 +55,8 @@ def visualize(model, model_name, file, output, lab=False):
     # calculating outputs
     layer_outs = functor([img, 1.])
 
-    for name, output in layer_outs:
+    for layer, output in zip(model.layers, layer_outs):
+        name = layer.name
         print(f"Writing output for layer {name} of image {file}")
         cv2.imwrite(os.path.join(folder, name + ".png"), output)
 
