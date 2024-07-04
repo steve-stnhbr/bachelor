@@ -75,8 +75,8 @@ def visualize(model, model_name, file, output, lab=False):
         outputs = [outputs]
 
     np.seterr(divide='ignore', invalid='ignore')
-    
-    for index, layer, output in enumerate(zip(model.layers, outputs)):
+
+    for index, layer, output in zip(range(outputs), model.layers, outputs):
         name = layer.name
         print(name, output.shape)
         if len(output.shape) != 4:
