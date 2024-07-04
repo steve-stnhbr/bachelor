@@ -6,6 +6,7 @@ from keras import Function as k_func
 import cv2
 from custom_utils import transform
 import tensorflow as tf
+import numpy as np
 
 @click.command()
 @click.option('-m', '--model')
@@ -76,11 +77,30 @@ def visualize(model, model_name, file, output, lab=False):
     if not isinstance(outputs, list):
         outputs = [outputs]
 
-    for layer, output in zip(model.layers, outputs):
-        name = layer.name
-        print(f"Writing output for layer {name} of image {file}")
-        output = (output[0] * 255).astype("uint8")
-        cv2.imwrite(os.path.join(folder, name + ".png"), output)
+    for layer, feature_map in zip(model.layers, outputs):
+        layer_name = layer.name
+        if True or len(feature_map.shape) == 4: # skip fully connected layers
+            # number of features in an individual feature map
+            n_features = feature_map.shape[-1]
+            # The feature map is in shape of (1, size, size, n_features)
+            size = feature_map.shape[1]
+            # Tile our feature images in matrix `display_grid
+            display_grid = np.zeros((size, size * n_features))
+            # Fill out the matrix by looping over all the feature images of your image
+            for i in range(n_features):
+                # Postprocess each feature of the layer to make it pleasible to your eyes
+                x = feature_map[0, :, :, i]
+                x -= x.mean()
+                x /= x.std()
+                x *= 64
+                x += 128
+                x = np.clip(x, 0, 255).astype('uint8')
+                # We'll tile each filter into this big horizontal grid
+                display_grid[:, i * size : (i + 1) * size] = x
+            # Display the grid
+            print(f"Writing output for layer {layer_name} of image {file}")
+            output = (output[0] * 255).astype("uint8")
+            cv2.imwrite(os.path.join(folder, layer_name + ".png"), display_grid)    
 
 if __name__ == '__main__':
     main()
