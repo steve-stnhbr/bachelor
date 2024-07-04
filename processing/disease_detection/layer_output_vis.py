@@ -6,6 +6,7 @@ from keras import Function as k_func
 import cv2
 from custom_utils import transform
 import tensorflow as tf
+import numpy as np
 
 @click.command()
 @click.option('-m', '--model')
@@ -43,41 +44,42 @@ def visualize(model, model_name, file, output, lab=False):
     img = cv2.imread(file)
     img = transform(img, lab=lab, rescale=True, smart_resize=True)
 
-    # Build the model by calling it on an example input
-    input_shape = (None,) + img.shape
-    
-    model(keras.Input(img.shape))
+    layer_outputs = [layer.output for layer in model.layers[1:]]
+    visual_model = tf.keras.models.Model(inputs = model.input, outputs = layer_outputs)
 
-    # Ensure the image has the right shape for the model
-    img = img.reshape((1, *img.shape))  # Adding batch dimension
+    # run your image through the network; make a prediction
+    feature_maps = visual_model.predict(img)
 
-    # # create output function
-    # inp = model.input                                           # input placeholder
-    # outputs = [layer.output for layer in model.layers]          # all layer outputs
-    # functor = k_func([inp], outputs)   # evaluation function
+    # Plotting intermediate representations for your image
 
-    # # calculating outputs
-    # layer_outs = functor([img])
-     # Get the outputs of each layer
-    layer_outputs = [layer.output for layer in model.layers]
-    
-    # Create a new model that will return these outputs
-    intermediate_model = tf.keras.models.Model(inputs=model.input, outputs=layer_outputs)
-    
-    # Get the outputs for the input tensor
-    outputs = intermediate_model(img)
-    
-    # Evaluate the tensors if using TensorFlow v2.x
-    # If using TF v1.x or eager execution is disabled, use K.get_session().run(outputs)
-    if not isinstance(outputs, list):
-        outputs = [outputs]
-    layer_outs = [output.numpy() for output in outputs]
+    # Collect the names of each layer except the first one for plotting
+    layer_names = [layer.name for layer in model.layers[1:]]
 
-    for layer, output in zip(model.layers, layer_outs):
-        name = layer.name
-        print(f"Writing output for layer {name} of image {file}")
-        output = (output[0] * 255).astype("uint8")
-        cv2.imwrite(os.path.join(folder, name + ".png"), output)
+    # Plotting intermediate representation images layer by layer
+    for layer_name, feature_map in zip(layer_names, feature_maps):
+        if True or len(feature_map.shape) == 4: # skip fully connected layers
+            # number of features in an individual feature map
+            n_features = feature_map.shape[-1]
+            # The feature map is in shape of (1, size, size, n_features)
+            size = feature_map.shape[1]
+            # Tile our feature images in matrix `display_grid
+            display_grid = np.zeros((size, size * n_features))
+            # Fill out the matrix by looping over all the feature images of your image
+            for i in range(n_features):
+                # Postprocess each feature of the layer to make it pleasible to your eyes
+                x = feature_map[0, :, :, i]
+                x -= x.mean()
+                x /= x.std()
+                x *= 64
+                x += 128
+                x = np.clip(x, 0, 255).astype('uint8')
+                # We'll tile each filter into this big horizontal grid
+                display_grid[:, i * size : (i + 1) * size] = x
+            # Display the grid
+            print(f"Writing output for layer {layer_name} of image {file}")
+            output = (output[0] * 255).astype("uint8")
+            cv2.imwrite(os.path.join(folder, layer_name + ".png"), display_grid)    
+        
 
 if __name__ == '__main__':
     main()
