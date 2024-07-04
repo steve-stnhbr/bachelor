@@ -38,6 +38,7 @@ def handle_model(model, input, output, lab):
         visualize(model, model_name, input, output, lab)
 
 def visualize(model, model_name, file, output, lab=False):
+    model.summary()
     # create output dir
     file_name = os.path.basename(file)
     folder = os.path.join(output, model_name[:model_name.index('.')], file_name[:file_name.index('.')])
