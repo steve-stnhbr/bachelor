@@ -44,8 +44,8 @@ def visualize(model, model_name, file, output, lab=False):
     # read input
     img = cv2.imread(file)
     img = transform(img, lab=lab, rescale=True, smart_resize=True)
-    
-    model.build(img.shape)
+
+    model.build((None,) + img.shape)
 
     layer_outputs = [layer.output for layer in model.layers[1:]]
     visual_model = tf.keras.models.Model(inputs = model.input, outputs = layer_outputs)
