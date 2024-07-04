@@ -78,6 +78,7 @@ def visualize(model, model_name, file, output, lab=False):
         name = layer.name
         print(output.shape)
         if len(output.shape) != 4:
+            print(f"Skipping lyer {name}")
             continue
         print(f"Writing output for layer {name} of image {file_name}")
         output = (output[0] * 255).astype("uint8")
