@@ -73,8 +73,10 @@ def visualize(model, model_name, file, output, lab=False):
     # Evaluate the tensors if using TensorFlow v2.x
     if not isinstance(outputs, list):
         outputs = [outputs]
-            
-    for layer, output in zip(model.layers, outputs):
+
+    np.seterr(divide='ignore', invalid='ignore')
+    
+    for index, layer, output in enumerate(zip(model.layers, outputs)):
         name = layer.name
         print(name, output.shape)
         if len(output.shape) != 4:
@@ -102,7 +104,7 @@ def visualize(model, model_name, file, output, lab=False):
             x += 128
             x = np.clip(x, 0, 255).astype('uint8')
             ax.imshow(x, cmap='gray')
-        pyplot.savefig(os.path.join(folder, f"{i:02d}_{name}_.jpg"), bbox_inches='tight', dpi=200)
+        pyplot.savefig(os.path.join(folder, f"{index:02d}_{name}_.jpg"), bbox_inches='tight', dpi=200)
         print("Saved fig")
     return
 
