@@ -6,10 +6,6 @@ from keras import Function as k_func
 import cv2
 from custom_utils import transform
 import tensorflow as tf
-import numpy as np
-import models
-from typing import Union
-from tf_hooks import register_forward_hook
 
 @click.command()
 @click.option('-m', '--model')
@@ -22,6 +18,10 @@ def main(model, input, output, lab):
     
     if ',' in model:
         models = model.split(',')
+        for model in models:
+            handle_model(model, input, output, lab)
+    elif os.isdir(model):
+        models = os.listdir(model)
         for model in models:
             handle_model(model, input, output, lab)
     else:
@@ -38,7 +38,6 @@ def handle_model(model, input, output, lab):
         visualize(model, model_name, input, output, lab)
 
 def visualize(model, model_name, file, output, lab=False):
-    model.summary()
     # create output dir
     file_name = os.path.basename(file)
     folder = os.path.join(output, model_name[:model_name.index('.')], file_name[:file_name.index('.')])
@@ -47,59 +46,41 @@ def visualize(model, model_name, file, output, lab=False):
     # read input
     img = cv2.imread(file)
     img = transform(img, lab=lab, rescale=True, smart_resize=True)
+
+    # Build the model by calling it on an example input
+    input_shape = (None,) + img.shape
     
-    model(keras.layers.Input(img.shape))
+    model(keras.Input(img.shape))
 
-    img = np.expand_dims(img, 0)
+    # Ensure the image has the right shape for the model
+    img = img.reshape((1, *img.shape))  # Adding batch dimension
 
-    def write_output(outputs, layer_name):
-        outputs = (outputs[0] * 255).astype("uint8")
-        cv2.imwrite(os.path.join(folder, layer.name + ".png"), outputs)
+    # # create output function
+    # inp = model.input                                           # input placeholder
+    # outputs = [layer.output for layer in model.layers]          # all layer outputs
+    # functor = k_func([inp], outputs)   # evaluation function
 
-    def hook_fn(layer: tf.keras.layers.Layer, args: tuple, kwargs: dict, outputs: Union[tf.Tensor, tuple]):
-        # print(f"{layer.name} outputs: {outputs}")
-        print(f"{layer.name} output-shape: {outputs.shape}")
-        if type(outputs) is tf.Tensor:
-            outputs = outputs.numpy()
-            if len(outputs.shape) > 3:
-                for i in range(outputs.shape[0]):
-                    write_output(outputs[i], layer.name)
-            
+    # # calculating outputs
+    # layer_outs = functor([img])
+     # Get the outputs of each layer
+    # Create a new model that will return the outputs of all layers
+    layer_outputs = [layer.output for layer in model.layers]
+    intermediate_model = tf.keras.models.Model(inputs=model.inputs, outputs=layer_outputs)
+    
+    print("Intermediate layers:", intermediate_model.layers)
+    
+    # Get the outputs for the input tensor
+    outputs = intermediate_model.predict(img)
+    
+    # Evaluate the tensors if using TensorFlow v2.x
+    if not isinstance(outputs, list):
+        outputs = [outputs]
 
-    hooks = []
-    for layer in model.layers:
-        hooks.append(register_forward_hook(layer, hook_fn))
-
-    model(img)
-
-    return
-    # Plotting intermediate representations for your image
-
-    # Plotting intermediate representation images layer by layer
-    for layer_name, feature_map in zip(layer_names, output):
-        if True or len(feature_map.shape) == 4: # skip fully connected layers
-            # number of features in an individual feature map
-            n_features = feature_map.shape[-1]
-            # The feature map is in shape of (1, size, size, n_features)
-            size = feature_map.shape[1]
-            # Tile our feature images in matrix `display_grid
-            display_grid = np.zeros((size, size * n_features))
-            # Fill out the matrix by looping over all the feature images of your image
-            for i in range(n_features):
-                # Postprocess each feature of the layer to make it pleasible to your eyes
-                x = feature_map[0, :, :, i]
-                x -= x.mean()
-                x /= x.std()
-                x *= 64
-                x += 128
-                x = np.clip(x, 0, 255).astype('uint8')
-                # We'll tile each filter into this big horizontal grid
-                display_grid[:, i * size : (i + 1) * size] = x
-            # Display the grid
-            print(f"Writing output for layer {layer_name} of image {file}")
-            output = (output[0] * 255).astype("uint8")
-            cv2.imwrite(os.path.join(folder, layer_name + ".png"), display_grid)    
-        
+    for layer, output in zip(model.layers, outputs):
+        name = layer.name
+        print(f"Writing output for layer {name} of image {file}")
+        output = (output[0] * 255).astype("uint8")
+        cv2.imwrite(os.path.join(folder, name + ".png"), output)
 
 if __name__ == '__main__':
     main()
