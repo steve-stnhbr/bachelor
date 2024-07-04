@@ -8,6 +8,8 @@ from custom_utils import transform
 import tensorflow as tf
 import numpy as np
 import models
+from typing import Union
+from tf_hooks import register_forward_hook
 
 @click.command()
 @click.option('-m', '--model')
@@ -56,8 +58,16 @@ def visualize(model, model_name, file, output, lab=False):
     layer_outputs = [l.output for l in model.layers]
     vis_model = keras.Model(model.input, outputs=layer_outputs)
 
-    output = vis_model(img)
+    def hook_fn(layer: tf.keras.layers.Layer, args: tuple, kwargs: dict, outputs: Union[tf.Tensor, tuple]):
+        print(f"{layer.name} outputs: {outputs}")
 
+    hooks = []
+    for layer in model.layers:
+        hooks.append(register_forward_hook(layer, hook_fn))
+
+    vis_model(img)
+
+    return
     # Plotting intermediate representations for your image
 
     # Plotting intermediate representation images layer by layer
