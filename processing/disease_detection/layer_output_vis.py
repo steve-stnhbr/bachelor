@@ -95,6 +95,7 @@ def visualize(model, model_name, file, output, lab=False):
             if i == plt_amount:
                 break
             #ax = pyplot.subplot(size, size, i+1)
+            ax.axis('off')
             ax.imshow(output[:, :, i], cmap='gray')
         pyplot.savefig(os.path.join(folder, f"{name}_.jpg"), bbox_inches='tight', dpi=200)
         print("Saved fig")
