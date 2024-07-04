@@ -21,7 +21,7 @@ def main(model, input, output, lab):
         models = model.split(',')
         for model in models:
             handle_model(model, input, output, lab)
-    elif os.isdir(model):
+    elif os.path.isdir(model):
         models = os.listdir(model)
         for model in models:
             handle_model(model, input, output, lab)
