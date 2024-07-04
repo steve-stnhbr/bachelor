@@ -65,8 +65,6 @@ def visualize(model, model_name, file, output, lab=False):
     layer_outputs = [layer.output for layer in model.layers]
     intermediate_model = tf.keras.models.Model(inputs=model.inputs, outputs=layer_outputs)
     
-    print("Intermediate layers:", intermediate_model.layers)
-    
     # Get the outputs for the input tensor
     outputs = intermediate_model.predict(img)
     
@@ -104,7 +102,7 @@ def visualize(model, model_name, file, output, lab=False):
             x += 128
             x = np.clip(x, 0, 255).astype('uint8')
             ax.imshow(x, cmap='gray')
-        pyplot.savefig(os.path.join(folder, f"{index:02d}_{name}_.jpg"), bbox_inches='tight', dpi=200)
+        pyplot.savefig(os.path.join(folder, f"{index:03d}_{name}_.jpg"), bbox_inches='tight', dpi=200)
         print("Saved fig")
     return
 
