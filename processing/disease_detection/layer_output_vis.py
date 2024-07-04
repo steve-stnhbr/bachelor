@@ -40,9 +40,12 @@ def visualize(model, model_name, file, output, lab=False):
     folder = os.path.join(output, model_name[:model_name.index('.')], file_name[:file_name.index('.')])
     os.makedirs(folder, exist_ok=True)
 
+
     # read input
     img = cv2.imread(file)
     img = transform(img, lab=lab, rescale=True, smart_resize=True)
+    
+    model.build(img.shape)
 
     layer_outputs = [layer.output for layer in model.layers[1:]]
     visual_model = tf.keras.models.Model(inputs = model.input, outputs = layer_outputs)
