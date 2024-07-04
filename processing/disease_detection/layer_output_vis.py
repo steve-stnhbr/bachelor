@@ -81,6 +81,8 @@ def visualize(model, model_name, file, output, lab=False):
             
     for layer, output in zip(model.layers, outputs):
         name = layer.name
+        if len(output.shape) is not 4:
+            continue
         print(f"Writing output for layer {name} of image {file_name}")
         print(output.shape)
         output = (output[0] * 255).astype("uint8")
