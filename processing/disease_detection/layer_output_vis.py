@@ -36,7 +36,6 @@ def handle_model(model, input, output, lab):
         visualize(model, model_name, input, output, lab)
 
 def visualize(model, model_name, file, output, lab=False):
-    model = models.alexnet_model(n_classes=2)
     # create output dir
     file_name = os.path.basename(file)
     folder = os.path.join(output, model_name[:model_name.index('.')], file_name[:file_name.index('.')])
@@ -50,11 +49,11 @@ def visualize(model, model_name, file, output, lab=False):
 
     img = np.expand_dims(img, 0)
 
-    layer_outputs = [layer.output for layer in model.layers[1:]]
-    visual_model = tf.keras.models.Model(inputs = model.input, outputs = layer_outputs)
-
-    # run your image through the network; make a prediction
-    feature_maps = visual_model(img)
+    # assuming model is a keras Sequence and x is a valid input
+    output_names = [l.name for l in model.layers]
+    model.outputs = [l.output for l in model.layers]
+    model.build(input_shape=img.shape)
+    output_values = model(img)
 
     # Plotting intermediate representations for your image
 
@@ -62,7 +61,7 @@ def visualize(model, model_name, file, output, lab=False):
     layer_names = [layer.name for layer in model.layers[1:]]
 
     # Plotting intermediate representation images layer by layer
-    for layer_name, feature_map in zip(layer_names, feature_maps):
+    for layer_name, feature_map in zip(layer_names, output_values):
         if True or len(feature_map.shape) == 4: # skip fully connected layers
             # number of features in an individual feature map
             n_features = feature_map.shape[-1]
