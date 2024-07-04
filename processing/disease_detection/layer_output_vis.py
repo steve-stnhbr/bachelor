@@ -7,6 +7,8 @@ import cv2
 from custom_utils import transform
 import tensorflow as tf
 import numpy as np
+import math
+from matplotlib import pyplot
 
 @click.command()
 @click.option('-m', '--model')
@@ -76,6 +78,29 @@ def visualize(model, model_name, file, output, lab=False):
     # Evaluate the tensors if using TensorFlow v2.x
     if not isinstance(outputs, list):
         outputs = [outputs]
+            
+    for layer, output in zip(model.layers, outputs):
+        name = layer.name
+        print(f"Writing output for layer {name} of image {file_name}")
+        print(output.shape)
+        output = (output[0] * 255).astype("uint8")
+
+        plt_amount = layer.output.shape[-1]
+        size = math.ceil(math.sqrt(plt_amount))
+        print(f"Creating subplot with size {size}x{size}")
+
+        fig, axes = pyplot.subplots(size, size, figsize=(20, 12))
+
+        pyplot.setp(axes, xticks=[], yticks=[])
+        axes = axes.flatten()
+        for i, ax in enumerate(axes):
+            if i == plt_amount:
+                break
+            #ax = pyplot.subplot(size, size, i+1)
+            ax.imshow(output[:, :, i], cmap='gray')
+        pyplot.savefig(os.path.join(folder, f"{name}_.jpg"), bbox_inches='tight', dpi=200)
+        print("Saved fig")
+    return
 
     for layer, feature_map in zip(model.layers, outputs):
         layer_name = layer.name
@@ -99,7 +124,6 @@ def visualize(model, model_name, file, output, lab=False):
                 display_grid[:, i * size : (i + 1) * size] = x
             # Display the grid
             print(f"Writing output for layer {layer_name} of image {file}")
-            output = (output[0] * 255).astype("uint8")
             cv2.imwrite(os.path.join(folder, layer_name + ".png"), display_grid)    
 
 if __name__ == '__main__':
