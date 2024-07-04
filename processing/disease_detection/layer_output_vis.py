@@ -95,7 +95,7 @@ def visualize(model, model_name, file, output, lab=False):
             if i == plt_amount:
                 break
             ax.axis('off')
-            x = output[:, :, i]
+            x = output[:, :, i].astype('float32')
             x -= x.mean()
             x /= x.std()
             x *= 64
