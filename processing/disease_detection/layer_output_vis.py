@@ -53,11 +53,6 @@ def visualize(model, model_name, file, output, lab=False):
 
     print("SHAPES", img.shape, model.input.shape)
 
-    # assuming model is a keras Sequence and x is a valid input
-    layer_names = [l.name for l in model.layers]
-    layer_outputs = [l.output for l in model.layers]
-    vis_model = keras.Model(model.input, outputs=layer_outputs)
-
     def hook_fn(layer: tf.keras.layers.Layer, args: tuple, kwargs: dict, outputs: Union[tf.Tensor, tuple]):
         print(f"{layer.name} outputs: {outputs}")
 
@@ -65,7 +60,7 @@ def visualize(model, model_name, file, output, lab=False):
     for layer in model.layers:
         hooks.append(register_forward_hook(layer, hook_fn))
 
-    vis_model(img)
+    model(img)
 
     return
     # Plotting intermediate representations for your image
