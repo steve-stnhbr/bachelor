@@ -52,7 +52,7 @@ def visualize(model, model_name, file, output, lab=False):
     visual_model = tf.keras.models.Model(inputs = model.input, outputs = layer_outputs)
 
     # run your image through the network; make a prediction
-    feature_maps = visual_model.predict(img)
+    feature_maps = visual_model(img)
 
     # Plotting intermediate representations for your image
 
