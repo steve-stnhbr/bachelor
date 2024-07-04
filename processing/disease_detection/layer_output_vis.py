@@ -50,18 +50,16 @@ def visualize(model, model_name, file, output, lab=False):
     img = np.expand_dims(img, 0)
 
     # assuming model is a keras Sequence and x is a valid input
-    output_names = [l.name for l in model.layers]
-    model.outputs = [l.output for l in model.layers]
-    model.build(input_shape=img.shape)
-    output_values = model(img)
+    layer_names = [l.name for l in model.layers]
+    layer_outputs = [l.output for l in model.layers]
+    vis_model = keras.Model(model.input, outputs=layer_outputs)
+
+    output = vis_model(img)
 
     # Plotting intermediate representations for your image
 
-    # Collect the names of each layer except the first one for plotting
-    layer_names = [layer.name for layer in model.layers[1:]]
-
     # Plotting intermediate representation images layer by layer
-    for layer_name, feature_map in zip(layer_names, output_values):
+    for layer_name, feature_map in zip(layer_names, output):
         if True or len(feature_map.shape) == 4: # skip fully connected layers
             # number of features in an individual feature map
             n_features = feature_map.shape[-1]
