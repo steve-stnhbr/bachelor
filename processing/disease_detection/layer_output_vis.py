@@ -49,6 +49,8 @@ def visualize(model, model_name, file, output, lab=False):
 
     img = np.expand_dims(img, 0)
 
+    print("SHAPES", img.shape, model.input.shape)
+
     # assuming model is a keras Sequence and x is a valid input
     layer_names = [l.name for l in model.layers]
     layer_outputs = [l.output for l in model.layers]
