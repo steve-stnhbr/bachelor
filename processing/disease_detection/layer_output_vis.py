@@ -51,10 +51,19 @@ def visualize(model, model_name, file, output, lab=False):
 
     img = np.expand_dims(img, 0)
 
-    print("SHAPES", img.shape, model.input.shape)
+    def write_output(outputs, layer_name):
+        outputs = (outputs[0] * 255).astype("uint8")
+        cv2.imwrite(os.path.join(folder, layer.name + ".png"), outputs)
 
     def hook_fn(layer: tf.keras.layers.Layer, args: tuple, kwargs: dict, outputs: Union[tf.Tensor, tuple]):
-        print(f"{layer.name} outputs: {outputs}")
+        # print(f"{layer.name} outputs: {outputs}")
+        print(f"{layer.name} output-shape: {outputs.shape}")
+        if type(outputs) is tf.Tensor:
+            outputs = outputs.numpy()
+            if len(outputs.shape) > 3:
+                for i in range(outputs.shape[0]):
+                    write_output(outputs[i], layer.name)
+            
 
     hooks = []
     for layer in model.layers:
