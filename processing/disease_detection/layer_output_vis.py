@@ -7,6 +7,7 @@ import cv2
 from custom_utils import transform
 import tensorflow as tf
 import numpy as np
+import models
 
 @click.command()
 @click.option('-m', '--model')
@@ -35,6 +36,7 @@ def handle_model(model, input, output, lab):
         visualize(model, model_name, input, output, lab)
 
 def visualize(model, model_name, file, output, lab=False):
+    model = models.alexnet_model(n_classes=2)
     # create output dir
     file_name = os.path.basename(file)
     folder = os.path.join(output, model_name[:model_name.index('.')], file_name[:file_name.index('.')])
