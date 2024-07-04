@@ -34,6 +34,9 @@ def handle_model(model, input, output, lab):
     model_name = os.path.basename(model)
     model = keras.models.load_model(model)
 
+    model.summary()
+    print(f"Visualizing model {model}")
+
     if os.path.isdir(input):
         for file in os.listdir(input):
             visualize(model, model_name, os.path.join(input, file), output, lab)
@@ -58,14 +61,6 @@ def visualize(model, model_name, file, output, lab=False):
     # Ensure the image has the right shape for the model
     img = img.reshape((1, *img.shape))  # Adding batch dimension
 
-    # # create output function
-    # inp = model.input                                           # input placeholder
-    # outputs = [layer.output for layer in model.layers]          # all layer outputs
-    # functor = k_func([inp], outputs)   # evaluation function
-
-    # # calculating outputs
-    # layer_outs = functor([img])
-     # Get the outputs of each layer
     # Create a new model that will return the outputs of all layers
     layer_outputs = [layer.output for layer in model.layers]
     intermediate_model = tf.keras.models.Model(inputs=model.inputs, outputs=layer_outputs)
@@ -81,10 +76,10 @@ def visualize(model, model_name, file, output, lab=False):
             
     for layer, output in zip(model.layers, outputs):
         name = layer.name
-        if len(output.shape) is not 4:
+        print(output.shape)
+        if len(output.shape) != 4:
             continue
         print(f"Writing output for layer {name} of image {file_name}")
-        print(output.shape)
         output = (output[0] * 255).astype("uint8")
 
         plt_amount = layer.output.shape[-1]
