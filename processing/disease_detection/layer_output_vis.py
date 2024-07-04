@@ -44,7 +44,7 @@ def visualize(model, model_name, file, output, lab=False):
     img = cv2.imread(file)
     img = transform(img, lab=lab, rescale=True, smart_resize=True)
     img = np.expand_dims(img, 0)
-    model.predict(img)
+    
     model(keras.layers.Input(img.shape[1:]))
 
     layer_outputs = [layer.output for layer in model.layers[1:]]
