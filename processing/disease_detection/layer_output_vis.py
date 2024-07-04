@@ -25,8 +25,8 @@ def main(model, input, output, lab):
             handle_model(model, input, output, lab)
     elif os.path.isdir(model):
         models = os.listdir(model)
-        for model in models:
-            handle_model(model, input, output, lab)
+        for model_name in models:
+            handle_model(os.path.join(model, model_name), input, output, lab)
     else:
         handle_model(model, input, output, lab)
 
