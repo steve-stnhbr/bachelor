@@ -94,10 +94,15 @@ def visualize(model, model_name, file, output, lab=False):
         for i, ax in enumerate(axes):
             if i == plt_amount:
                 break
-            #ax = pyplot.subplot(size, size, i+1)
             ax.axis('off')
-            ax.imshow(output[:, :, i], cmap='gray')
-        pyplot.savefig(os.path.join(folder, f"{name}_.jpg"), bbox_inches='tight', dpi=200)
+            x = output[:, :, i]
+            x -= x.mean()
+            x /= x.std()
+            x *= 64
+            x += 128
+            x = np.clip(x, 0, 255).astype('uint8')
+            ax.imshow(x, cmap='gray')
+        pyplot.savefig(os.path.join(folder, f"{i:02d}_{name}_.jpg"), bbox_inches='tight', dpi=200)
         print("Saved fig")
     return
 
