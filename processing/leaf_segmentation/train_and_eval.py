@@ -1,5 +1,4 @@
 import cai.datasets
-from schuler_two_branch.test_datagen import PlantLeafsDataGenBinary
 import cai
 import os
 from tensorflow import keras
@@ -11,15 +10,14 @@ import numpy as np
 from functools import partial
 import skimage.color as skimage_color
 import cv2
-from models import alexnet_model, vgg19_model, lenet_model
 import keras_cv
 
 INPUT_SHAPE = (224, 224, 3)
 CLASSES = 25
 
-TRAIN_DATA_PATH = os.path.join("_data", "train")
-VAL_DATA_PATH = os.path.join("_data", "val")
-TEST_DATA_PATH = os.path.join("_data", "test")
+TRAIN_DATA_PATH = os.path.join("_data", "PhenoBench", "train")
+VAL_DATA_PATH = os.path.join("_data", "PhenoBench", "val")
+TEST_DATA_PATH = os.path.join("_data", "PhenoBench", "test")
 
 MASK_SUBDIR = "leaf_instances"
 
@@ -91,7 +89,7 @@ def gen_dataset(path, mask_subdir, batch_size, lab):
 @click.option("-b", "--batch_size", type=int)
 def main(batch_size):
     models = [
-        keras_cv.models.DeepLabV3Plus.from_preset("resnet152")
+        keras_cv.models.DeepLabV3Plus.from_preset("resnet152", num_classes=50)
     ]
 
     for lab in [True]:
