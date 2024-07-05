@@ -89,7 +89,10 @@ def gen_dataset(path, mask_subdir, batch_size, lab):
 @click.option("-b", "--batch_size", type=int)
 def main(batch_size):
     models = [
-        keras_cv.models.DeepLabV3Plus.from_preset("resnet152", num_classes=50)
+        (
+            keras_cv.models.DeepLabV3Plus.from_preset("resnet152", num_classes=50),
+            "DeepLabV3Plus_resnet152"
+        )
     ]
 
     for lab in [True]:
