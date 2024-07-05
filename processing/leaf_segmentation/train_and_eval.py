@@ -43,13 +43,7 @@ def execute(model, name=None, lab=False, batch_size=32):
 
     train_datagen = gen_dataset(TRAIN_DATA_PATH, MASK_SUBDIR, batch_size=batch_size, lab=lab)
     val_datagen = gen_dataset(VAL_DATA_PATH, MASK_SUBDIR, batch_size=batch_size, lab=lab)
-    test_datagen = gen_dataset(TEST_DATA_PATH, MASK_SUBDIR, batch_size=batch_size, lab=lab)
-
-    test = train_datagen.take(5).as_numpy_iterator()
-    for el in test:
-        print(el[0].shape, el[1].shape)
-
-    print("Dataset sizes [train, val, test]", len(train_datagen), len(val_datagen), len(test_datagen))
+    #test_datagen = gen_dataset(TEST_DATA_PATH, MASK_SUBDIR, batch_size=batch_size, lab=lab)
 
     callbacks = [
         keras.callbacks.EarlyStopping(patience=5),
@@ -63,7 +57,7 @@ def execute(model, name=None, lab=False, batch_size=32):
 
     print("Training finished, starting test evaluation")
 
-    result = model.evaluate(test_datagen)
+    result = model.evaluate(val_datagen)
     print(result)
 
 def gen_dataset(path, mask_subdir, batch_size, lab):
