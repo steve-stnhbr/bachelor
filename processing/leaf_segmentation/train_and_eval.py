@@ -11,6 +11,7 @@ from functools import partial
 import skimage.color as skimage_color
 import cv2
 import keras_cv
+from models import seg_net
 
 INPUT_SHAPE = (224, 224, 3)
 CLASSES = 25
@@ -33,13 +34,15 @@ def execute(model, name=None, lab=False, batch_size=32):
     model.compile(
         loss='categorical_crossentropy',
         optimizer=opt,
-        metrics=['accuracy']
+        metrics=[
+            keras.metrics.MeanIoU(
+                num_classes=CLASSES, sparse_y_true=False, sparse_y_pred=False
+            ),
+            keras.metrics.CategoricalAccuracy(),
+        ],
     )
 
     print("Creating datagen")
-    # train_datagen = PlantLeafsDataGenBinary(TRAIN_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
-    # val_datagen = PlantLeafsDataGenBinary(VAL_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
-    # test_datagen = PlantLeafsDataGenBinary(TEST_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
 
     train_datagen = gen_dataset(TRAIN_DATA_PATH, MASK_SUBDIR, batch_size=batch_size, lab=lab)
     val_datagen = gen_dataset(VAL_DATA_PATH, MASK_SUBDIR, batch_size=batch_size, lab=lab)
@@ -83,9 +86,13 @@ def gen_dataset(path, mask_subdir, batch_size, lab):
 @click.option("-b", "--batch_size", type=int)
 def main(batch_size):
     models = [
+        # (
+        #     keras_cv.models.DeepLabV3Plus.from_preset("resnet152", num_classes=50),
+        #     "DeepLabV3Plus_resnet152"
+        # )
         (
-            keras_cv.models.DeepLabV3Plus.from_preset("resnet152", num_classes=50),
-            "DeepLabV3Plus_resnet152"
+            seg_net(INPUT_SHAPE, CLASSES),
+            "SegNet"
         )
     ]
 
