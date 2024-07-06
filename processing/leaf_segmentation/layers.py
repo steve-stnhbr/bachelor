@@ -1,5 +1,6 @@
 from keras import backend as K
 from keras.layers import Layer
+import tensorflow as tf
 
 
 class MaxPoolingWithArgmax2D(Layer):
@@ -48,7 +49,7 @@ class MaxUnpooling2D(Layer):
 
     def call(self, inputs, output_shape=None):
         updates, mask = inputs[0], inputs[1]
-        with K.tf.variable_scope(self.name):
+        with tf.variable_scope(self.name):
             mask = K.cast(mask, "int32")
             input_shape = K.tf.shape(updates, out_type="int32")
             #  calculation new shape
