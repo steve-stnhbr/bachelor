@@ -81,7 +81,7 @@ def gen_dataset(path, mask_subdir, batch_size, lab):
         , num_parallel_calls=tf.data.AUTOTUNE, deterministic=False)
     datagen = datagen.map(lambda x, y: (x, to_categorical(y, num_classes=CLASSES))).prefetch(tf.data.AUTOTUNE)
     for s in datagen.take(5).as_numpy_iterator():
-        print(s.shape)
+        print(s[0].shape)
     return datagen
 
 @click.command()
