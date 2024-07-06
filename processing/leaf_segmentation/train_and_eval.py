@@ -73,7 +73,8 @@ def gen_dataset(path, mask_subdir, batch_size, lab):
                                                  batch_size=batch_size,
                                                  image_size=INPUT_SHAPE[:2], 
                                                  crop_to_aspect_ratio=True, 
-                                                 labels=None)
+                                                 labels=None,
+                                                 color_mode='grayscale')
     datagen = tf.data.Dataset.zip((x, y))
     if lab:
         datagen = datagen.map(
