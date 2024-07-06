@@ -1,3 +1,28 @@
+
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
+import tensorflow as tf
+
+from keras.models import Model
+from keras import layers
+from keras.layers import Input
+from keras.layers import Reshape
+from keras.layers import Activation
+from keras.layers import Concatenate
+from keras.layers import Add
+from keras.layers import Dropout
+from keras.layers import BatchNormalization
+from keras.layers import Conv2D
+from keras.layers import DepthwiseConv2D
+from keras.layers import ZeroPadding2D
+from keras.layers import GlobalAveragePooling2D
+from tensorflow.python.keras.utils.layer_utils import get_source_inputs
+from tensorflow.python.keras.utils.data_utils import get_file
+from keras import backend as K
+from keras.applications.imagenet_utils import preprocess_input
 from keras.layers import Conv2D, BatchNormalization, ReLU, MaxPooling2D, MaxUnpooling2D, UpSampling2D, Flatten, Dense, MaxPoolingWithArgmax2D, Convolution2D
 from keras.models import Sequential
 
@@ -39,30 +64,6 @@ https://github.com/JonathanCMitchell/mobilenet_v2_keras
 - [Inverted Residuals and Linear Bottlenecks: Mobile Networks for
     Classification, Detection and Segmentation](https://arxiv.org/abs/1801.04381)
 """
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import tensorflow as tf
-
-from tensorflow.python.keras.models import Model
-from tensorflow.python.keras import layers
-from tensorflow.python.keras.layers import Input
-from tensorflow.python.keras.layers import Reshape
-from tensorflow.python.keras.layers import Activation
-from tensorflow.python.keras.layers import Concatenate
-from tensorflow.python.keras.layers import Add
-from tensorflow.python.keras.layers import Dropout
-from tensorflow.python.keras.layers import BatchNormalization
-from tensorflow.python.keras.layers import Conv2D
-from tensorflow.python.keras.layers import DepthwiseConv2D
-from tensorflow.python.keras.layers import ZeroPadding2D
-from tensorflow.python.keras.layers import GlobalAveragePooling2D
-from tensorflow.python.keras.utils.layer_utils import get_source_inputs
-from tensorflow.python.keras.utils.data_utils import get_file
-from tensorflow.python.keras import backend as K
-from tensorflow.python.keras.applications.imagenet_utils import preprocess_input
 
 WEIGHTS_PATH_X = "https://github.com/bonlime/keras-deeplab-v3-plus/releases/download/1.1/deeplabv3_xception_tf_dim_ordering_tf_kernels.h5"
 WEIGHTS_PATH_MOBILE = "https://github.com/bonlime/keras-deeplab-v3-plus/releases/download/1.1/deeplabv3_mobilenetv2_tf_dim_ordering_tf_kernels.h5"
