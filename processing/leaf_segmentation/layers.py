@@ -44,7 +44,7 @@ class MaxPoolingWithArgmax2D(Layer):
 class MaxUnpooling2D(Layer):
     def __init__(self, pool_size=(2, 2), **kwargs):
         super(MaxUnpooling2D, self).__init__(**kwargs)
-        self.size = size
+        self.size = pool_size
 
     def call(self, inputs, output_shape=None):
         updates, mask = inputs[0], inputs[1]
