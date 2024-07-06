@@ -77,7 +77,7 @@ def gen_dataset(path, mask_subdir, batch_size, lab):
     datagen = tf.data.Dataset.zip((x, y))
     if lab:
         datagen = datagen.map(
-            lambda x, y: (transform_wrapper(x, target_size=INPUT_SHAPE[:2], rescale=True, smart_resize=True, lab=True), y)
+            lambda x, y: (transform_wrapper(x, target_size=INPUT_SHAPE[:2], rescale=True, smart_resize=True, lab=True), to_categorical(y))
         , num_parallel_calls=tf.data.AUTOTUNE, deterministic=False)
     datagen = datagen.prefetch(tf.data.AUTOTUNE)
     return datagen
