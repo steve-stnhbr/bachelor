@@ -146,22 +146,22 @@ class MaxPoolingWithArgmax2D(Layer):
 
 
 class MaxUnpooling2D(Layer):
-    def __init__(self, up_size=(2, 2), **kwargs):
+    def __init__(self, pool_size=(2, 2), **kwargs):
         super(MaxUnpooling2D, self).__init__(**kwargs)
-        self.up_size = up_size
+        self.pool_size = pool_size
 
     def call(self, inputs, output_shape=None):
         updates = inputs[0]
         mask    = tf.cast(inputs[1], dtype=tf.int64)
-        ksize   = [1, self.up_size[0], self.up_size[1], 1]
+        ksize   = [1, self.pool_size[0], self.pool_size[1], 1]
         return unpool(updates, mask, ksize)
 
     def compute_output_shape(self, input_shape):
         mask_shape = input_shape[1]
         return (
             mask_shape[0],
-            mask_shape[1] * self.up_size[0],
-            mask_shape[2] * self.up_size[1],
+            mask_shape[1] * self.pool_size[0],
+            mask_shape[2] * self.pool_size[1],
             mask_shape[3]
         )
 
