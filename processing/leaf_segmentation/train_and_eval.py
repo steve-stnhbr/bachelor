@@ -98,7 +98,7 @@ def main(batch_size):
         )
     ]
 
-    for lab in [True]:
+    for lab in [False]:
         for model, name in models:
             execute(model, f"{name}_{'lab' if lab else 'rgb'}", lab, batch_size=batch_size)
 
