@@ -23,8 +23,9 @@ from tensorflow.python.keras.utils.layer_utils import get_source_inputs
 from tensorflow.python.keras.utils.data_utils import get_file
 from keras import backend as K
 from keras.applications.imagenet_utils import preprocess_input
-from keras.layers import Conv2D, BatchNormalization, ReLU, MaxPooling2D, MaxUnpooling2D, UpSampling2D, Flatten, Dense, MaxPoolingWithArgmax2D, Convolution2D
+from keras.layers import Conv2D, BatchNormalization, ReLU, MaxPooling2D, UpSampling2D, Flatten, Dense, Convolution2D
 from keras.models import Sequential
+from layers import MaxUnpooling2D, MaxPoolingWithArgmax2D
 
 def plrs_net(img_shape=(224, 224, 3), n_classes=1000):
 	'''
