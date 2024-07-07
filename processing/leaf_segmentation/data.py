@@ -3,6 +3,7 @@ from keras.utils import Sequence
 import os
 from cv2 import imread, resize
 import lib.Mask_RCNN.mrcnn.utils as utils
+import cv2
 
 class CustomMRCNNDataset(Sequence):
     def __init__(self, image_dir, mask_dir, batch_size, image_size, config):
@@ -28,7 +29,7 @@ class CustomMRCNNDataset(Sequence):
 
         for image_name, mask_name in zip(batch_images, batch_masks):
             image = imread(os.path.join(self.image_dir, image_name))
-            mask = imread(os.path.join(self.mask_dir, mask_name), as_gray=True)
+            mask = imread(os.path.join(self.mask_dir, mask_name), cv2.IMREAD_GRAYSCALE)
             
             # Convert mask to binary (0 and 1 values)
             mask = (mask > 0).astype(np.uint8)

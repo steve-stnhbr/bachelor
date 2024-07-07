@@ -98,7 +98,7 @@ def gen_dataset(path, mask_subdir, batch_size, lab):
     return datagen
 
 @click.command()
-@click.option("-b", "--batch_size", type=int)
+@click.option("-b", "--batch_size", type=int, default=20)
 @click.option("-e", "--epochs", type=int)
 @click.option('-d', '--data', type=str)
 def main(batch_size, epochs, data):
