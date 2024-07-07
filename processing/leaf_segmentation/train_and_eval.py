@@ -107,6 +107,20 @@ def main(batch_size, epochs, data):
         NUM_CLASSES = CLASSES # COCO has 80 classes
         GPU_COUNT = 1
         IMAGES_PER_GPU = 1
+
+        def compute_backbone_shapes(self, image_shape):
+            """Computes the width and height of each stage of the backbone network."""
+            return np.array(
+                [[int(np.ceil(image_shape[0] / stride)),
+                int(np.ceil(image_shape[1] / stride))]
+                for stride in self.BACKBONE_STRIDES]
+            )
+
+        def __init__(self):
+            super().__init__()
+            self.BACKBONE_STRIDES = [4, 8, 16, 32, 64]
+            self.BACKBONE_SHAPES = self.compute_backbone_shapes([self.IMAGE_MIN_DIM, self.IMAGE_MAX_DIM])
+
     mrcnn_config_instance = InferenceConfig()
     mrcnn_train_data = CustomMRCNNDataset(os.path.join(data, "train", "images"), os.path.join(data, "train", MASK_SUBDIR), batch_size=batch_size, image_size=INPUT_SHAPE[:2], config=mrcnn_config_instance)
     mrcnn_val_data = CustomMRCNNDataset(os.path.join(data, "val", "images"), os.path.join(data, "val", MASK_SUBDIR), batch_size=batch_size, image_size=INPUT_SHAPE[:2], config=mrcnn_config_instance)
