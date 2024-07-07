@@ -935,7 +935,7 @@ def fpn_classifier_graph(rois, feature_maps, image_meta,
     x = KL.Activation('relu')(x)
 
     #shared = KL.Lambda(lambda x: K.squeeze(K.squeeze(x, 3), 2), name="pool_squeeze")(x)
-    shared = KL.Lambda(lambda x: K.squeeze(K.squeeze(x, 3), 2), output_shape=lambda s: (s[0], s[1], s[2]), name="pool_squeeze")(x)
+    shared = KL.Lambda(lambda x: tf.squeeze(tf.squeeze(x, 3), 2), output_shape=lambda s: (s[0], s[1], s[2]), name="pool_squeeze")(x)
 
     # Classifier head
     mrcnn_class_logits = KL.TimeDistributed(KL.Dense(num_classes),
