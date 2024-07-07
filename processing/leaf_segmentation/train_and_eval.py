@@ -104,6 +104,7 @@ def main(batch_size, epochs, data):
         NUM_CLASSES = CLASSES # COCO has 80 classes
         GPU_COUNT = 1
         IMAGES_PER_GPU = 1
+    mrcnn_config = InferenceConfig()
     models = [
         (
             modellib.MaskRCNN(mode="inference", model_dir=os.getcwd(), config=mrcnn_config).keras_model,
