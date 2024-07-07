@@ -12,6 +12,7 @@ import skimage.color as skimage_color
 import cv2
 import keras_cv
 from models import seg_net
+from losses import DiceLoss
 
 INPUT_SHAPE = (224, 224, 3)
 CLASSES = 25
@@ -25,14 +26,14 @@ MASK_SUBDIR = "leaf_instances"
 def load_transform(paths):
     return cai.datasets.load_images_from_files(paths, target_size=INPUT_SHAPE[:2], lab=True, rescale=True, smart_resize=True)
 
-def execute(model, name=None, lab=False, batch_size=32):
+def execute(model, name=None, lab=False, batch_size=32, epochs=15):
     if name is None:
         name = type(model).__name__
     print(f"Starting training for {name}")
 
     opt = keras.optimizers.SGD(learning_rate=0.01, momentum=0.9, nesterov=True)
     model.compile(
-        loss='categorical_crossentropy',
+        loss=DiceLoss(),
         optimizer=opt,
         metrics=[
             keras.metrics.MeanIoU(
@@ -56,7 +57,7 @@ def execute(model, name=None, lab=False, batch_size=32):
     ]
     print(f"Beginning training of model {name}")
 
-    model.fit(train_datagen, epochs=15, callbacks=callbacks, validation_data=val_datagen)
+    model.fit(train_datagen, epochs=epochs, callbacks=callbacks, validation_data=val_datagen)
 
     print("Training finished, starting test evaluation")
 
@@ -87,11 +88,15 @@ def gen_dataset(path, mask_subdir, batch_size, lab):
 
 @click.command()
 @click.option("-b", "--batch_size", type=int)
-def main(batch_size):
+@click.option("-e", "--epochs", type=int)
+def main(batch_size, epochs):
     models = [
         (
             keras_cv.models.DeepLabV3Plus.from_preset("resnet152", num_classes=CLASSES),
             "DeepLabV3Plus_resnet152"
+        ),
+        (
+            tf.keras.applications.unet
         )
         # (
         #     seg_net(INPUT_SHAPE, CLASSES),
@@ -101,7 +106,7 @@ def main(batch_size):
 
     for lab in [False]:
         for model, name in models:
-            execute(model, f"{name}_{'lab' if lab else 'rgb'}", lab, batch_size=batch_size)
+            execute(model, f"{name}_{'lab' if lab else 'rgb'}", lab, batch_size=batch_size, epochs=epochs)
 
 
 def transform(imgs, target_size=(224,224), smart_resize=False, lab=False, rescale=False, bipolar=False):
