@@ -12,6 +12,8 @@ import skimage.color as skimage_color
 import cv2
 import keras_cv
 from losses import DiceLoss
+import lib.mrcnn.config as mrcnn_config
+import lib.mrcnn.model as modellib
 
 INPUT_SHAPE = (224, 224, 3)
 CLASSES = 25
@@ -98,11 +100,19 @@ def gen_dataset(path, mask_subdir, batch_size, lab):
 @click.option("-e", "--epochs", type=int)
 @click.option('-d', '--data', type=str)
 def main(batch_size, epochs, data):
+    class InferenceConfig(mrcnn_config.Config):
+        NUM_CLASSES = CLASSES # COCO has 80 classes
+        GPU_COUNT = 1
+        IMAGES_PER_GPU = 1
     models = [
+        (
+            modellib.MaskRCNN(mode="inference", model_dir=os.getcwd(), config=mrcnn_config).keras_model,
+            "Mask R-CNN"
+        ),
         (
             keras_cv.models.DeepLabV3Plus.from_preset("resnet152", num_classes=CLASSES),
             "DeepLabV3Plus_resnet152"
-        )
+        ),
         # (
         #     seg_net(INPUT_SHAPE, CLASSES),
         #     "SegNet"
