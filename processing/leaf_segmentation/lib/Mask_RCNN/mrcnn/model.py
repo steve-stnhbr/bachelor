@@ -700,7 +700,6 @@ def refine_detections_graph(rois, probs, deltas, window, config):
     # Class IDs per ROI
     class_ids = tf.argmax(probs, axis=1, output_type=tf.int32)
     # Class probability of the top class of each ROI
-    print(probs.shape)
     indices = tf.stack([tf.range(probs.shape[0]), class_ids], axis=1)
     class_scores = tf.gather_nd(probs, indices)
     # Class-specific bounding box deltas
@@ -799,6 +798,7 @@ class DetectionLayer(KL.Layer):
         mrcnn_class = inputs[1]
         mrcnn_bbox = inputs[2]
         image_meta = inputs[3]
+        print(mrcnn_class.shape)
 
         # Get windows of images in normalized coordinates. Windows are the area
         # in the image that excludes the padding.
