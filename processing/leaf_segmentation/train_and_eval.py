@@ -72,13 +72,13 @@ def gen_dataset(path, mask_subdir, batch_size, lab):
                                                  batch_size=batch_size, 
                                                  image_size=INPUT_SHAPE[:2], 
                                                  crop_to_aspect_ratio=True, 
-                                                 labels=None).map(lambda x: x / 255).map(lambda x: tf.expand_dims(x, 0) if len(x.shape) == 3 else x)
+                                                 labels=None).map(lambda x0: x0 / 255).map(lambda x1: tf.ex1pand_dims(x1, 0) if len(x1.shape) == 3 else x1)
     y = keras.utils.image_dataset_from_directory(os.path.join(path, mask_subdir), 
                                                  batch_size=batch_size,
                                                  image_size=INPUT_SHAPE[:2], 
                                                  crop_to_aspect_ratio=True, 
                                                  labels=None,
-                                                 color_mode='grayscale').map(lambda y: to_categorical(y, num_classes=CLASSES)).map(lambda y: y / 255).map(lambda y: tf.expand_dims(y, 0))
+                                                 color_mode='grayscale').map(lambda y: tf.expand_dims(to_categorical(y, num_classes=CLASSES) / 255, 0))
     datagen = tf.data.Dataset.zip((x, y))
     if lab:
         datagen = datagen.map(
