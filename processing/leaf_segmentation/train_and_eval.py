@@ -72,19 +72,19 @@ def gen_dataset(path, mask_subdir, batch_size, lab):
                                                  batch_size=batch_size, 
                                                  image_size=INPUT_SHAPE[:2], 
                                                  crop_to_aspect_ratio=True, 
-                                                 labels=None)
+                                                 labels=None).map(lambda x: x / 255).map(tf.expand_dims(x, 0) if len(x.shape) == 3 else x)
     y = keras.utils.image_dataset_from_directory(os.path.join(path, mask_subdir), 
                                                  batch_size=batch_size,
                                                  image_size=INPUT_SHAPE[:2], 
                                                  crop_to_aspect_ratio=True, 
                                                  labels=None,
-                                                 color_mode='grayscale')
+                                                 color_mode='grayscale').map(lambda y: to_categorical(y, num_classes=CLASSES)).map(lambda y: y / 255).map(lambda y: tf.expand_dims(y, 0))
     datagen = tf.data.Dataset.zip((x, y))
     if lab:
         datagen = datagen.map(
             lambda x, y: (transform_wrapper(x, target_size=INPUT_SHAPE[:2], rescale=True, smart_resize=True, lab=True), y)
         , num_parallel_calls=tf.data.AUTOTUNE, deterministic=False)
-    datagen = datagen.map(lambda x, y: (tf.expand_dims(x, 0) if len(x.shape) == 3 else x, tf.expand_dims(to_categorical(y, num_classes=CLASSES) / 255, 0))).prefetch(tf.data.AUTOTUNE)
+    datagen = datagen.prefetch(tf.data.AUTOTUNE)
     for s in datagen.take(5).as_numpy_iterator():
         print(s[1].shape)
     return datagen
