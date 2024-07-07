@@ -11,7 +11,7 @@ from functools import partial
 import skimage.color as skimage_color
 import cv2
 import keras_cv
-from models import seg_net
+from models import MaskRCNN
 from losses import DiceLoss
 
 INPUT_SHAPE = (224, 224, 3)
@@ -26,7 +26,7 @@ MASK_SUBDIR = "leaf_instances"
 def load_transform(paths):
     return cai.datasets.load_images_from_files(paths, target_size=INPUT_SHAPE[:2], lab=True, rescale=True, smart_resize=True)
 
-def execute(model, name=None, lab=False, batch_size=32, epochs=15):
+def execute(model, name=None, lab=False, batch_size=32, epochs=15, data='_data'):
     if name is None:
         name = type(model).__name__
     print(f"Starting training for {name}")
@@ -45,12 +45,16 @@ def execute(model, name=None, lab=False, batch_size=32, epochs=15):
 
     print("Creating datagen")
 
-    train_datagen = gen_dataset(TRAIN_DATA_PATH, MASK_SUBDIR, batch_size=batch_size, lab=lab)
-    val_datagen = gen_dataset(VAL_DATA_PATH, MASK_SUBDIR, batch_size=batch_size, lab=lab)
+
+    train_dir = os.path.join(data, 'train')
+    train_datagen = gen_dataset(train_dir, MASK_SUBDIR, batch_size=batch_size, lab=lab)
+    val_dir = os.path.join(data, 'val')
+    val_datagen = gen_dataset(val_dir, MASK_SUBDIR, batch_size=batch_size, lab=lab)
+    # test_dir = os.path.join(data, 'test')
     #test_datagen = gen_dataset(TEST_DATA_PATH, MASK_SUBDIR, batch_size=batch_size, lab=lab)
 
     callbacks = [
-        keras.callbacks.EarlyStopping(patience=5),
+        #keras.callbacks.EarlyStopping(patience=5),
         keras.callbacks.ModelCheckpoint(filepath='checkpoints/model##name##.{epoch:02d}.keras'.replace("##name##", name)),
         keras.callbacks.TensorBoard(log_dir='./logs'),
         keras.callbacks.ModelCheckpoint(filepath='out/best##name##.keras'.replace('##name##', name), save_best_only=True, mode='max', monitor='val_accuracy')
@@ -89,7 +93,8 @@ def gen_dataset(path, mask_subdir, batch_size, lab):
 @click.command()
 @click.option("-b", "--batch_size", type=int)
 @click.option("-e", "--epochs", type=int)
-def main(batch_size, epochs):
+@click.option('-d', '--data', type=str)
+def main(batch_size, epochs, data):
     models = [
         (
             keras_cv.models.DeepLabV3Plus.from_preset("resnet152", num_classes=CLASSES),
@@ -103,7 +108,7 @@ def main(batch_size, epochs):
 
     for lab in [False]:
         for model, name in models:
-            execute(model, f"{name}_{'lab' if lab else 'rgb'}", lab, batch_size=batch_size, epochs=epochs)
+            execute(model, f"{name}_{'lab' if lab else 'rgb'}", lab, batch_size=batch_size, epochs=epochs, data=data)
 
 
 def transform(imgs, target_size=(224,224), smart_resize=False, lab=False, rescale=False, bipolar=False):
