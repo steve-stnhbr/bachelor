@@ -90,7 +90,7 @@ def gen_dataset(path, mask_subdir, batch_size, lab):
 def main(batch_size):
     models = [
         (
-            keras_cv.models.DeepLabV3Plus.from_preset("resnet152", num_classes=50),
+            keras_cv.models.DeepLabV3Plus.from_preset("resnet152", num_classes=CLASSES),
             "DeepLabV3Plus_resnet152"
         )
         # (
