@@ -101,6 +101,7 @@ def gen_dataset(path, mask_subdir, batch_size, lab):
 @click.option('-d', '--data', type=str)
 def main(batch_size, epochs, data):
     class InferenceConfig(mrcnn_config.Config):
+        NAME="mask_rcnn"
         NUM_CLASSES = CLASSES # COCO has 80 classes
         GPU_COUNT = 1
         IMAGES_PER_GPU = 1
