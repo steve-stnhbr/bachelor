@@ -36,7 +36,7 @@ class CustomMRCNNDataset(Sequence):
             
             # Resize image and mask
             image = resize(image, self.image_size)
-            mask = resize(mask, self.image_size, preserve_range=True)
+            mask = resize(mask, self.image_size)
 
             # Generate image meta data and anchors
             image_meta = compose_image_meta(
