@@ -86,7 +86,8 @@ def gen_dataset(path, mask_subdir, batch_size, lab):
         , num_parallel_calls=tf.data.AUTOTUNE, deterministic=False)
     datagen = datagen.prefetch(tf.data.AUTOTUNE)
     for s in datagen.take(5).as_numpy_iterator():
-        print(s[1].shape)
+        print(s[0].shape, tf.reduce_max(s[0]).numpy())
+        print(s[1].shape, tf.reduce_max(s[1]).numpy())
     return datagen
 
 @click.command()
