@@ -12,8 +12,8 @@ import skimage.color as skimage_color
 import cv2
 import keras_cv
 from losses import DiceLoss
-import lib.mrcnn.config as mrcnn_config
-import lib.mrcnn.model as modellib
+import lib.Mask_RCNN.mrcnn.config as mrcnn_config
+import lib.Mask_RCNN.mrcnn.model as modellib
 
 INPUT_SHAPE = (224, 224, 3)
 CLASSES = 25
