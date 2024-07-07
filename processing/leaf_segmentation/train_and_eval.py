@@ -71,7 +71,7 @@ def execute(model, name=None, lab=False, batch_size=32, epochs=15, data='_data',
 
     print("Training finished, starting test evaluation")
 
-    result = model.evaluate(val_datagen)
+    result = model.evaluate(val_data)
     print(result)
 
 def gen_dataset(path, mask_subdir, batch_size, lab):

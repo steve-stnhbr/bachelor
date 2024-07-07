@@ -798,7 +798,6 @@ class DetectionLayer(KL.Layer):
         mrcnn_class = inputs[1]
         mrcnn_bbox = inputs[2]
         image_meta = inputs[3]
-        print(mrcnn_class.shape)
 
         # Get windows of images in normalized coordinates. Windows are the area
         # in the image that excludes the padding.
