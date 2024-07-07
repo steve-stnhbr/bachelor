@@ -11,7 +11,6 @@ from functools import partial
 import skimage.color as skimage_color
 import cv2
 import keras_cv
-from models import MaskRCNN
 from losses import DiceLoss
 
 INPUT_SHAPE = (224, 224, 3)
