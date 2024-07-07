@@ -128,7 +128,7 @@ def main(batch_size, epochs, data):
     mrcnn_val_data = CustomMRCNNDataset(os.path.join(data, "val", "images"), os.path.join(data, "val", MASK_SUBDIR), batch_size=batch_size, image_size=INPUT_SHAPE[:2], config=mrcnn_config_instance)
     models = [
         (
-            modellib.MaskRCNN(mode="inference", model_dir=os.getcwd(), config=mrcnn_config_instance).keras_model,
+            modellib.MaskRCNN(mode="training", model_dir=os.getcwd(), config=mrcnn_config_instance).keras_model,
             "Mask R-CNN",
             mrcnn_train_data,
             mrcnn_val_data
