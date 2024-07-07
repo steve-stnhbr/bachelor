@@ -33,6 +33,8 @@ def execute(model, name=None, lab=False, batch_size=32, epochs=15, data='_data',
         name = type(model).__name__
     print(f"Starting training for {name}")
 
+    model.build(keras.Input((batch_size, ) + INPUT_SHAPE))
+
     opt = keras.optimizers.SGD(learning_rate=0.01, momentum=0.9, nesterov=True)
     model.compile(
         loss=DiceLoss(),
