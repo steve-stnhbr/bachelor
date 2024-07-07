@@ -94,9 +94,6 @@ def main(batch_size, epochs):
         (
             keras_cv.models.DeepLabV3Plus.from_preset("resnet152", num_classes=CLASSES),
             "DeepLabV3Plus_resnet152"
-        ),
-        (
-            tf.keras.applications.unet
         )
         # (
         #     seg_net(INPUT_SHAPE, CLASSES),
