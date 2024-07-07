@@ -58,6 +58,9 @@ def execute(model, name=None, lab=False, batch_size=32, epochs=15, data='_data')
         keras.callbacks.TensorBoard(log_dir='./logs'),
         keras.callbacks.ModelCheckpoint(filepath='out/best##name##.keras'.replace('##name##', name), save_best_only=True, mode='max', monitor='val_accuracy')
     ]
+
+    model.summary()
+
     print(f"Beginning training of model {name}")
 
     model.fit(train_datagen, epochs=epochs, callbacks=callbacks, validation_data=val_datagen)
