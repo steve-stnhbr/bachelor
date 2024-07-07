@@ -57,12 +57,23 @@ class CustomMRCNNDataset(Sequence):
         
         return (np.array(image_batch), np.array(image_meta_batch), np.array(anchors_batch)), np.array(mask_batch)
 
-def compose_image_meta(image_id, original_image_shape, image_shape, active_class_ids):
+# def compose_image_meta(image_id, original_image_shape, image_shape, active_class_ids):
+#     """Builds an array of image attributes."""
+#     meta = np.array(
+#         [image_id] + 
+#         list(original_image_shape) + 
+#         list(image_shape) + 
+#         list(active_class_ids)
+#     )
+#     return meta
+def compose_image_meta(image_id, original_image_shape, image_shape, window, scale, active_class_ids):
     """Builds an array of image attributes."""
     meta = np.array(
         [image_id] + 
         list(original_image_shape) + 
         list(image_shape) + 
+        list(window) + 
+        [scale] + 
         list(active_class_ids)
     )
     return meta
