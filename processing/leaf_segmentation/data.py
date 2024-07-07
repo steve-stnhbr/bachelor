@@ -38,10 +38,19 @@ class CustomMRCNNDataset(Sequence):
             image = resize(image, self.image_size)
             mask = resize(mask, self.image_size)
 
+            # Resize image and mask
+            original_image_shape = image.shape
+            image = resize(image, self.image_size).astype(np.float32)
+            mask = resize(mask, self.image_size).astype(np.uint8)
+            image_shape = image.shape
+            window = [0, 0, image_shape[0], image_shape[1]]  # Assume no padding
+            scale = 1.0  # Assume no scaling for simplicity
+
             # Generate image meta data and anchors
             image_meta = compose_image_meta(
-                0, image.shape, image.shape, np.zeros([self.config.NUM_CLASSES], dtype=np.int32)
+                0, original_image_shape, image_shape, window, scale, np.zeros([self.config.NUM_CLASSES], dtype=np.int32)
             )
+
             anchors = utils.generate_pyramid_anchors(
                 self.config.RPN_ANCHOR_SCALES,
                 self.config.RPN_ANCHOR_RATIOS,
