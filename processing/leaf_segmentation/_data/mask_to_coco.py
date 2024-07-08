@@ -6,7 +6,7 @@ import json
 import os
 import glob
 import click
-from multiprocessing import Pool
+import tqdm
 
 def create_coco_annotation(mask, image_id, category_id, annotation_id):
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -40,8 +40,10 @@ def convert_masks_to_coco(image_dir, mask_dir, output_path):
     annotation_id = 1
     image_id = 1
     
-    for img_path, mask_path in zip(image_paths, mask_paths):
-        print(f"Processing {os.path.basename(img_path)}")
+    p_bar = tqdm.tqdm(zip(image_paths, mask_paths))
+
+    for img_path, mask_path in p_bar:
+        p_bar.set_description_str(f"Processing {os.path.basename(img_path)}")
         mask_image = Image.open(mask_path)
         mask = np.array(mask_image)
         
