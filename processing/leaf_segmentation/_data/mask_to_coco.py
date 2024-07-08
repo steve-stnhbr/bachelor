@@ -6,6 +6,7 @@ import json
 import os
 import glob
 import click
+from multiprocessing import Pool
 
 def create_coco_annotation(mask, image_id, category_id, annotation_id):
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -40,6 +41,7 @@ def convert_masks_to_coco(image_dir, mask_dir, output_path):
     image_id = 1
     
     for img_path, mask_path in zip(image_paths, mask_paths):
+        print(f"Processing {os.path.basename(img_path)}")
         mask_image = Image.open(mask_path)
         mask = np.array(mask_image)
         
@@ -77,6 +79,8 @@ def convert_masks_to_coco(image_dir, mask_dir, output_path):
     
     with open(output_path, 'w') as f:
         json.dump(coco_dataset, f, indent=4)
+
+def process_image(image_path, mask_path):
 
 @click.command()
 @click.option("-i", '--images', type=str)
