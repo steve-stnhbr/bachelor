@@ -40,7 +40,7 @@ def convert_masks_to_coco(image_dir, mask_dir, output_path):
     annotation_id = 1
     image_id = 1
     
-    p_bar = tqdm.tqdm(zip(image_paths, mask_paths))
+    p_bar = tqdm.tqdm(zip(image_paths, mask_paths), total=len(image_paths))
 
     for img_path, mask_path in p_bar:
         p_bar.set_description_str(f"Processing {os.path.basename(img_path)}")
