@@ -80,7 +80,6 @@ def convert_masks_to_coco(image_dir, mask_dir, output_path):
     with open(output_path, 'w') as f:
         json.dump(coco_dataset, f, indent=4)
 
-def process_image(image_path, mask_path):
 
 @click.command()
 @click.option("-i", '--images', type=str)
