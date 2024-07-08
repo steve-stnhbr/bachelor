@@ -37,7 +37,7 @@ def process_single_image(args):
     img_path, mask_path, image_id, annotation_id_start = args
     if VERBOSE:
         print(f"Converting {os.path.basename(img_path)}")
-    mask_image = Image.open(mask_path)
+    mask_image = Image.open(mask_path).convert('L')
     mask = np.array(mask_image)
     
     unique_categories = np.unique(mask)
