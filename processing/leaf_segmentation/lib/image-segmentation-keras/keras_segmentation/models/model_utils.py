@@ -89,6 +89,7 @@ def get_segmentation_model(input, output):
         o = (Reshape((output_height*output_width, -1)))(o)
 
     o = (Activation('softmax'))(o)
+    o = Reshape(input.shape)(o)
     model = Model(img_input, o)
     model.output_width = output_width
     model.output_height = output_height

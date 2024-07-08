@@ -3701,8 +3701,7 @@ def build_pspnet(nb_classes, resnet_layers, input_shape, activation='softmax'):
     # x = Lambda(Interp, arguments={'shape': (
     #    input_shape[0], input_shape[1])})(x)
     x = Interp([input_shape[0], input_shape[1]])(x)
-    # x = Activation('softmax')(x)
-    # x = Reshape(input_shape[:-1] + (x.shape[-1], ))
+    x = Activation('softmax')(x)
 
     model = Model(inputs=inp, outputs=x)
 
