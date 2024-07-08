@@ -61,15 +61,19 @@ def process_single_image(args):
     
     return image_info, annotations, list(unique_categories)
 
-def convert_masks_to_coco(image_dir, mask_dir, output_path):
+def convert_masks_to_coco(image_dir, mask_dir, output_path, pool_size=None):
     image_paths = sorted(glob.glob(os.path.join(image_dir, "*.png")))
     mask_paths = sorted(glob.glob(os.path.join(mask_dir, "*.png")))
     
     images = []
     annotations = []
     categories = set()
+
+    if pool_size is None:
+        pool_size = int(cpu_count() * .8)
+    print(f"Spawning pool with {pool_size} workers")
     
-    with Pool(int(cpu_count() * .8)) as pool:
+    with Pool(pool_size) as pool:
         image_id = 1
         annotation_id_start = 1
         args = [(img_path, mask_path, image_id + idx, annotation_id_start + idx * 1000) 
@@ -89,6 +93,8 @@ def convert_masks_to_coco(image_dir, mask_dir, output_path):
         "annotations": annotations,
         "categories": categories
     }
+
+    print(f"Writing to {output_path}")
     
     with open(output_path, 'w') as f:
         json.dump(coco_dataset, f, indent=4)
