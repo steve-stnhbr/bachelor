@@ -79,7 +79,8 @@ def convert_masks_to_coco(image_dir, mask_dir, output_path, pool_size=None):
         args = [(img_path, mask_path, image_id + idx, annotation_id_start + idx * 1000) 
                 for idx, (img_path, mask_path) in enumerate(zip(image_paths, mask_paths))]
         
-        results = list(tqdm.tqdm(pool.map(process_single_image, args), total = len(image_paths)))
+        #results = list(tqdm.tqdm(pool.map(process_single_image, args), total = len(image_paths)))
+        results = pool.map(process_single_image, args)
         
         for image_info, annots, cats in results:
             images.append(image_info)
