@@ -18,7 +18,7 @@ from data import CustomMRCNNDataset
 #from models import build_pspnet
 from keras_segmentation.models.pspnet import pspnet_101
 
-INPUT_SHAPE = (224, 224, 3)
+INPUT_SHAPE = (473, 473, 3)
 CLASSES = 25
 
 TRAIN_DATA_PATH = os.path.join("_data", "PhenoBench", "train")
