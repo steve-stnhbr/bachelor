@@ -111,8 +111,9 @@ def convert_masks_to_coco(image_dir, mask_dir, output_path, pool_size=None):
 @click.option("-i", '--images', type=str)
 @click.option("-m", '--masks', type=str)
 @click.option("-o", '--output', type=str)
-def main(images, masks, output):
-    convert_masks_to_coco(images, masks, output)
+@click.option("-p", '--pool_size', type=int, default=None)
+def main(images, masks, output, pool_size):
+    convert_masks_to_coco(images, masks, output, pool_size=pool_size)
 
 if __name__ == "__main__":
     main()
