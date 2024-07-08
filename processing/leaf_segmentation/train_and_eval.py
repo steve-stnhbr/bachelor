@@ -15,6 +15,8 @@ from losses import DiceLoss
 import lib.Mask_RCNN.mrcnn.config as mrcnn_config
 import lib.Mask_RCNN.mrcnn.model as modellib
 from data import CustomMRCNNDataset
+from models import build_pspnet
+from keras_segmentation.models.pspnet import pspnet_101
 
 INPUT_SHAPE = (224, 224, 3)
 CLASSES = 25
@@ -127,6 +129,18 @@ def main(batch_size, epochs, data):
     mrcnn_train_data = CustomMRCNNDataset(os.path.join(data, "train", "images"), os.path.join(data, "train", MASK_SUBDIR), batch_size=batch_size, image_size=INPUT_SHAPE[:2], config=mrcnn_config_instance)
     mrcnn_val_data = CustomMRCNNDataset(os.path.join(data, "val", "images"), os.path.join(data, "val", MASK_SUBDIR), batch_size=batch_size, image_size=INPUT_SHAPE[:2], config=mrcnn_config_instance)
     models = [
+        (
+            pspnet_101(CLASSES, INPUT_SHAPE[0], INPUT_SHAPE[1]),
+            "PSPNet",
+            None,
+            None
+        ),
+        (
+            build_pspnet(CLASSES, 24, INPUT_SHAPE),
+            "PSP-Net",
+            None, 
+            None
+        ),
         (
             keras_cv.models.DeepLabV3Plus.from_preset("resnet152", num_classes=CLASSES),
             "DeepLabV3Plus_resnet152",
