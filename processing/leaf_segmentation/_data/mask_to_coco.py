@@ -9,6 +9,8 @@ import click
 import tqdm
 from multiprocessing import Pool, cpu_count
 
+VERBOSE = True
+
 def create_coco_annotation(mask, image_id, category_id, annotation_id):
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     segmentations = []
@@ -33,6 +35,8 @@ def create_coco_annotation(mask, image_id, category_id, annotation_id):
 
 def process_single_image(args):
     img_path, mask_path, image_id, annotation_id_start = args
+    if VERBOSE:
+        print(f"Converting {os.path.basename(img_path)}")
     mask_image = Image.open(mask_path)
     mask = np.array(mask_image)
     
@@ -79,8 +83,10 @@ def convert_masks_to_coco(image_dir, mask_dir, output_path, pool_size=None):
         args = [(img_path, mask_path, image_id + idx, annotation_id_start + idx * 1000) 
                 for idx, (img_path, mask_path) in enumerate(zip(image_paths, mask_paths))]
         
+        print("Starting Pool")
+        
         #results = list(tqdm.tqdm(pool.map(process_single_image, args), total = len(image_paths)))
-        results = pool.map(process_single_image, args)
+        results = pool.imap(process_single_image, args)
         
         for image_info, annots, cats in results:
             images.append(image_info)
