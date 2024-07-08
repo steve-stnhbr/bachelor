@@ -69,7 +69,7 @@ def convert_masks_to_coco(image_dir, mask_dir, output_path):
     annotations = []
     categories = set()
     
-    with Pool(cpu_count()) as pool:
+    with Pool(int(cpu_count() * .8)) as pool:
         image_id = 1
         annotation_id_start = 1
         args = [(img_path, mask_path, image_id + idx, annotation_id_start + idx * 1000) 
