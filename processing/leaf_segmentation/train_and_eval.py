@@ -39,11 +39,11 @@ def execute(model, name=None, lab=False, batch_size=32, epochs=15, data='_data',
 
     opt = keras.optimizers.SGD(learning_rate=0.01, momentum=0.9, nesterov=True)
     model.compile(
-        loss='categorical_crossentropy',
+        loss=DiceLoss(),
         optimizer=opt,
         metrics=[
-            keras.metrics.OneHotMeanIoU(
-                num_classes=CLASSES, sparse_y_pred=False
+            keras.metrics.MeanIoU(
+                num_classes=CLASSES, sparse_y_pred=True
             ),
             keras.metrics.CategoricalAccuracy(),
         ],
