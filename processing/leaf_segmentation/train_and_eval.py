@@ -92,6 +92,7 @@ def gen_dataset(path, mask_subdir, batch_size, lab):
                                                  color_mode='grayscale').map(lambda y: to_categorical(y, num_classes=CLASSES))
     compare_datasets(os.path.join(path, "images"), os.path.join(path, mask_subdir))
     print("Dataset Sizes:", len(x), len(y))
+    print(set.intersection(set(x.file_paths), set(y.file_paths)))
     datagen = tf.data.Dataset.zip((x, y))
     if lab:
         datagen = datagen.map(
