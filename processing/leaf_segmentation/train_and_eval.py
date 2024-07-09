@@ -243,9 +243,13 @@ def get_file_names_from_dataset(dataset):
     """
     Extracts the file names from a dataset loaded with image_dataset_from_directory.
     """
-    file_paths = dataset.file_paths
-    file_names = [tf.strings.split(file_path, os.sep)[-1].numpy().decode('utf-8') for file_path in file_paths]
-    return set(file_names)
+    file_names = set()
+    for batch in dataset:
+        file_paths = batch[0].numpy()
+        for file_path in file_paths:
+            file_name = os.path.basename(file_path.decode('utf-8'))
+            file_names.add(file_name)
+    return file_names
 
 def compare_datasets(dataset1, dataset2):
     """
