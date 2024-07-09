@@ -92,16 +92,15 @@ def gen_dataset(path, mask_subdir, batch_size, lab):
                                                  color_mode='grayscale').map(lambda y: to_categorical(y, num_classes=CLASSES))
     compare_datasets(os.path.join(path, "images"), os.path.join(path, mask_subdir))
     print("Dataset Sizes:", len(x), len(y))
-    print(set.intersection(set(x.file_paths), set(y.file_paths)))
     datagen = tf.data.Dataset.zip((x, y))
     if lab:
         datagen = datagen.map(
             lambda x, y: (transform_wrapper(x, target_size=INPUT_SHAPE[:2], rescale=True, smart_resize=True, lab=True), y)
         , num_parallel_calls=tf.data.AUTOTUNE, deterministic=False)
     datagen = datagen.prefetch(tf.data.AUTOTUNE)
-    for s in datagen.take(5).as_numpy_iterator():
-        print(s[0].shape, tf.reduce_max(s[0]).numpy())
-        print(s[1].shape, tf.reduce_max(s[1]).numpy())
+    for s in datagen.take(1).as_numpy_iterator():
+        print("X", s[0].shape, tf.reduce_max(s[0]).numpy())
+        print("Y", s[1].shape, tf.reduce_max(s[1]).numpy())
     return datagen
 
 @click.command()
