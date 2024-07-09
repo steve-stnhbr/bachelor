@@ -256,8 +256,11 @@ def compare_datasets(dataset1, dataset2):
     """
     Compares the file names of two datasets.
     """
-    dataset1_files = set([os.path.basename(f) for f in os.listdir(dataset1)])
-    dataset2_files = set([os.path.basename(f) for f in os.listdir(dataset2)])
+    dataset1_files = set([os.path.basename(f) for f in os.listdir(dataset1) if f.endswith(('.png', '.jpg', '.jpeg'))])
+    dataset2_files = set([os.path.basename(f) for f in os.listdir(dataset2) if f.endswith(('.png', '.jpg', '.jpeg'))])
+
+    non_image_files1 = set([os.path.basename(f) for f in os.listdir(dataset1) if not f.endswith(('.png', '.jpg', '.jpeg'))])
+    non_image_files2 = set([os.path.basename(f) for f in os.listdir(dataset2) if not f.endswith(('.png', '.jpg', '.jpeg'))])
 
     common_files = dataset1_files.intersection(dataset2_files)
     dataset1_only = dataset1_files - dataset2_files
@@ -268,6 +271,8 @@ def compare_datasets(dataset1, dataset2):
     print(f"Number of common files: {len(common_files)}")
     print(f"Number of files only in dataset1: {len(dataset1_only)}")
     print(f"Number of files only in dataset2: {len(dataset2_only)}")
+    print(f"Non-image files in dataset 1: #{len(non_image_files1)}: {non_image_files1}")
+    print(f"Non-image files in dataset 2: #{len(non_image_files2)}: {non_image_files2}")
 
     if dataset1_only:
         print("\nFiles only in dataset1:")
