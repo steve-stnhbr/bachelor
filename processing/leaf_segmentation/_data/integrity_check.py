@@ -8,12 +8,10 @@ import click
 @click.argument('two')
 @click.option('-s', '--subdirs', type=str, default=None)
 def main(one, two, subdirs):
-    if subdirs is None:
-        subdirs = ['.']
-    else:
-        subdirs = subdirs.split(',')
     folders = [one, two]
-    folders = [os.path.join(f, subdir) for f in folders for subdir in subdirs]
+    if subdirs is not None:
+        subdirs = subdirs.split(',')
+        folders = [os.path.join(f, subdir) for f in folders for subdir in subdirs]
     for folder in folders:
         os.makedirs(folder + "_disc", exist_ok=True)
 
