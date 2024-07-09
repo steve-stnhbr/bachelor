@@ -90,6 +90,7 @@ def gen_dataset(path, mask_subdir, batch_size, lab):
                                                  crop_to_aspect_ratio=True,
                                                  labels=None,
                                                  color_mode='grayscale').map(lambda y: to_categorical(y, num_classes=CLASSES))
+    compare_datasets(x, y)
     datagen = tf.data.Dataset.zip((x, y))
     if lab:
         datagen = datagen.map(
@@ -237,6 +238,46 @@ def transform_wrapper(imgs, target_size=(224,224), smart_resize=False, lab=False
     imgs = tf.py_function(func=p, inp=[imgs], Tout=tf.float32)
     imgs.set_shape((size,) + target_size + (3,))
     return imgs
+
+def get_file_names_from_dataset(dataset):
+    """
+    Extracts the file names from a dataset loaded with image_dataset_from_directory.
+    """
+    file_paths = dataset.file_paths
+    file_names = [tf.strings.split(file_path, os.sep)[-1].numpy().decode('utf-8') for file_path in file_paths]
+    return set(file_names)
+
+def compare_datasets(dataset1, dataset2):
+    """
+    Compares the file names of two datasets.
+    """
+    dataset1_files = get_file_names_from_dataset(dataset1)
+    dataset2_files = get_file_names_from_dataset(dataset2)
+
+    common_files = dataset1_files.intersection(dataset2_files)
+    dataset1_only = dataset1_files - dataset2_files
+    dataset2_only = dataset2_files - dataset1_files
+
+    print(f"Number of files in dataset1: {len(dataset1_files)}")
+    print(f"Number of files in dataset2: {len(dataset2_files)}")
+    print(f"Number of common files: {len(common_files)}")
+    print(f"Number of files only in dataset1: {len(dataset1_only)}")
+    print(f"Number of files only in dataset2: {len(dataset2_only)}")
+
+    if dataset1_only:
+        print("\nFiles only in dataset1:")
+        for file in dataset1_only:
+            print(file)
+    
+    if dataset2_only:
+        print("\nFiles only in dataset2:")
+        for file in dataset2_only:
+            print(file)
+
+    if len(dataset1_only) == 0 and len(dataset2_only) == 0:
+        print("\nThe datasets have the same file names.")
+    else:
+        print("\nThe datasets do not have the same file names.")
 
 if __name__ == '__main__':
     main()
