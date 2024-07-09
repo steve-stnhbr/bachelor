@@ -80,12 +80,12 @@ def execute(model, name=None, lab=False, batch_size=32, epochs=15, data='_data',
 
 def gen_dataset(path, mask_subdir, batch_size, lab):
     x = keras.utils.image_dataset_from_directory(os.path.join(path, "images"),
-                                                 batch_size=batch_size,
+                                                 batch_size=1,
                                                  image_size=INPUT_SHAPE[:2],
                                                  crop_to_aspect_ratio=True,
                                                  labels=None).map(lambda x0: x0 / 255)#.map(lambda x1: tf.expand_dims(x1, 0) if len(x1.shape) == 3 else x1)
     y = keras.utils.image_dataset_from_directory(os.path.join(path, mask_subdir),
-                                                 batch_size=batch_size,
+                                                 batch_size=1,
                                                  image_size=INPUT_SHAPE[:2],
                                                  crop_to_aspect_ratio=True,
                                                  labels=None,
@@ -97,7 +97,7 @@ def gen_dataset(path, mask_subdir, batch_size, lab):
         datagen = datagen.map(
             lambda x, y: (transform_wrapper(x, target_size=INPUT_SHAPE[:2], rescale=True, smart_resize=True, lab=True), y)
         , num_parallel_calls=tf.data.AUTOTUNE, deterministic=False)
-    datagen = datagen.prefetch(tf.data.AUTOTUNE)
+    datagen = datagen.prefetch(tf.data.AUTOTUNE).batch(batch_size=batch_size, drop_remainder=True)
     for s in datagen.take(1).as_numpy_iterator():
         print("X", s[0].shape, tf.reduce_max(s[0]).numpy())
         print("Y", s[1].shape, tf.reduce_max(s[1]).numpy())
