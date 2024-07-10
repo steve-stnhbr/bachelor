@@ -49,7 +49,7 @@ def resize_image(inp,  s, data_format):
                                                 width_factor=s[1],
                                                 data_format=data_format,
                                                 interpolation='bilinear'),
-                                                output_shape=(lambda x: s[0] * tf.shape(inp)[1], s[1] * tf.shape(inp)[2 + 1]) if data_format == 'channels_last' else (s[0] * tf.shape(inp)[2], s[1] * tf.shape(inp)[3 + 1]))(inp)
+                                                output_shape=lambda: (s[0] * tf.shape(inp)[1], s[1] * tf.shape(inp)[2 + 1]) if data_format == 'channels_last' else (s[0] * tf.shape(inp)[2], s[1] * tf.shape(inp)[3 + 1]))(inp)
 
     except Exception as e:
         # if keras is old, then rely on the tf function
