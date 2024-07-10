@@ -37,8 +37,8 @@ def pool_block(feats, pool_factor):
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
 
-    x = resize_image(x, strides, data_format=IMAGE_ORDERING)
-    #x = Resizing(strides[0], strides[1], data_format=IMAGE_ORDERING)(x)
+    #x = resize_image(x, strides, data_format=IMAGE_ORDERING)
+    x = Resizing(x.shape[0] * strides[0],x.shape[1] * strides[1], data_format=IMAGE_ORDERING)(x)
 
     return x
 
@@ -62,7 +62,7 @@ def _pspnet(n_classes, encoder,  input_height=384, input_width=576, channels=3):
         pool_outs.append(pooled)
 
     print([pool.shape for pool in pool_outs])
-    
+
     o = Concatenate(axis=MERGE_AXIS)(pool_outs)
 
     o = Conv2D(512, (1, 1), data_format=IMAGE_ORDERING, use_bias=False , name="seg_feats" )(o)
