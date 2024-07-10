@@ -71,7 +71,8 @@ def _pspnet(n_classes, encoder,  input_height=384, input_width=576, channels=3):
 
     o = Conv2D(n_classes, (3, 3), data_format=IMAGE_ORDERING,
                padding='same')(o)
-    o = resize_image(o, (8, 8), data_format=IMAGE_ORDERING)
+    # o = resize_image(o, (8, 8), data_format=IMAGE_ORDERING)
+    o = ResizeImagesByFactor(8, 8, data_format=IMAGE_ORDERING)(o)
 
     model = get_segmentation_model(img_input, o)
     return model
