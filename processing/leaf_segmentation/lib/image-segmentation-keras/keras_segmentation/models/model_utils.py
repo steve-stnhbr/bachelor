@@ -48,7 +48,7 @@ def resize_image(inp,  s, data_format):
                                                 height_factor=s[0],
                                                 width_factor=s[1],
                                                 data_format=data_format,
-                                                output_shape=(s[0], s[1], )
+                                                output_shape=(s[0], s[1]),
                                                 interpolation='bilinear'))(inp)
 
     except Exception as e:
