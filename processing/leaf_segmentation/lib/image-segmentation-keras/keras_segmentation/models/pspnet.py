@@ -37,8 +37,8 @@ def pool_block(feats, pool_factor):
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
 
-    #x = resize_image(x, strides, data_format=IMAGE_ORDERING)
-    x = Resizing(strides[0], strides[1], data_format=IMAGE_ORDERING)(x)
+    x = resize_image(x, strides, data_format=IMAGE_ORDERING)
+    #x = Resizing(strides[0], strides[1], data_format=IMAGE_ORDERING)(x)
 
     return x
 
