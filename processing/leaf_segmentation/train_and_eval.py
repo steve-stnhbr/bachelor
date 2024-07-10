@@ -17,6 +17,8 @@ import lib.Mask_RCNN.mrcnn.model as modellib
 from data import CustomMRCNNDataset
 #from models import build_pspnet
 from keras_segmentation.models.pspnet import pspnet_101
+from keras_segmentation.models.segnet import vgg_segnet
+from keras_segmentation.models.fcn import fcn_32_mobilenet
 
 INPUT_SHAPE = (473, 473, 3)
 CLASSES = 25
@@ -37,13 +39,15 @@ def execute(model, name=None, lab=False, batch_size=32, epochs=15, data='_data',
 
     model.build(keras.Input((batch_size, ) + INPUT_SHAPE))
 
-    opt = keras.optimizers.SGD(learning_rate=0.01, momentum=0.9, nesterov=True)
+#    opt = keras.optimizers.SGD(learning_rate=0.01, momentum=0.9, nesterov=True)
+    opt = keras.optimizers.Adam(learning_rate=0.01)
     model.compile(
-        loss=DiceLoss(),
+        #loss=DiceLoss(),
+        loss='categorical_crossentropy',
         optimizer=opt,
         metrics=[
-            keras.metrics.MeanIoU(
-                num_classes=CLASSES, sparse_y_pred=True
+            keras.metrics.OneHotMeanIoU(
+                num_classes=CLASSES, sparse_y_pred=False
             ),
             keras.metrics.CategoricalAccuracy(),
         ],
@@ -62,9 +66,9 @@ def execute(model, name=None, lab=False, batch_size=32, epochs=15, data='_data',
 
     callbacks = [
         #keras.callbacks.EarlyStopping(patience=5),
-        keras.callbacks.ModelCheckpoint(filepath='checkpoints/model##name##.{epoch:02d}.keras'.replace("##name##", name)),
+        keras.callbacks.ModelCheckpoint(filepath='checkpoints/model_##name##.{epoch:02d}_##data##.keras'.replace("##name##", name).replace('##data##', os.path.basename(data))),
         keras.callbacks.TensorBoard(log_dir='./logs'),
-        keras.callbacks.ModelCheckpoint(filepath='out/best##name##.keras'.replace('##name##', name), save_best_only=True, mode='max', monitor='val_accuracy')
+        keras.callbacks.ModelCheckpoint(filepath='out/best_##name##_##data##.keras'.replace('##name##', name).replace('##data##', os.path.basename(data)), save_best_only=True, mode='max', monitor='val_one_hot_mean_io_u:')
     ]
 
     model.summary()
@@ -131,24 +135,36 @@ def main(batch_size, epochs, data):
     mrcnn_train_data = CustomMRCNNDataset(os.path.join(data, "train", "images"), os.path.join(data, "train", MASK_SUBDIR), batch_size=batch_size, image_size=INPUT_SHAPE[:2], config=mrcnn_config_instance)
     mrcnn_val_data = CustomMRCNNDataset(os.path.join(data, "val", "images"), os.path.join(data, "val", MASK_SUBDIR), batch_size=batch_size, image_size=INPUT_SHAPE[:2], config=mrcnn_config_instance)
     models = [
+        #(
+        #    fcn_32_mobilenet(CLASSES, INPUT_SHAPE[0], INPUT_SHAPE[1]),
+        #    "FCN32 Mobilenet",
+        #    None,
+        #    None
+        #),
+        #(
+        #    vgg_segnet(CLASSES, INPUT_SHAPE[0], INPUT_SHAPE[1]),
+        #    "VGG-Segnet",
+        #    None,
+        #    None
+        #),
         (
             pspnet_101(CLASSES, INPUT_SHAPE[0], INPUT_SHAPE[1]),
             "PSPNet",
             None,
             None
         ),
-        (
-            keras_cv.models.DeepLabV3Plus.from_preset("resnet152", num_classes=CLASSES),
-            "DeepLabV3Plus_resnet152",
-            None,
-            None
-        ),
-        (
-            modellib.MaskRCNN(mode="training", model_dir=os.getcwd(), config=mrcnn_config_instance).keras_model,
-            "Mask R-CNN",
-            mrcnn_train_data,
-            mrcnn_val_data
-        ),
+        #(
+        #    keras_cv.models.DeepLabV3Plus.from_preset("resnet152", num_classes=CLASSES),
+        #    "DeepLabV3Plus_resnet152",
+        #    None,
+        #    None
+        #),
+        #(
+        #    modellib.MaskRCNN(mode="training", model_dir=os.getcwd(), config=mrcnn_config_instance).keras_model,
+        #    "Mask R-CNN",
+        #    mrcnn_train_data,
+        #    mrcnn_val_data
+        #),
         # (
         #     seg_net(INPUT_SHAPE, CLASSES),
         #     "SegNet"
