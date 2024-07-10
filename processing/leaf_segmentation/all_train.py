@@ -101,6 +101,8 @@ def train(model,
         else:
             model = model_from_name[model](n_classes)
 
+    model.summary()
+
     n_classes = model.n_classes
     input_height = model.input_height
     input_width = model.input_width
