@@ -224,7 +224,8 @@ def train(model,
 @click.option('-n', '--no-validate', is_flag=True)
 @click.option('-c', '--classes', default=25)
 @click.option('-v', '--verify', is_flag=True)
-def main(model, input, augment, no_validate, classes, verify):
+@click.option('-e', '--epochs', type=int)
+def main(model, input, augment, no_validate, classes, verify, epochs):
     train_images = os.path.join(input, "train", "images")
     train_anno = os.path.join(input, "train", "leaf_instances")
 
@@ -245,7 +246,8 @@ def main(model, input, augment, no_validate, classes, verify):
           val_images=val_images, 
           val_annotations=val_anno, 
           verify_dataset=verify,
-          #callbacks=callbacks, 
+          callbacks=callbacks, 
+          epochs=epochs,
           do_augment=augment,
           n_classes=classes)
     
