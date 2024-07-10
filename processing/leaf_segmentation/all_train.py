@@ -216,6 +216,8 @@ def train(model,
                   epochs=epochs, callbacks=callbacks, 
                   initial_epoch=initial_epoch)
         
+    return model
+        
 
 @click.command()
 @click.option('-m', '--model', type=str)
@@ -227,7 +229,8 @@ def train(model,
 @click.option('-e', '--epochs', type=int, default=25)
 @click.option('-b', '--batch-size', type=int, default=8)
 @click.option('-s', '--steps', type=int, default=512)
-def main(model, input, augment, no_validate, classes, verify, epochs, batch_size, steps):
+@click.option('-z', '--zero-ignore', is_flag=True)
+def main(model, input, augment, no_validate, classes, verify, epochs, batch_size, steps, zero_ignore):
     train_images = os.path.join(input, "train", "images")
     train_anno = os.path.join(input, "train", "leaf_instances")
 
@@ -236,12 +239,12 @@ def main(model, input, augment, no_validate, classes, verify, epochs, batch_size
 
     callbacks = [
         #keras.callbacks.EarlyStopping(patience=5),
-        keras.callbacks.ModelCheckpoint(filepath='checkpoints/model_##name##.{epoch:02d}_##data##.keras'.replace("##name##", model).replace('##data##', os.path.basename(input))),
+        keras.callbacks.ModelCheckpoint(filepath='checkpoints/model_##name##.{epoch:02d}_##data##.keras'.replace("##name##", model).replace('##data##', os.path.basename(os.path.normpath(input)))),
         keras.callbacks.TensorBoard(log_dir='./logs'),
-        keras.callbacks.ModelCheckpoint(filepath='out/best_##name##_##data##.keras'.replace('##name##', model).replace('##data##', os.path.basename(input)), save_best_only=True, mode='max', monitor='val_mean_io_u')
+        keras.callbacks.ModelCheckpoint(filepath='out/best_##name##_##data##.keras'.replace('##name##', model).replace('##data##', os.path.basename(os.path.normpath(input))), save_best_only=True, mode='max', monitor='val_mean_io_u')
     ]
 
-    train(model, 
+    trained = train(model, 
           train_images, 
           train_anno,
           validate=not no_validate,
@@ -253,7 +256,10 @@ def main(model, input, augment, no_validate, classes, verify, epochs, batch_size
           do_augment=augment,
           n_classes=classes,
           batch_size=batch_size,
-          steps_per_epoch=steps)
+          steps_per_epoch=steps,
+          ignore_zero_class=zero_ignore)
+    
+    trained.save('out/best_##name##_##data##.keras'.replace('##name##', model).replace('##data##', os.path.basename(os.path.normpath(input))))
     
 if __name__ == '__main__':
     main()
