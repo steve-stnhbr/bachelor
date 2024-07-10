@@ -149,11 +149,11 @@ class ResizeImagesByFactor(Layer):
 
     def call(self, inputs):
         if self.data_format == "channels_first":
-            input_shape = K.shape(inputs)
+            input_shape = inputs.shape
             original_height = K.cast(input_shape[2], tf.float32)
             original_width = K.cast(input_shape[3], tf.float32)
         elif self.data_format == "channels_last":
-            input_shape = K.shape(inputs)
+            input_shape = inputs.shape
             original_height = K.cast(input_shape[1], tf.float32)
             original_width = K.cast(input_shape[2], tf.float32)
         else:
