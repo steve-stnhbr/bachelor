@@ -321,7 +321,7 @@ def image_segmentation_generator(images_path, segs_path, batch_size,
                 oth = []
                 for i, image in enumerate(ims):
                     oth_im = get_image_array(image, input_width,
-                                             input_height, ordering=IMAGE_ORDERING)
+                                             input_height, ordering=IMAGE_ORDERING, no_reshape=True)
 
                     if preprocessing is not None:
                         if isinstance(preprocessing, Sequence):
@@ -335,7 +335,7 @@ def image_segmentation_generator(images_path, segs_path, batch_size,
 
             if not ignore_segs:
                 Y.append(get_segmentation_array(
-                    seg, n_classes, output_width, output_height))
+                    seg, n_classes, output_width, output_height, no_reshape=True))
 
         if ignore_segs:
             yield np.array(X)
