@@ -3,6 +3,7 @@ import keras
 from keras.models import *
 from keras.layers import *
 import keras.backend as K
+import tensorflow as tf
 
 from .config import IMAGE_ORDERING
 from .model_utils import get_segmentation_model, resize_image
@@ -150,17 +151,17 @@ class ResizeImagesByFactor(Layer):
     def call(self, inputs):
         if self.data_format == "channels_first":
             input_shape = inputs.shape
-            original_height = K.cast(input_shape[2], tf.float32)
-            original_width = K.cast(input_shape[3], tf.float32)
+            original_height = tf.cast(input_shape[2], tf.float32)
+            original_width = tf.cast(input_shape[3], tf.float32)
         elif self.data_format == "channels_last":
             input_shape = inputs.shape
-            original_height = K.cast(input_shape[1], tf.float32)
-            original_width = K.cast(input_shape[2], tf.float32)
+            original_height = tf.cast(input_shape[1], tf.float32)
+            original_width = tf.cast(input_shape[2], tf.float32)
         else:
             raise ValueError(f"Invalid `data_format` argument: {self.data_format}")
 
-        new_height = K.cast(original_height * self.height_factor, tf.int32)
-        new_width = K.cast(original_width * self.width_factor, tf.int32)
+        new_height = tf.cast(original_height * self.height_factor, tf.int32)
+        new_width = tf.cast(original_width * self.width_factor, tf.int32)
 
         resized = tf.image.resize(inputs, [new_height, new_width], method=self.interpolation)
 
