@@ -90,7 +90,7 @@ def train(model,
                              # cv2.IMREAD_GRAYSCALE = 0,
                              # cv2.IMREAD_UNCHANGED = -1 (4 channels like RGBA)
          ):
-    from .models.all_models import model_from_name
+    from keras_segmentation.models.all_models import model_from_name
     # check if user gives model name instead of the model object
     if isinstance(model, six.string_types):
         # create the model from the name
