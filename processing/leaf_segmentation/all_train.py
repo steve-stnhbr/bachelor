@@ -167,6 +167,8 @@ def train(model,
                                                    n_classes)
             assert verified
 
+    print(input_width, input_height, output_width, output_height)
+
     train_gen = image_segmentation_generator(
         train_images, train_annotations,  batch_size,  n_classes,
         input_height, input_width, output_height, output_width,
@@ -216,7 +218,8 @@ def train(model,
 @click.option('-a', '--augment', is_flag=True)
 @click.option('-n', '--no-validate', is_flag=True)
 @click.option('-c', '--classes', default=25)
-def main(model, input, augment, no_validate, classes):
+@click.option('-v', '--verify', is_flag=True)
+def main(model, input, augment, no_validate, classes, verify):
     train_images = os.path.join(input, "train", "images")
     train_anno = os.path.join(input, "train", "leaf_instances")
 
@@ -236,6 +239,7 @@ def main(model, input, augment, no_validate, classes):
           validate=not no_validate,
           val_images=val_images, 
           val_annotations=val_anno, 
+          verify_dataset=verify,
           #callbacks=callbacks, 
           do_augment=augment,
           n_classes=classes)
