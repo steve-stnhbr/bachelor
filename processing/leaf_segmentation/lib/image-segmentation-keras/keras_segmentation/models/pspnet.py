@@ -38,7 +38,7 @@ def pool_block(feats, pool_factor):
     x = Activation('relu')(x)
 
     #x = resize_image(x, strides, data_format=IMAGE_ORDERING)
-    x = Resizing(x.shape[0] * strides[0],x.shape[1] * strides[1], data_format=IMAGE_ORDERING)(x)
+    x = ResizeImagesByFactor(strides[0], strides[1], data_format=IMAGE_ORDERING)(x)
 
     return x
 
@@ -133,6 +133,48 @@ def pspnet_101(n_classes,  input_height=473, input_width=473, channels=3):
 #                    input_height=input_height, input_width=input_width)
 # 	model.model_name = "mobilenet_pspnet"
 # 	return model
+
+
+class ResizeImagesByFactor(Layer):
+    def __init__(self, height_factor, width_factor, data_format="channels_last", interpolation="bilinear", **kwargs):
+        super(ResizeImagesByFactor, self).__init__(**kwargs)
+        self.height_factor = height_factor
+        self.width_factor = width_factor
+        self.data_format = data_format
+        self.interpolation = interpolation
+
+    def build(self, input_shape):
+        super(ResizeImagesByFactor, self).build(input_shape)
+
+    def call(self, inputs):
+        if self.data_format == "channels_first":
+            input_shape = K.shape(inputs)
+            original_height = K.cast(input_shape[2], tf.float32)
+            original_width = K.cast(input_shape[3], tf.float32)
+        elif self.data_format == "channels_last":
+            input_shape = K.shape(inputs)
+            original_height = K.cast(input_shape[1], tf.float32)
+            original_width = K.cast(input_shape[2], tf.float32)
+        else:
+            raise ValueError(f"Invalid `data_format` argument: {self.data_format}")
+
+        new_height = K.cast(original_height * self.height_factor, tf.int32)
+        new_width = K.cast(original_width * self.width_factor, tf.int32)
+
+        resized = tf.image.resize(inputs, [new_height, new_width], method=self.interpolation)
+
+        if self.data_format == "channels_first":
+            resized = Permute((0, 2, 3, 1))(resized)
+
+        return resized
+
+    def compute_output_shape(self, input_shape):
+        if self.data_format == "channels_first":
+            return (input_shape[0], input_shape[1], None, None)
+        elif self.data_format == "channels_last":
+            return (input_shape[0], None, None, input_shape[3])
+        else:
+            raise ValueError(f"Invalid `data_format` argument: {self.data_format}")
 
 
 if __name__ == '__main__':
