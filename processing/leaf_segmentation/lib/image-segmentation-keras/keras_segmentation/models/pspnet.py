@@ -61,6 +61,8 @@ def _pspnet(n_classes, encoder,  input_height=384, input_width=576, channels=3):
         pooled = pool_block(o, p)
         pool_outs.append(pooled)
 
+    print([pool.shape for pool in pool_outs])
+    
     o = Concatenate(axis=MERGE_AXIS)(pool_outs)
 
     o = Conv2D(512, (1, 1), data_format=IMAGE_ORDERING, use_bias=False , name="seg_feats" )(o)
