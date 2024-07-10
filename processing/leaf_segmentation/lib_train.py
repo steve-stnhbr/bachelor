@@ -26,7 +26,6 @@ def main(model, input, augment, no_validate, classes):
     train(model, 
           train_images, 
           train_anno,
-          do_augment=augment,
           validate=not no_validate,
           val_images=val_images, 
           val_annotations=val_anno, 
