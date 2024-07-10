@@ -74,6 +74,7 @@ def _pspnet(n_classes, encoder,  input_height=384, input_width=576, channels=3):
                padding='same')(o)
     # o = resize_image(o, (8, 8), data_format=IMAGE_ORDERING)
     o = ResizeImagesByFactor(8, 8, data_format=IMAGE_ORDERING)(o)
+    o = ResizeImagesByFactor(4, 4, data_format=IMAGE_ORDERING)(o)
 
     model = get_segmentation_model(img_input, o)
     return model
