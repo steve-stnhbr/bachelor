@@ -109,6 +109,9 @@ def train(model,
     output_height = model.output_height
     output_width = model.output_width
 
+    output_height = input_height
+    output_width = input_width
+
     if validate:
         assert val_images is not None
         assert val_annotations is not None
