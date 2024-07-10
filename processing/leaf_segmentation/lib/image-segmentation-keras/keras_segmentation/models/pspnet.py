@@ -20,11 +20,11 @@ elif IMAGE_ORDERING == 'channels_last':
 def pool_block(feats, pool_factor):
 
     if IMAGE_ORDERING == 'channels_first':
-        h = K.int_shape(feats)[2]
-        w = K.int_shape(feats)[3]
+        h = feats.shape[2]
+        w = feats.shape[3]
     elif IMAGE_ORDERING == 'channels_last':
-        h = K.int_shape(feats)[1]
-        w = K.int_shape(feats)[2]
+        h = feats.shape[1]
+        w = feats.shape[2]
 
     pool_size = strides = [
         int(np.round(float(h) / pool_factor)),
