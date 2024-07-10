@@ -226,7 +226,8 @@ def train(model,
 @click.option('-v', '--verify', is_flag=True)
 @click.option('-e', '--epochs', type=int, default=25)
 @click.option('-b', '--batch-size', type=int, default=8)
-def main(model, input, augment, no_validate, classes, verify, epochs, batch_size):
+@click.option('-s', '--steps', type=int, default=512)
+def main(model, input, augment, no_validate, classes, verify, epochs, batch_size, steps):
     train_images = os.path.join(input, "train", "images")
     train_anno = os.path.join(input, "train", "leaf_instances")
 
@@ -251,7 +252,8 @@ def main(model, input, augment, no_validate, classes, verify, epochs, batch_size
           epochs=epochs,
           do_augment=augment,
           n_classes=classes,
-          batch_size=batch_size)
+          batch_size=batch_size,
+          steps_per_epoch=steps)
     
 if __name__ == '__main__':
     main()
