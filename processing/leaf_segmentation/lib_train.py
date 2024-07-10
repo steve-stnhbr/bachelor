@@ -29,7 +29,7 @@ def main(model, input, augment, no_validate, classes):
           validate=not no_validate,
           val_images=val_images, 
           val_annotations=val_anno, 
-          callbacks=callbacks, 
+          #callbacks=callbacks, 
           do_augment=augment,
           n_classes=classes)
 
