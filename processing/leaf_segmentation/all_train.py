@@ -46,12 +46,12 @@ def find_latest_checkpoint(checkpoints_path, fail_safe=True):
 
 def masked_categorical_crossentropy(gt, pr):
     from keras.losses import categorical_crossentropy
-    # Assuming gt is [batch_size, height, width, num_classes]
-    # Assuming pr is [batch_size, height, width, num_classes]
-    mask = tf.not_equal(gt, 0)  # Assuming 0 is the background or mask value
+
+    print(gt.shape, pr.shape)
     
-    # Convert mask to float
-    mask = tf.cast(mask, tf.float32)
+    # Create a mask where the gt labels are not equal to the background (assuming 0 is the background class)
+    mask = tf.reduce_max(gt, axis=-1)  # Reduce max along the last axis to get [batch_size, height, width]
+    mask = tf.cast(tf.not_equal(mask, 0), tf.float32)  # Convert mask to float and boolean not equal to 0
     
     # Compute the categorical crossentropy
     loss = categorical_crossentropy(gt, pr)
