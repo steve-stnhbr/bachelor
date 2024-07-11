@@ -220,7 +220,7 @@ def train(model,
     return model
 
 def handle_model(train_images, train_anno, val_images, val_anno, model, augment, no_validate, classes, verify, epochs, batch_size, steps, zero_ignore):
-callbacks = [
+    callbacks = [
         #keras.callbacks.EarlyStopping(patience=5),
         keras.callbacks.ModelCheckpoint(filepath='checkpoints/model_##name##.{epoch:02d}_##data##.keras'.replace("##name##", model).replace('##data##', os.path.basename(os.path.normpath(input)))),
         keras.callbacks.TensorBoard(log_dir='./logs'),
