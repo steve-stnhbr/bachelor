@@ -271,19 +271,22 @@ def main(model, input, augment, no_validate, classes, verify, epochs, batch_size
     else:
         raise Error("Please provide model strings")
 
-    if type(model) is list:
+    if type(model) is not list:
+        model = [model]
+    for m in model:
         handle_model(train_images=train_images,
-                 train_anno=train_anno,
-                 val_images=val_images,
-                 val_anno=val_anno,
-                 augment=augment,
-                 no_validate=no_validate,
-                 classes=classes,
-                 verify=verify,
-                 epochs=epochs,
-                 batch_size=batch_size,
-                 steps=steps,
-                 zero_ignore=zero_ignore)
+                train_anno=train_anno,
+                val_images=val_images,
+                val_anno=val_anno,
+                model=m,
+                augment=augment,
+                no_validate=no_validate,
+                classes=classes,
+                verify=verify,
+                epochs=epochs,
+                batch_size=batch_size,
+                steps=steps,
+                zero_ignore=zero_ignore)
     
 if __name__ == '__main__':
     main()
