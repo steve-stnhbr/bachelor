@@ -3,6 +3,7 @@ import os
 
 from keras_segmentation.data_utils.data_loader import image_segmentation_generator, \
     verify_segmentation_dataset
+import keras_segmentation.models.all_models as all_models
 import six
 from keras.callbacks import Callback
 from keras.callbacks import ModelCheckpoint
@@ -217,27 +218,9 @@ def train(model,
                   initial_epoch=initial_epoch)
         
     return model
-        
 
-@click.command()
-@click.option('-m', '--model', type=str)
-@click.option('-i', '--input', type=str)
-@click.option('-a', '--augment', is_flag=True)
-@click.option('-n', '--no-validate', is_flag=True)
-@click.option('-c', '--classes', default=25)
-@click.option('-v', '--verify', is_flag=True)
-@click.option('-e', '--epochs', type=int, default=25)
-@click.option('-b', '--batch-size', type=int, default=8)
-@click.option('-s', '--steps', type=int, default=512)
-@click.option('-z', '--zero-ignore', is_flag=True)
-def main(model, input, augment, no_validate, classes, verify, epochs, batch_size, steps, zero_ignore):
-    train_images = os.path.join(input, "train", "images")
-    train_anno = os.path.join(input, "train", "leaf_instances")
-
-    val_images = os.path.join(input, "val", "images")
-    val_anno = os.path.join(input, "val", "leaf_instances")
-
-    callbacks = [
+def handle_model(train_images, train_anno, val_images, val_anno, model, augment, no_validate, classes, verify, epochs, batch_size, steps, zero_ignore):
+callbacks = [
         #keras.callbacks.EarlyStopping(patience=5),
         keras.callbacks.ModelCheckpoint(filepath='checkpoints/model_##name##.{epoch:02d}_##data##.keras'.replace("##name##", model).replace('##data##', os.path.basename(os.path.normpath(input)))),
         keras.callbacks.TensorBoard(log_dir='./logs'),
@@ -260,6 +243,47 @@ def main(model, input, augment, no_validate, classes, verify, epochs, batch_size
           ignore_zero_class=zero_ignore)
     
     trained.save('out/best_##name##_##data##.keras'.replace('##name##', model).replace('##data##', os.path.basename(os.path.normpath(input))))
+        
+
+@click.command()
+@click.option('-m', '--model', type=str)
+@click.option('-i', '--input', type=str)
+@click.option('-a', '--augment', is_flag=True)
+@click.option('-n', '--no-validate', is_flag=True)
+@click.option('-c', '--classes', default=25)
+@click.option('-v', '--verify', is_flag=True)
+@click.option('-e', '--epochs', type=int, default=25)
+@click.option('-b', '--batch-size', type=int, default=8)
+@click.option('-s', '--steps', type=int, default=512)
+@click.option('-z', '--zero-ignore', is_flag=True)
+def main(model, input, augment, no_validate, classes, verify, epochs, batch_size, steps, zero_ignore):
+    train_images = os.path.join(input, "train", "images")
+    train_anno = os.path.join(input, "train", "leaf_instances")
+
+    val_images = os.path.join(input, "val", "images")
+    val_anno = os.path.join(input, "val", "leaf_instances")
+
+    if model is None:
+        model = all_models.model_from_name.keys()
+    elif type(model) is str:
+        if ',' in model:
+            model = model.split(',')
+    else:
+        raise Error("Please provide model strings")
+
+    if type(model) is list:
+        handle_model(train_images=train_images,
+                 train_anno=train_anno,
+                 val_images=val_images,
+                 val_anno=val_anno,
+                 augment=augment,
+                 no_validate=no_validate,
+                 classes=classes,
+                 verify=verify,
+                 epochs=epochs,
+                 batch_size=batch_size,
+                 steps=steps,
+                 zero_ignore=zero_ignore)
     
 if __name__ == '__main__':
     main()
