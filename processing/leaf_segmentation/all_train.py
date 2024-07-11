@@ -232,7 +232,7 @@ def handle_model(train_images, train_anno, val_images, val_anno, input, model, a
     callbacks = [
         #keras.callbacks.EarlyStopping(patience=5),
         keras.callbacks.ModelCheckpoint(filepath='checkpoints/model_##name##.{epoch:02d}_##data##.keras'.replace("##name##", model).replace('##data##', os.path.basename(os.path.normpath(input)))),
-        keras.callbacks.ModelCheckpoint(filepath='checkpoints/model_##name##.{epoch:02d}_##data##.ckpt'.replace("##name##", model).replace('##data##', os.path.basename(os.path.normpath(input)))),
+        #keras.callbacks.ModelCheckpoint(filepath='checkpoints/model_##name##.{epoch:02d}_##data##.ckpt'.replace("##name##", model).replace('##data##', os.path.basename(os.path.normpath(input)))),
         keras.callbacks.TensorBoard(log_dir='./logs'),
         keras.callbacks.ModelCheckpoint(filepath='out/best_##name##_##data##.keras'.replace('##name##', model).replace('##data##', os.path.basename(os.path.normpath(input))), save_best_only=True, mode='max', monitor='val_mean_io_u')
     ]
