@@ -264,7 +264,7 @@ def main(model, input, augment, no_validate, classes, verify, epochs, batch_size
     val_anno = os.path.join(input, "val", "leaf_instances")
 
     if model is None:
-        model = all_models.model_from_name.keys()
+        model = list(all_models.model_from_name.keys())
     elif type(model) is str:
         if ',' in model:
             model = model.split(',')
