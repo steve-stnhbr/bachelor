@@ -46,8 +46,6 @@ def find_latest_checkpoint(checkpoints_path, fail_safe=True):
 
 def masked_categorical_crossentropy(gt, pr):
     from keras.losses import categorical_crossentropy
-
-    print(gt.shape, pr.shape)
     
     # Create a mask where the gt labels are not equal to the background (assuming 0 is the background class)
     mask = tf.reduce_max(gt, axis=-1)  # Reduce max along the last axis to get [batch_size, height, width]
@@ -234,6 +232,7 @@ def handle_model(train_images, train_anno, val_images, val_anno, input, model, a
     callbacks = [
         #keras.callbacks.EarlyStopping(patience=5),
         keras.callbacks.ModelCheckpoint(filepath='checkpoints/model_##name##.{epoch:02d}_##data##.keras'.replace("##name##", model).replace('##data##', os.path.basename(os.path.normpath(input)))),
+        keras.callbacks.ModelCheckpoint(filepath='checkpoints/model_##name##.{epoch:02d}_##data##.ckpt'.replace("##name##", model).replace('##data##', os.path.basename(os.path.normpath(input)))),
         keras.callbacks.TensorBoard(log_dir='./logs'),
         keras.callbacks.ModelCheckpoint(filepath='out/best_##name##_##data##.keras'.replace('##name##', model).replace('##data##', os.path.basename(os.path.normpath(input))), save_best_only=True, mode='max', monitor='val_mean_io_u')
     ]
