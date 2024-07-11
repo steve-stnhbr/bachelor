@@ -46,9 +46,20 @@ def find_latest_checkpoint(checkpoints_path, fail_safe=True):
 
 def masked_categorical_crossentropy(gt, pr):
     from keras.losses import categorical_crossentropy
-    mask = 1 - gt[:, :, 0]
-    return categorical_crossentropy(gt, pr) * mask
-
+    # Assuming gt is [batch_size, height, width, num_classes]
+    # Assuming pr is [batch_size, height, width, num_classes]
+    mask = tf.not_equal(gt, 0)  # Assuming 0 is the background or mask value
+    
+    # Convert mask to float
+    mask = tf.cast(mask, tf.float32)
+    
+    # Compute the categorical crossentropy
+    loss = categorical_crossentropy(gt, pr)
+    
+    # Apply mask to the loss
+    loss = loss * mask
+    
+    return tf.reduce_mean(loss)
 
 class CheckpointsCallback(Callback):
     def __init__(self, checkpoints_path):
