@@ -10,7 +10,7 @@ BASE_WEIGHT_PATH = ('https://github.com/fchollet/deep-learning-models/'
 
 
 def relu6(x):
-    return K.relu(x, max_value=6)
+    return ReLU(max_value=6)
 
 
 def _conv_block(inputs, filters, alpha, kernel=(3, 3), strides=(1, 1)):
@@ -25,7 +25,8 @@ def _conv_block(inputs, filters, alpha, kernel=(3, 3), strides=(1, 1)):
                strides=strides,
                name='conv1')(x)
     x = BatchNormalization(axis=channel_axis, name='conv1_bn')(x)
-    return Activation(relu6, name='conv1_relu')(x)
+    return ReLU(max_value=6, name='conv1_relu')(x)
+    #return Activation(relu6, name='conv1_relu')(x)
 
 
 def _depthwise_conv_block(inputs, pointwise_conv_filters, alpha,
@@ -44,7 +45,8 @@ def _depthwise_conv_block(inputs, pointwise_conv_filters, alpha,
                         name='conv_dw_%d' % block_id)(x)
     x = BatchNormalization(
         axis=channel_axis, name='conv_dw_%d_bn' % block_id)(x)
-    x = Activation(relu6, name='conv_dw_%d_relu' % block_id)(x)
+    x = ReLU(max_value=6, name='conv_dw_%d_relu' % block_id)(x)
+    #x = Activation(relu6, name='conv_dw_%d_relu' % block_id)(x)
 
     x = Conv2D(pointwise_conv_filters, (1, 1), data_format=IMAGE_ORDERING,
                padding='same',
@@ -53,7 +55,8 @@ def _depthwise_conv_block(inputs, pointwise_conv_filters, alpha,
                name='conv_pw_%d' % block_id)(x)
     x = BatchNormalization(axis=channel_axis,
                            name='conv_pw_%d_bn' % block_id)(x)
-    return Activation(relu6, name='conv_pw_%d_relu' % block_id)(x)
+    return ReLU(max_value=6, name='conv_pw_%d_relu' % block_id)(x)
+    #return Activation(relu6, name='conv_pw_%d_relu' % block_id)(x)
 
 
 def get_mobilenet_encoder(input_height=224, input_width=224,
