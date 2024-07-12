@@ -53,7 +53,4 @@ val_dataset = val_dataset.batch(config.task.validation_data.global_batch_size)
 model_builder = factory.build_maskrcnn
 model = model_builder(config.task.model)
 
-model_builder = factory.build_maskrcnn
-model = model_builder(config.task.model)
-
 model.fit(train_dataset)
