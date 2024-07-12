@@ -46,7 +46,7 @@ class LeavesDataset(utils.Dataset):
 
         images_dir = os.path.join(self.files_dir, 'images')
 
-        for file in images_dir:
+        for file in os.listdir(images_dir):
             file_path = os.path.join(images_dir, file)
 
             self.add_image(
