@@ -2344,12 +2344,14 @@ class MaskRCNN():
             if name in self.keras_model.metrics_names:
                 continue
             if name == 'reg_loss':
-                self.keras_model.add_metric(
-                    tf.add_n(reg_losses), name=name, aggregation='mean')
+                metric_fn = lambda x: reg_loss
             else:
                 layer = self.keras_model.get_layer(name)
-                self.keras_model.add_metric(
-                    layer.output, name=name, aggregation='mean')
+                metric_fn = lambda x, name=name: self.keras_model.get_layer(name).output
+            
+            metric = keras.metrics.Mean(name=name)
+            metric.update_state = lambda x, y=None, sample_weight=None: metric.update_state(metric_fn(x))
+            self.keras_model.add_metric(metric)
 
     def set_trainable(self, layer_regex, keras_model=None, indent=0, verbose=1):
         """Sets model layers as trainable if their names match
