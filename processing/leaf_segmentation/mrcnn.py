@@ -69,6 +69,7 @@ class LeavesDataset(utils.Dataset):
         # Read mask files from .png image
         mask = skimage.io.imread(os.path.join(mask_dir, info['id']), as_gray=True)
         mask = to_categorical(mask)
+        print(mask.shape, mask.dtype)
         # Return mask, and array of class IDs of each instance. Since we have
         # one class ID, we return an array of ones
         return mask, np.ones([mask.shape[-1]], dtype=np.int32)
