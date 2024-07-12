@@ -1032,7 +1032,7 @@ def rpn_class_loss_graph(rpn_match, rpn_class_logits):
     # Squeeze last dim to simplify
     rpn_match = tf.squeeze(rpn_match, -1)
     # Get anchor classes. Convert the -1/+1 match to 0/1 values.
-    anchor_class = tf.cast(K.equal(rpn_match, 1), tf.int32)
+    anchor_class = tf.cast(tf.math.equal(rpn_match, 1), tf.int32)
     # Positive and Negative anchors contribute to the loss,
     # but neutral anchors (match value = 0) don't.
     indices = tf.where(K.not_equal(rpn_match, 0))
@@ -1060,13 +1060,13 @@ def rpn_bbox_loss_graph(config, target_bbox, rpn_match, rpn_bbox):
     # Positive anchors contribute to the loss, but negative and
     # neutral anchors (match value of 0 or -1) don't.
     rpn_match = tf.squeeze(rpn_match, -1)
-    indices = tf.where(K.equal(rpn_match, 1))
+    indices = tf.where(tf.math.equal(rpn_match, 1))
 
     # Pick bbox deltas that contribute to the loss
     rpn_bbox = tf.gather_nd(rpn_bbox, indices)
 
     # Trim target bounding box deltas to the same length as rpn_bbox.
-    batch_counts = K.sum(tf.cast(K.equal(rpn_match, 1), tf.int32), axis=1)
+    batch_counts = K.sum(tf.cast(tf.math.equal(rpn_match, 1), tf.int32), axis=1)
     target_bbox = batch_pack_graph(target_bbox, batch_counts,
                                    config.IMAGES_PER_GPU)
 
