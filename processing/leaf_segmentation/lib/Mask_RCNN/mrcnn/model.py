@@ -1629,6 +1629,43 @@ def generate_random_rois(image_shape, count, gt_class_ids, gt_boxes):
     rois[-remaining_count:] = global_rois
     return rois
 
+def get_output_signature(config, random_rois):
+    height, width, channels = config.IMAGE_SHAPE
+    max_gt_instances = config.MAX_GT_INSTANCES
+
+    inputs_signature = (
+        tf.TensorSpec(shape=(None, height, width, channels), dtype=tf.float32),  # Images
+        tf.TensorSpec(shape=(None, 4), dtype=tf.float32),  # Image Meta
+        tf.TensorSpec(shape=(None, None, 1), dtype=tf.int32),  # RPN Match
+        tf.TensorSpec(shape=(None, config.RPN_TRAIN_ANCHORS_PER_IMAGE, 4), dtype=tf.float32),  # RPN BBox
+        tf.TensorSpec(shape=(None, max_gt_instances), dtype=tf.int32),  # GT Class IDs
+        tf.TensorSpec(shape=(None, max_gt_instances, 4), dtype=tf.int32),  # GT Boxes
+        tf.TensorSpec(shape=(None, height, width, max_gt_instances), dtype=tf.float32)  # GT Masks
+    )
+
+    if random_rois:
+        outputs_signature = (
+            tf.TensorSpec(shape=(None, random_rois, 1), dtype=tf.int32),  # MRCNN Class IDs
+            tf.TensorSpec(shape=(None, random_rois, 4), dtype=tf.float32),  # MRCNN BBox
+            tf.TensorSpec(shape=(None, height, width, random_rois), dtype=tf.float32)  # MRCNN Mask
+        )
+    else:
+        outputs_signature = []
+
+    return (inputs_signature, outputs_signature)
+
+def create_dataset(dataset, config, batch_size=1, shuffle=True, augment=False,
+                   augmentation=None, random_rois=0, detection_targets=False,
+                   no_augmentation_sources=None):
+    output_signature = get_output_signature(config, random_rois)
+
+    return tf.data.Dataset.from_generator(
+        lambda: data_generator(dataset, config, shuffle, augment, augmentation,
+                                random_rois, batch_size, detection_targets,
+                                no_augmentation_sources),
+        output_signature=output_signature
+    ).batch(batch_size).prefetch(tf.data.AUTOTUNE)
+
 
 def data_generator(dataset, config, shuffle=True, augment=False, augmentation=None,
                    random_rois=0, batch_size=1, detection_targets=False,
@@ -1811,7 +1848,7 @@ def data_generator(dataset, config, shuffle=True, augment=False, augmentation=No
             # Log it and skip the image
             # logging.exception("Error processing image {}".format(
             #     dataset.image_info[image_id]))
-            
+
             error_count += 1
             if error_count > 5:
                 raise
@@ -2335,11 +2372,12 @@ class MaskRCNN():
             layers = layer_regex[layers]
 
         # Data generators
-        train_generator = data_generator(train_dataset, self.config, shuffle=True,
+        train_generator = create_dataset(train_dataset, self.config, shuffle=True,
                                          augmentation=augmentation,
                                          batch_size=self.config.BATCH_SIZE,
                                          no_augmentation_sources=no_augmentation_sources)
-        val_generator = data_generator(val_dataset, self.config, shuffle=True,
+        train_generator = tf.Da
+        val_generator = create_dataset(val_dataset, self.config, shuffle=True,
                                        batch_size=self.config.BATCH_SIZE)
 
         # Create log_dir if it does not exist
