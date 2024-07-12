@@ -1040,7 +1040,7 @@ def rpn_class_loss_graph(rpn_match, rpn_class_logits):
     rpn_class_logits = tf.gather_nd(rpn_class_logits, indices)
     anchor_class = tf.gather_nd(anchor_class, indices)
     # Cross entropy loss
-    loss = keras.losses.SparseCategoricalCrossentropy(from_logits=True)(anchor_class, pn_class_logits)
+    loss = keras.losses.SparseCategoricalCrossentropy(from_logits=True)(anchor_class, rpn_class_logits)
     loss = tf.cond(tf.size(loss) > 0, lambda: tf.reduce_mean(loss), lambda: tf.constant(0.0))
     return loss
 
