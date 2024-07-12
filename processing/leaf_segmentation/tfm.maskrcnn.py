@@ -123,3 +123,6 @@ def main(input_path, epochs):
     # Example usage
     test_image_path = 'path/to/test/image.png'
     results = predict(model, test_image_path)
+
+if __name__ == '__main__':
+    main()
