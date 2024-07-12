@@ -17,6 +17,7 @@ import lib.Mask_RCNN.mrcnn.model as modellib
 from data import CustomMRCNNDataset
 import keras
 from tensorflow.keras import backend as K
+from typing import Union, Callable
 
 #from models import build_pspnet
 from keras_segmentation.models.pspnet import pspnet_101
