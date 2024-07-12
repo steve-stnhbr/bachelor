@@ -3,6 +3,9 @@ import numpy as np
 from PIL import Image
 import os
 import click
+import tensorflow as tf
+from tensorflow_models.vision.maskrcnn_model import MaskRCNNModel
+from tensorflow_models.vision.configs.maskrcnn_config import MaskRCNNConfig
 
 CLASSES = 1
 
@@ -48,9 +51,6 @@ class CustomMaskRCNNDataset(tf.keras.utils.Sequence):
             masks.append(np.stack(binary_masks, axis=-1))
         
         return np.array(images), np.array(masks)
-import tensorflow as tf
-from tfm.vision.maskrcnn_model import MaskRCNNModel
-from tfm.vision.configs.maskrcnn_config import MaskRCNNConfig
 
 # Define your configuration
 class CustomMaskRCNNConfig(MaskRCNNConfig):
