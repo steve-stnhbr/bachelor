@@ -1903,16 +1903,16 @@ def create_dataset(dataset, config, shuffle=True, augment=False, augmentation=No
 
             yield inputs, outputs
 
-    # Define output shapes and types
+     # Define output shapes and types
     output_shapes = (
         (
-            tf.TensorShape((None,) + tuple(config.IMAGE_SHAPE)),
+            tf.TensorShape(config.IMAGE_SHAPE),
             tf.TensorShape([None]),
-            tf.TensorShape([None, None, 1]),
-            tf.TensorShape([None, config.RPN_TRAIN_ANCHORS_PER_IMAGE, 4]),
-            tf.TensorShape([None, config.MAX_GT_INSTANCES]),
-            tf.TensorShape([None, config.MAX_GT_INSTANCES, 4]),
-            tf.TensorShape([None, None, None, config.MAX_GT_INSTANCES])
+            tf.TensorShape([None, 1]),
+            tf.TensorShape([config.RPN_TRAIN_ANCHORS_PER_IMAGE, 4]),
+            tf.TensorShape([config.MAX_GT_INSTANCES]),
+            tf.TensorShape([config.MAX_GT_INSTANCES, 4]),
+            tf.TensorShape([config.IMAGE_SHAPE[0], config.IMAGE_SHAPE[1], config.MAX_GT_INSTANCES])
         ),
         ()
     )
@@ -1923,14 +1923,14 @@ def create_dataset(dataset, config, shuffle=True, augment=False, augmentation=No
     )
 
     if random_rois:
-        output_shapes[0] += (tf.TensorShape([None, None, 4]),)
+        output_shapes[0] += (tf.TensorShape([None, 4]),)
         output_types[0] += (tf.float32,)
         if detection_targets:
             output_shapes[0] += (
-                tf.TensorShape([None, None, 4]),
-                tf.TensorShape([None, None, 1]),
-                tf.TensorShape([None, None, 4]),
-                tf.TensorShape([None, None, None, None])
+                tf.TensorShape([None, 4]),
+                tf.TensorShape([None, 1]),
+                tf.TensorShape([None, 4]),
+                tf.TensorShape([None, None, None])
             )
             output_types[0] += (tf.float32, tf.int32, tf.float32, tf.bool)
 
