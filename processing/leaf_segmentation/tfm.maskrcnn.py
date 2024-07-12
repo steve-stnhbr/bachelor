@@ -79,7 +79,7 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
         return tfds.core.DatasetInfo(
             builder=self,
             description="Leaf instance dataset with RGB images and instance masks.",
-            features=FeaturesDict({
+            features=tfds.features.FeaturesDict({
                 'image': tfds.features.Image(shape=(None, None, 3), dtype=np.uint8),
                 'image/filename': tfds.features.Text(shape=(), dtype=str),
                 'image/id': np.int64,
