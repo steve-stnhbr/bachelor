@@ -1016,7 +1016,7 @@ def smooth_l1_loss(y_true, y_pred):
     """Implements Smooth-L1 loss.
     y_true and y_pred are typically: [N, 4], but could be any shape.
     """
-    diff = K.abs(y_true - y_pred)
+    diff = tf.math.abs(y_true - y_pred)
     less_than_one = K.cast(K.less(diff, 1.0), "float32")
     loss = (less_than_one * 0.5 * diff**2) + (1 - less_than_one) * (diff - 0.5)
     return loss
@@ -1178,7 +1178,7 @@ def mrcnn_mask_loss_graph(target_masks, target_class_ids, pred_masks):
     loss = tf.cond(tf.size(y_true) > 0,
                     lambda: tf.keras.losses.binary_crossentropy(y_true, y_pred),
                     lambda: tf.constant(0.0))
-    loss = tf.reduce_mean(loss)
+    loss = tf.math.reduce_mean(loss)
     return loss
 
 
