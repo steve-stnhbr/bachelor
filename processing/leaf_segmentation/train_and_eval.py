@@ -171,16 +171,16 @@ def main(batch_size, epochs, data):
         #    None
         #),
         (
-           keras_cv.models.DeepLabV3Plus.from_preset("resnet152", num_classes=CLASSES),
-           "DeepLabV3Plus_resnet152",
-           None,
-           None
-        ),
-        (
             pspnet_101(CLASSES, INPUT_SHAPE[0], INPUT_SHAPE[1]),
             "PSPNet",
             None,
             None
+        ),
+        (
+           keras_cv.models.DeepLabV3Plus.from_preset("resnet152", num_classes=CLASSES),
+           "DeepLabV3Plus_resnet152",
+           None,
+           None
         ),
         #(
         #    modellib.MaskRCNN(mode="training", model_dir=os.getcwd(), config=mrcnn_config_instance).keras_model,
