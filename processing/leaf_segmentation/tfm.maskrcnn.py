@@ -45,39 +45,26 @@ def preprocess_example(example):
         'groundtruth_masks': masks
     }
 
-def masks_to_boxes(masks: torch.Tensor) -> torch.Tensor:
-        """
-        Compute the bounding boxes around the provided masks.
+def masks_to_boxes(masks):
+    # if masks.numel() == 0:
+    #     return torch.zeros((0, 4), device=masks.device, dtype=torch.float)
 
-        Returns a [N, 4] tensor containing bounding boxes. The boxes are in ``(x1, y1, x2, y2)`` format with
-        ``0 <= x1 < x2`` and ``0 <= y1 < y2``.
+    n = masks.shape[0]
 
-        Args:
-            masks (Tensor[N, H, W]): masks to transform where N is the number of masks
-                and (H, W) are the spatial dimensions.
+    bounding_boxes = np.zeros(
+        (n, 4), device=masks.device, dtype=torch.float)
 
-        Returns:
-            Tensor[N, 4]: bounding boxes
-        """
-        # if masks.numel() == 0:
-        #     return torch.zeros((0, 4), device=masks.device, dtype=torch.float)
-
-        n = masks.shape[0]
-
-        bounding_boxes = np.zeros(
-            (n, 4), device=masks.device, dtype=torch.float)
-
-        for index, mask in enumerate(masks):
-            if mask.sum() < self.area_threshold:
-                continue
-            y, x = np.nonzero(mask)
-            bounding_boxes[index, 0] = np.min(x)
-            bounding_boxes[index, 1] = np.min(y)
-            bounding_boxes[index, 2] = np.max(x)
-            bounding_boxes[index, 3] = np.max(y)
-        bounding_boxes_area = bounding_boxes.sum(dim=1)
-        bounding_boxes = bounding_boxes[~(bounding_boxes_area==0)]
-        return bounding_boxes, bounding_boxes_area
+    for index, mask in enumerate(masks):
+        if mask.sum() < self.area_threshold:
+            continue
+        y, x = np.nonzero(mask)
+        bounding_boxes[index, 0] = np.min(x)
+        bounding_boxes[index, 1] = np.min(y)
+        bounding_boxes[index, 2] = np.max(x)
+        bounding_boxes[index, 3] = np.max(y)
+    bounding_boxes_area = bounding_boxes.sum(dim=1)
+    bounding_boxes = bounding_boxes[~(bounding_boxes_area==0)]
+    return bounding_boxes, bounding_boxes_area
 
 class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
     """Leaf Instance dataset."""
