@@ -24,7 +24,7 @@ from keras_segmentation.models.pspnet import pspnet_101
 from keras_segmentation.models.segnet import vgg_segnet
 from keras_segmentation.models.fcn import fcn_32_mobilenet
 
-INPUT_SHAPE = (512, 512, 3)
+INPUT_SHAPE = (473, 473, 3)
 CLASSES = 25
 
 TRAIN_DATA_PATH = os.path.join("_data", "PhenoBench", "train")
