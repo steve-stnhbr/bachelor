@@ -24,7 +24,7 @@ from keras_segmentation.models.pspnet import pspnet_101
 from keras_segmentation.models.segnet import vgg_segnet
 from keras_segmentation.models.fcn import fcn_32_mobilenet
 
-INPUT_SHAPE = (473, 473, 3)
+INPUT_SHAPE = (512, 512, 3)
 CLASSES = 25
 
 TRAIN_DATA_PATH = os.path.join("_data", "PhenoBench", "train")
@@ -197,10 +197,10 @@ def main(batch_size, epochs, data):
         #    None
         #),
         (
-            pspnet_101(CLASSES, INPUT_SHAPE[0], INPUT_SHAPE[1]),
-            "PSPNet",
-            None,
-            None
+           modellib.MaskRCNN(mode="training", model_dir=os.getcwd(), config=mrcnn_config_instance).keras_model,
+           "Mask R-CNN",
+           mrcnn_train_data,
+           mrcnn_val_data
         ),
         (
            keras_cv.models.DeepLabV3Plus.from_preset("resnet152", num_classes=CLASSES),
@@ -208,12 +208,12 @@ def main(batch_size, epochs, data):
            None,
            None
         ),
-        #(
-        #    modellib.MaskRCNN(mode="training", model_dir=os.getcwd(), config=mrcnn_config_instance).keras_model,
-        #    "Mask R-CNN",
-        #    mrcnn_train_data,
-        #    mrcnn_val_data
-        #),
+        (
+            pspnet_101(CLASSES, INPUT_SHAPE[0], INPUT_SHAPE[1]),
+            "PSPNet",
+            None,
+            None
+        ),
         # (
         #     seg_net(INPUT_SHAPE, CLASSES),
         #     "SegNet"
