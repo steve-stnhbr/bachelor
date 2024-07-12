@@ -76,6 +76,7 @@ def execute(model, name=None, lab=False, batch_size=32, epochs=15, data='_data',
     print("Creating datagen")
 
     print("Input shape", model.inputs[0].shape[1:3])
+    print("Inputs", model.inputs)
 
     if train_data is None:
         train_dir = os.path.join(data, 'train')
