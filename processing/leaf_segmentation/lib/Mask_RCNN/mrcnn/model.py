@@ -2172,6 +2172,7 @@ class MaskRCNN():
             def call(self, inputs):
                 return tf.reduce_mean(inputs, keepdims=True)
         mean_layer = MeanLayer()
+        print(self.keras_model.add_loss)
         for name in loss_names:
             layer = self.keras_model.get_layer(name)
             if layer.output in self.keras_model.losses:
