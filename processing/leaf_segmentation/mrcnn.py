@@ -3,6 +3,8 @@ import os
 from imgaug import augmenters as iaa
 import click
 import numpy as np
+from tensorflow.keras.utils import to_categorical
+import skimage.io
 
 from lib.Mask_RCNN.mrcnn.config import Config
 from lib.Mask_RCNN.mrcnn import utils
@@ -42,14 +44,43 @@ class LeavesDataset(utils.Dataset):
     def load_leaves(self):
         self.add_class(CLASS_NAME, 1, CLASS_NAME)
 
-        for file in os.listdir(self.files_dir):
-            file_path = os.path.join(self.files_dir, file)
+        images_dir = os.path.join(self.files_dir, 'images')
+
+        for file in images_dir:
+            file_path = os.path.join(images_dir, file)
 
             self.add_image(
                 CLASS_NAME,
                 image_id=file,
                 path=file_path)
-            
+
+    def load_mask(self, image_id):
+        """Generate instance masks for an image.
+       Returns:
+        masks: A bool array of shape [height, width, instance count] with
+            one mask per instance.
+        class_ids: a 1D array of class IDs of the instance masks.
+        """
+        info = self.image_info[image_id]
+        # Get mask directory from image path
+        
+        mask_dir = os.path.join(os.path.dirname(os.path.dirname(info['path'])), "leaf_instances")
+
+        # Read mask files from .png image
+        mask = skimage.io.imread(os.path.join(mask_dir, info['image_id']), as_gray=True)
+        mask = to_categorical(mask)
+        # Return mask, and array of class IDs of each instance. Since we have
+        # one class ID, we return an array of ones
+        return mask, np.ones([mask.shape[-1]], dtype=np.int32)
+    
+    def image_reference(self, image_id):
+        """Return the path of the image."""
+        info = self.image_info[image_id]
+        if info["source"] == "nucleus":
+            return info["id"]
+        else:
+            super(self.__class__, self).image_reference(image_id)       
+    
 def train(path, epochs=24, batch_size=8, model_dir=os.getcwd()):
     augmentation = iaa.SomeOf((0, 2), [
         iaa.Fliplr(0.5),
