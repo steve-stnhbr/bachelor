@@ -77,7 +77,7 @@ def _load_data(image_path, mask_path):
     image_id = tf.strings.to_number(tf.strings.split(filename, '.')[0], out_type=tf.int32)
     
     # You'll need to implement masks_to_boxes function
-    boxes, areas = tf.py_function(self.masks_to_boxes, [mask], [tf.float32, tf.float32])
+    boxes, areas = tf.py_function(masks_to_boxes, [mask], [tf.float32, tf.float32])
     
     return {
         'image': image,
