@@ -7,9 +7,6 @@ from official.core import exp_factory
 from official.core import config_definitions as cfg
 from official.vision.serving import export_saved_model_lib
 
-from lib.detr_tf.data import load_coco_dataset
-from lib.detr_tf.training_config import TrainingConfig, DataConfig
-
 
 experiment_type = 'maskrcnn_resnetfpn_coco'
 config = exp_factory.get_exp_config(experiment_type)
