@@ -1903,39 +1903,30 @@ def create_dataset(dataset, config, shuffle=True, augment=False, augmentation=No
 
             yield inputs, outputs
 
-    # Create the tf.data.Dataset
-    output_shapes = {
-        'input_image': tf.TensorShape(config.IMAGE_SHAPE),
-        'input_image_meta': tf.TensorShape((None,)),
-        'input_rpn_match': tf.TensorShape((None, 1)),
-        'input_rpn_bbox': tf.TensorShape((config.RPN_TRAIN_ANCHORS_PER_IMAGE, 4)),
-        'input_gt_class_ids': tf.TensorShape((config.MAX_GT_INSTANCES,)),
-        'input_gt_boxes': tf.TensorShape((config.MAX_GT_INSTANCES, 4)),
-        'input_gt_masks': tf.TensorShape((config.IMAGE_SHAPE[0], config.IMAGE_SHAPE[1], config.MAX_GT_INSTANCES))
-    }
+    # Define output shapes and types
+    output_shapes = [
+        tf.TensorShape(config.IMAGE_SHAPE),
+        tf.TensorShape((None,)),
+        tf.TensorShape((None, 1)),
+        tf.TensorShape((config.RPN_TRAIN_ANCHORS_PER_IMAGE, 4)),
+        tf.TensorShape((config.MAX_GT_INSTANCES,)),
+        tf.TensorShape((config.MAX_GT_INSTANCES, 4)),
+        tf.TensorShape((config.IMAGE_SHAPE[0], config.IMAGE_SHAPE[1], config.MAX_GT_INSTANCES))
+    ]
 
-    output_types = {
-        'input_image': tf.float32,
-        'input_image_meta': tf.float32,
-        'input_rpn_match': tf.int32,
-        'input_rpn_bbox': tf.float32,
-        'input_gt_class_ids': tf.int32,
-        'input_gt_boxes': tf.float32,
-        'input_gt_masks': tf.bool
-    }
+    output_types = [tf.float32, tf.float32, tf.int32, tf.float32, tf.int32, tf.float32, tf.bool]
 
     if random_rois:
-        output_shapes['input_rpn_rois'] = tf.TensorShape((None, 4))
-        output_types['input_rpn_rois'] = tf.float32
+        output_shapes.append(tf.TensorShape((None, 4)))
+        output_types.append(tf.float32)
         if detection_targets:
-            output_shapes['input_rois'] = tf.TensorShape((None, 4))
-            output_shapes['input_mrcnn_class_ids'] = tf.TensorShape((None,))
-            output_shapes['input_mrcnn_bbox'] = tf.TensorShape((None, 4))
-            output_shapes['input_mrcnn_mask'] = tf.TensorShape((None, None, None))
-            output_types['input_rois'] = tf.float32
-            output_types['input_mrcnn_class_ids'] = tf.int32
-            output_types['input_mrcnn_bbox'] = tf.float32
-            output_types['input_mrcnn_mask'] = tf.bool
+            output_shapes.extend([
+                tf.TensorShape((None, 4)),
+                tf.TensorShape((None, 1)),
+                tf.TensorShape((None, 4)),
+                tf.TensorShape((None, None, None))
+            ])
+            output_types.extend([tf.float32, tf.int32, tf.float32, tf.bool])
 
     dataset = tf.data.Dataset.from_generator(
         generator_function,
