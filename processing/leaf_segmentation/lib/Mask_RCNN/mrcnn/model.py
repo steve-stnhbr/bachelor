@@ -1654,33 +1654,6 @@ def get_output_signature(config, random_rois):
 
     return (inputs_signature, outputs_signature)
 
-def get_data_generator_output_signature(rois):
-    """Defines the output_signature for the data_generator based on detection_targets.
-
-    Args:
-        config: The model configuration object.
-
-    Returns:
-        A tuple representing the output_signature.
-    """
-    # Define empty output signature for the default case
-    output_signature = ()
-
-    # If detection_targets is True, define specific output tensors
-    if rois:
-        batch_size = config.BATCH_SIZE
-        mrcnn_class_ids_shape = (batch_size, 1)
-        mrcnn_bbox_shape = (batch_size, config.MAX_GT_INSTANCES, 4)
-        mrcnn_mask_shape = (batch_size, config.IMAGE_SHAPE[0], config.IMAGE_SHAPE[1], config.MAX_GT_INSTANCES)
-
-        output_signature = (
-            tf.TensorSpec(shape=mrcnn_class_ids_shape, dtype=tf.int32),
-            tf.TensorSpec(shape=mrcnn_bbox_shape, dtype=tf.float32),
-            tf.TensorSpec(shape=mrcnn_mask_shape, dtype=tf.float32),
-        )
-
-    return output_signature
-
 def create_dataset(dataset, config, batch_size=1, shuffle=True, augment=False, 
                    augmentation=None, random_rois=0, detection_targets=False, 
                    no_augmentation_sources=None):
@@ -1689,7 +1662,7 @@ def create_dataset(dataset, config, batch_size=1, shuffle=True, augment=False,
         lambda: data_generator(dataset, config, shuffle, augment, augmentation,
                                 random_rois, batch_size, detection_targets, 
                                 no_augmentation_sources),
-        output_signature=get_data_generator_output_signature(random_rois)
+        output_signature=get_output_signature(config, random_rois)
     ).prefetch(tf.data.AUTOTUNE)
 
 
@@ -1879,10 +1852,136 @@ def data_generator(dataset, config, shuffle=True, augment=False, augmentation=No
             if error_count > 5:
                 raise
 
-def gen_dataset(dataset, config, shuffle=True, augment=False, augmentation=None,
-                   random_rois=0, batch_size=1, detection_targets=False,
-                   no_augmentation_sources=None):
-    tf.data.Dataset()
+
+
+import tensorflow as tf
+import numpy as np
+
+class MaskRCNNDataset(tf.keras.utils.Sequence):
+    def __init__(self, dataset, config, batch_size, shuffle=True, augment=True, random_rois=0, detection_targets=False):
+        self.dataset = dataset
+        self.config = config
+        self.batch_size = batch_size
+        self.shuffle = shuffle
+        self.augment = augment
+        self.random_rois = random_rois
+        self.detection_targets = detection_targets
+        self.image_ids = list(range(len(dataset.image_info)))
+        self.no_augmentation_sources = []  # Define this based on your requirements
+        self.on_epoch_end()
+
+    def __len__(self):
+        return int(np.ceil(len(self.image_ids) / float(self.batch_size)))
+
+    def __getitem__(self, idx):
+        batch_image_ids = self.image_ids[idx * self.batch_size:(idx + 1) * self.batch_size]
+        batch_inputs, batch_outputs = self.generate_batch(batch_image_ids)
+        return batch_inputs, batch_outputs
+
+    def on_epoch_end(self):
+        if self.shuffle:
+            np.random.shuffle(self.image_ids)
+
+    def generate_batch(self, batch_image_ids):
+        batch_images = []
+        batch_image_meta = []
+        batch_rpn_match = []
+        batch_rpn_bbox = []
+        batch_gt_class_ids = []
+        batch_gt_boxes = []
+        batch_gt_masks = []
+        batch_rpn_rois = []
+        batch_rois = []
+        batch_mrcnn_class_ids = []
+        batch_mrcnn_bbox = []
+        batch_mrcnn_mask = []
+
+        for image_id in batch_image_ids:
+            try:
+                # Load image and ground truth data
+                if self.dataset.image_info[image_id]['source'] in self.no_augmentation_sources:
+                    image, image_meta, gt_class_ids, gt_boxes, gt_masks = load_image_gt(
+                        self.dataset, self.config, image_id, augment=self.augment,
+                        augmentation=None, use_mini_mask=self.config.USE_MINI_MASK)
+                else:
+                    image, image_meta, gt_class_ids, gt_boxes, gt_masks = load_image_gt(
+                        self.dataset, self.config, image_id, augment=self.augment,
+                        augmentation=augmentation, use_mini_mask=self.config.USE_MINI_MASK)
+
+                # Skip images that have no instances
+                if not np.any(gt_class_ids > 0):
+                    continue
+
+                # RPN Targets
+                rpn_match, rpn_bbox = build_rpn_targets(image.shape, anchors,
+                                                        gt_class_ids, gt_boxes, self.config)
+
+                # Mask R-CNN Targets
+                if self.random_rois:
+                    rpn_rois = generate_random_rois(
+                        image.shape, self.random_rois, gt_class_ids, gt_boxes)
+                    if self.detection_targets:
+                        rois, mrcnn_class_ids, mrcnn_bbox, mrcnn_mask = build_detection_targets(
+                            rpn_rois, gt_class_ids, gt_boxes, gt_masks, self.config)
+
+                # If more instances than fits in the array, sub-sample from them.
+                if gt_boxes.shape[0] > self.config.MAX_GT_INSTANCES:
+                    ids = np.random.choice(
+                        np.arange(gt_boxes.shape[0]), self.config.MAX_GT_INSTANCES, replace=False)
+                    gt_class_ids = gt_class_ids[ids]
+                    gt_boxes = gt_boxes[ids]
+                    gt_masks = gt_masks[:, :, ids]
+
+                # Add to batch
+                batch_images.append(mold_image(image.astype(np.float32), self.config))
+                batch_image_meta.append(image_meta)
+                batch_rpn_match.append(rpn_match[:, np.newaxis])
+                batch_rpn_bbox.append(rpn_bbox)
+                batch_gt_class_ids.append(gt_class_ids)
+                batch_gt_boxes.append(gt_boxes)
+                batch_gt_masks.append(gt_masks)
+                if self.random_rois:
+                    batch_rpn_rois.append(rpn_rois)
+                if self.detection_targets:
+                    batch_rois.append(rois)
+                    batch_mrcnn_class_ids.append(mrcnn_class_ids)
+                    batch_mrcnn_bbox.append(mrcnn_bbox)
+                    batch_mrcnn_mask.append(mrcnn_mask)
+
+            except Exception as e:
+                print(f"Error processing image {image_id}: {str(e)}")
+
+        # Pad or truncate to ensure consistent batch size
+        def pad_to_batch_size(batch_array, target_shape):
+            current_size = len(batch_array)
+            if current_size < self.batch_size:
+                padding = [np.zeros(target_shape) for _ in range(self.batch_size - current_size)]
+                batch_array.extend(padding)
+            return np.array(batch_array[:self.batch_size])
+
+        inputs = [
+            pad_to_batch_size(batch_images, self.config.IMAGE_SHAPE),
+            pad_to_batch_size(batch_image_meta, batch_image_meta[0].shape),
+            pad_to_batch_size(batch_rpn_match, (anchors.shape[0], 1)),
+            pad_to_batch_size(batch_rpn_bbox, (self.config.RPN_TRAIN_ANCHORS_PER_IMAGE, 4)),
+            pad_to_batch_size(batch_gt_class_ids, (self.config.MAX_GT_INSTANCES,)),
+            pad_to_batch_size(batch_gt_boxes, (self.config.MAX_GT_INSTANCES, 4)),
+            pad_to_batch_size(batch_gt_masks, (batch_gt_masks[0].shape[0], batch_gt_masks[0].shape[1], self.config.MAX_GT_INSTANCES))
+        ]
+
+        outputs = []
+
+        if self.random_rois:
+            inputs.append(pad_to_batch_size(batch_rpn_rois, (rpn_rois.shape[0], 4)))
+            if self.detection_targets:
+                inputs.append(pad_to_batch_size(batch_rois, rois.shape))
+                outputs.extend([
+                    pad_to_batch_size(batch_mrcnn_class_ids, (mrcnn_class_ids.shape[0], 1)),
+                    pad_to_batch_size(batch_mrcnn_bbox, mrcnn_bbox.shape),
+                    pad_to_batch_size(batch_mrcnn_mask, mrcnn_mask.shape)
+                ])
+
+        return inputs, outputs
 
 ############################################################
 #  MaskRCNN Class
@@ -2406,8 +2505,10 @@ class MaskRCNN():
                                          augmentation=augmentation,
                                          batch_size=self.config.BATCH_SIZE,
                                          no_augmentation_sources=no_augmentation_sources)
+        train_generator = MaskRCNNDataset(train_dataset, self.config, self.config.BATCH_SIZE, no_augmentation_sources=no_augmentation_sources)
         val_generator = create_dataset(val_dataset, self.config, shuffle=True,
                                        batch_size=self.config.BATCH_SIZE)
+        val_generator = MaskRCNNDataset(val_dataset, self.config, self.config.BATCH_SIZE)
 
         # Create log_dir if it does not exist
         if not os.path.exists(self.log_dir):
