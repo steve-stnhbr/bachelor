@@ -37,8 +37,9 @@ class LeavesDataset(utils.Dataset):
         super().__init__()
 
         self.files_dir = files_dir
+        self.load_leaves()
 
-    def load_leaves(self, subset):
+    def load_leaves(self):
         self.add_class(CLASS_NAME, 1, CLASS_NAME)
 
         for file in self.files_dir:
