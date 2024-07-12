@@ -1043,7 +1043,7 @@ def rpn_class_loss_graph(rpn_match, rpn_class_logits):
     loss = K.sparse_categorical_crossentropy(target=anchor_class,
                                              output=rpn_class_logits,
                                              from_logits=True)
-    loss = tf.cond(tf.size(loss) > 0, K.mean(loss), tf.constant(0.0))
+    loss = tf.cond(tf.size(loss) > 0, lambda: K.mean(loss), lambda: tf.constant(0.0))
     return loss
 
 
@@ -1072,7 +1072,7 @@ def rpn_bbox_loss_graph(config, target_bbox, rpn_match, rpn_bbox):
 
     loss = smooth_l1_loss(target_bbox, rpn_bbox)
     
-    loss = tf.cond(tf.size(loss) > 0, K.mean(loss), tf.constant(0.0))
+    loss = tf.cond(tf.size(loss) > 0, lambda: K.mean(loss), lambda: tf.constant(0.0))
     return loss
 
 
@@ -1137,8 +1137,8 @@ def mrcnn_bbox_loss_graph(target_bbox, target_class_ids, pred_bbox):
 
     # Smooth-L1 Loss
     loss = tf.cond(tf.size(target_bbox) > 0,
-                    smooth_l1_loss(y_true=target_bbox, y_pred=pred_bbox),
-                    tf.constant(0.0))
+                    lambda: smooth_l1_loss(y_true=target_bbox, y_pred=pred_bbox),
+                    lambda: tf.constant(0.0))
     loss = K.mean(loss)
     return loss
 
@@ -1176,8 +1176,8 @@ def mrcnn_mask_loss_graph(target_masks, target_class_ids, pred_masks):
     # Compute binary cross entropy. If no positive ROIs, then return 0.
     # shape: [batch, roi, num_classes]
     loss = tf.cond(tf.size(y_true) > 0,
-                    tf.keras.losses.binary_crossentropy(y_true, y_pred),
-                    tf.constant(0.0))
+                    lambda: tf.keras.losses.binary_crossentropy(y_true, y_pred),
+                    lambda: tf.constant(0.0))
     loss = K.mean(loss)
     return loss
 
