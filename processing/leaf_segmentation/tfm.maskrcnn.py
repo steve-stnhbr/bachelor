@@ -7,6 +7,10 @@ from official.core import exp_factory
 from official.core import config_definitions as cfg
 from official.vision.serving import export_saved_model_lib
 
+from lib.detr_tf.data import load_coco_dataset
+from lib.detr_tf.training_config import TrainingConfig, DataConfig
+
+
 experiment_type = 'maskrcnn_resnetfpn_coco'
 config = exp_factory.get_exp_config(experiment_type)
 
@@ -42,13 +46,10 @@ def preprocess_example(example):
         'groundtruth_masks': masks
     }
 
-train_dataset = tfds.load('coco/2017', split='train')
-train_dataset = train_dataset.map(preprocess_example)
-train_dataset = train_dataset.batch(config.task.train_data.global_batch_size)
 
-val_dataset = tfds.load('coco/2017', split='validation')
-val_dataset = val_dataset.map(preprocess_example)
-val_dataset = val_dataset.batch(config.task.validation_data.global_batch_size)
+train_dataset = tfds.load('coco', data_dir = "_data", download = False, try_gcs = False,
+    split = 'train', shuffle_files = True)
+train_dataset = train_dataset.batch(config.task.train_data.global_batch_size)
 
 model_builder = factory.build_maskrcnn
 model = model_builder(config.task.model)
