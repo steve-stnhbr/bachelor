@@ -136,8 +136,9 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
                     ]
                 }
 
-tfds.load.register_dataset_builder('leaf_detection', LeafInstanceDataset)
-train_dataset = tfds.load('leaf_detection', split='train')
+
+#train_dataset = tfds.load('leaf_detection', split='train')
+train_dataset = LeafInstanceDataset().as_dataset()
 train_dataset = train_dataset.batch(config.task.train_data.global_batch_size)
 
 model_builder = factory.build_maskrcnn
