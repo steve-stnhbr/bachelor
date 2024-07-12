@@ -2467,7 +2467,7 @@ class MaskRCNN():
         #                                  augmentation=augmentation,
         #                                  batch_size=self.config.BATCH_SIZE,
         #                                  no_augmentation_sources=no_augmentation_sources)
-        train_generator = create_dataset(train_dataset, config)
+        train_generator = create_dataset(train_dataset, self.config)
         # val_generator = create_dataset(val_dataset, self.config, shuffle=True,
         #                                batch_size=self.config.BATCH_SIZE)
         val_generator = create_dataset(val_dataset, self.config)
