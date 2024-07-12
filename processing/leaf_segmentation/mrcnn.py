@@ -19,6 +19,10 @@ class LeavesConfig(Config):
     NUM_CLASSES = CLASSES # COCO has 80 classes
     GPU_COUNT = 1
     IMAGES_PER_GPU = 1
+    IMAGE_SHAPE = (1024, 1024, 3)
+    USE_MINI_MASK = True
+    MINI_MASK_SHAPE = (56, 56)  # Adjust this if needed
+    MAX_GT_INSTANCES = 100
 
     def compute_backbone_shapes(self, image_shape):
         """Computes the width and height of each stage of the backbone network."""
