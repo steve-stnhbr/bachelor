@@ -1629,42 +1629,6 @@ def generate_random_rois(image_shape, count, gt_class_ids, gt_boxes):
     rois[-remaining_count:] = global_rois
     return rois
 
-def get_output_signature(config, random_rois):
-    height, width, channels = config.IMAGE_SHAPE
-    max_gt_instances = config.MAX_GT_INSTANCES
-
-    inputs_signature = (
-        tf.TensorSpec(shape=(None, height, width, channels), dtype=tf.float32),  # Images
-        tf.TensorSpec(shape=(None, 4), dtype=tf.float32),  # Image Meta
-        tf.TensorSpec(shape=(None, None, 1), dtype=tf.int32),  # RPN Match
-        tf.TensorSpec(shape=(None, config.RPN_TRAIN_ANCHORS_PER_IMAGE, 4), dtype=tf.float32),  # RPN BBox
-        tf.TensorSpec(shape=(None, max_gt_instances), dtype=tf.int32),  # GT Class IDs
-        tf.TensorSpec(shape=(None, max_gt_instances, 4), dtype=tf.int32),  # GT Boxes
-        tf.TensorSpec(shape=(None, height, width, max_gt_instances), dtype=tf.float32)  # GT Masks
-    )
-
-    if random_rois:
-        outputs_signature = (
-            tf.TensorSpec(shape=(None, random_rois, 1), dtype=tf.int32),  # MRCNN Class IDs
-            tf.TensorSpec(shape=(None, random_rois, 4), dtype=tf.float32),  # MRCNN BBox
-            tf.TensorSpec(shape=(None, height, width, random_rois), dtype=tf.float32)  # MRCNN Mask
-        )
-    else:
-        outputs_signature = []
-
-    return (inputs_signature, outputs_signature)
-
-def create_dataset(dataset, config, batch_size=1, shuffle=True, augment=False, 
-                   augmentation=None, random_rois=0, detection_targets=False, 
-                   no_augmentation_sources=None):
-    
-    return tf.data.Dataset.from_generator(
-        lambda: data_generator(dataset, config, shuffle, augment, augmentation,
-                                random_rois, batch_size, detection_targets, 
-                                no_augmentation_sources),
-        output_signature=get_output_signature(config, random_rois)
-    ).prefetch(tf.data.AUTOTUNE)
-
 
 def data_generator(dataset, config, shuffle=True, augment=False, augmentation=None,
                    random_rois=0, batch_size=1, detection_targets=False,
@@ -1854,129 +1818,132 @@ def data_generator(dataset, config, shuffle=True, augment=False, augmentation=No
 
 
 
-import tensorflow as tf
-import numpy as np
+def create_dataset(dataset, config, shuffle=True, augment=False, augmentation=None,
+                   random_rois=0, batch_size=1, detection_targets=False,
+                   no_augmentation_sources=None):
+    
+    def generator_function():
+        image_index = -1
+        image_ids = np.copy(dataset.image_ids)
+        no_augmentation_sources = no_augmentation_sources or []
 
-class MaskRCNNDataset(tf.data.Dataset):
-    def __new__(cls, dataset, config, shuffle=True, augment=True, random_rois=0, detection_targets=False):
-        return tf.data.Dataset.from_generator(
-            cls._generator,
-            output_types=cls._get_output_types(random_rois, detection_targets),
-            output_shapes=cls._get_output_shapes(config, random_rois, detection_targets),
-            args=(dataset, config, shuffle, augment, random_rois, detection_targets)
-        )
-
-    @staticmethod
-    def _generator(dataset, config, shuffle=True, augment=False, random_rois=False, detection_targets=True):
-        image_ids = list(range(len(dataset.image_info)))
-        no_augmentation_sources = []  # Define this based on your requirements
+        # Anchors
+        backbone_shapes = compute_backbone_shapes(config, config.IMAGE_SHAPE)
+        anchors = utils.generate_pyramid_anchors(config.RPN_ANCHOR_SCALES,
+                                                 config.RPN_ANCHOR_RATIOS,
+                                                 backbone_shapes,
+                                                 config.BACKBONE_STRIDES,
+                                                 config.RPN_ANCHOR_STRIDE)
 
         while True:
-            if shuffle:
+            image_index = (image_index + 1) % len(image_ids)
+            if shuffle and image_index == 0:
                 np.random.shuffle(image_ids)
 
-            for image_id in image_ids:
-                try:
-                    # Load image and ground truth data
-                    if dataset.image_info[image_id]['source'] in no_augmentation_sources:
-                        image, image_meta, gt_class_ids, gt_boxes, gt_masks = load_image_gt(
-                            dataset, config, image_id, augment=augment,
-                            augmentation=None, use_mini_mask=config.USE_MINI_MASK)
-                    else:
-                        image, image_meta, gt_class_ids, gt_boxes, gt_masks = load_image_gt(
-                            dataset, config, image_id, augment=augment,
-                            augmentation=augmentation, use_mini_mask=config.USE_MINI_MASK)
+            image_id = image_ids[image_index]
 
-                    # Skip images that have no instances
-                    if not np.any(gt_class_ids > 0):
-                        continue
+            # If the image source is not to be augmented pass None as augmentation
+            if dataset.image_info[image_id]['source'] in no_augmentation_sources:
+                image, image_meta, gt_class_ids, gt_boxes, gt_masks = \
+                load_image_gt(dataset, config, image_id, augment=augment,
+                              augmentation=None,
+                              use_mini_mask=config.USE_MINI_MASK)
+            else:
+                image, image_meta, gt_class_ids, gt_boxes, gt_masks = \
+                    load_image_gt(dataset, config, image_id, augment=augment,
+                                augmentation=augmentation,
+                                use_mini_mask=config.USE_MINI_MASK)
 
-                    # RPN Targets
-                    rpn_match, rpn_bbox = build_rpn_targets(image.shape, anchors,
-                                                            gt_class_ids, gt_boxes, config)
+            # Skip images that have no instances
+            if not np.any(gt_class_ids > 0):
+                continue
 
-                    # Mask R-CNN Targets
-                    if random_rois:
-                        rpn_rois = generate_random_rois(
-                            image.shape, random_rois, gt_class_ids, gt_boxes)
-                        if detection_targets:
-                            rois, mrcnn_class_ids, mrcnn_bbox, mrcnn_mask = build_detection_targets(
-                                rpn_rois, gt_class_ids, gt_boxes, gt_masks, config)
+            # RPN Targets
+            rpn_match, rpn_bbox = build_rpn_targets(image.shape, anchors,
+                                                    gt_class_ids, gt_boxes, config)
 
-                    # If more instances than fits in the array, sub-sample from them.
-                    if gt_boxes.shape[0] > config.MAX_GT_INSTANCES:
-                        ids = np.random.choice(
-                            np.arange(gt_boxes.shape[0]), config.MAX_GT_INSTANCES, replace=False)
-                        gt_class_ids = gt_class_ids[ids]
-                        gt_boxes = gt_boxes[ids]
-                        gt_masks = gt_masks[:, :, ids]
+            # Mask R-CNN Targets
+            if random_rois:
+                rpn_rois = generate_random_rois(
+                    image.shape, random_rois, gt_class_ids, gt_boxes)
+                if detection_targets:
+                    rois, mrcnn_class_ids, mrcnn_bbox, mrcnn_mask =\
+                        build_detection_targets(
+                            rpn_rois, gt_class_ids, gt_boxes, gt_masks, config)
 
-                    # Prepare the return values
-                    inputs = [
-                        mold_image(image.astype(np.float32), config),
-                        image_meta,
-                        rpn_match[:, np.newaxis],
-                        rpn_bbox,
-                        gt_class_ids,
-                        gt_boxes,
-                        gt_masks
-                    ]
+            # If more instances than fits in the array, sub-sample from them.
+            if gt_boxes.shape[0] > config.MAX_GT_INSTANCES:
+                ids = np.random.choice(
+                    np.arange(gt_boxes.shape[0]), config.MAX_GT_INSTANCES, replace=False)
+                gt_class_ids = gt_class_ids[ids]
+                gt_boxes = gt_boxes[ids]
+                gt_masks = gt_masks[:, :, ids]
 
-                    outputs = []
+            # Prepare the data to be yielded
+            inputs = {
+                'input_image': mold_image(image.astype(np.float32), config),
+                'input_image_meta': image_meta,
+                'input_rpn_match': rpn_match[:, np.newaxis],
+                'input_rpn_bbox': rpn_bbox,
+                'input_gt_class_ids': gt_class_ids,
+                'input_gt_boxes': gt_boxes,
+                'input_gt_masks': gt_masks
+            }
 
-                    if random_rois:
-                        inputs.append(rpn_rois)
-                        if detection_targets:
-                            inputs.append(rois)
-                            outputs.extend([
-                                np.expand_dims(mrcnn_class_ids, -1),
-                                mrcnn_bbox,
-                                mrcnn_mask
-                            ])
+            if random_rois:
+                inputs['input_rpn_rois'] = rpn_rois
+                if detection_targets:
+                    inputs['input_rois'] = rois
+                    inputs['input_mrcnn_class_ids'] = mrcnn_class_ids
+                    inputs['input_mrcnn_bbox'] = mrcnn_bbox
+                    inputs['input_mrcnn_mask'] = mrcnn_mask
 
-                    yield tuple(inputs), tuple(outputs) if outputs else None
+            yield inputs
 
-                except Exception as e:
-                    print(f"Error processing image {image_id}: {str(e)}")
+    # Create the tf.data.Dataset
+    output_shapes = {
+        'input_image': tf.TensorShape(config.IMAGE_SHAPE),
+        'input_image_meta': tf.TensorShape((None,)),
+        'input_rpn_match': tf.TensorShape((None, 1)),
+        'input_rpn_bbox': tf.TensorShape((config.RPN_TRAIN_ANCHORS_PER_IMAGE, 4)),
+        'input_gt_class_ids': tf.TensorShape((config.MAX_GT_INSTANCES,)),
+        'input_gt_boxes': tf.TensorShape((config.MAX_GT_INSTANCES, 4)),
+        'input_gt_masks': tf.TensorShape((config.IMAGE_SHAPE[0], config.IMAGE_SHAPE[1], config.MAX_GT_INSTANCES))
+    }
 
-    @staticmethod
-    def _get_output_types(random_rois, detection_targets):
-        input_types = [tf.float32, tf.float32, tf.float32, tf.float32, tf.int32, tf.float32, tf.float32]
-        output_types = []
+    output_types = {
+        'input_image': tf.float32,
+        'input_image_meta': tf.float32,
+        'input_rpn_match': tf.int32,
+        'input_rpn_bbox': tf.float32,
+        'input_gt_class_ids': tf.int32,
+        'input_gt_boxes': tf.float32,
+        'input_gt_masks': tf.bool
+    }
 
-        if random_rois:
-            input_types.append(tf.float32)
-            if detection_targets:
-                input_types.append(tf.float32)
-                output_types.extend([tf.int32, tf.float32, tf.float32])
+    if random_rois:
+        output_shapes['input_rpn_rois'] = tf.TensorShape((None, 4))
+        output_types['input_rpn_rois'] = tf.float32
+        if detection_targets:
+            output_shapes['input_rois'] = tf.TensorShape((None, 4))
+            output_shapes['input_mrcnn_class_ids'] = tf.TensorShape((None,))
+            output_shapes['input_mrcnn_bbox'] = tf.TensorShape((None, 4))
+            output_shapes['input_mrcnn_mask'] = tf.TensorShape((None, None, None))
+            output_types['input_rois'] = tf.float32
+            output_types['input_mrcnn_class_ids'] = tf.int32
+            output_types['input_mrcnn_bbox'] = tf.float32
+            output_types['input_mrcnn_mask'] = tf.bool
 
-        return (tuple(input_types), tuple(output_types)) if output_types else tuple(input_types)
+    dataset = tf.data.Dataset.from_generator(
+        generator_function,
+        output_types=output_types,
+        output_shapes=output_shapes
+    )
 
-    @staticmethod
-    def _get_output_shapes(config, random_rois, detection_targets):
-        input_shapes = [
-            tf.TensorShape(config.IMAGE_SHAPE),
-            tf.TensorShape([None]),  # image_meta
-            tf.TensorShape([None, 1]),  # rpn_match
-            tf.TensorShape([None, 4]),  # rpn_bbox
-            tf.TensorShape([None]),  # gt_class_ids
-            tf.TensorShape([None, 4]),  # gt_boxes
-            tf.TensorShape([None, None, None])  # gt_masks
-        ]
-        output_shapes = []
+    # Apply batching
+    dataset = dataset.batch(batch_size)
 
-        if random_rois:
-            input_shapes.append(tf.TensorShape([None, 4]))  # rpn_rois
-            if detection_targets:
-                input_shapes.append(tf.TensorShape([None, 4]))  # rois
-                output_shapes.extend([
-                    tf.TensorShape([None, 1]),  # mrcnn_class_ids
-                    tf.TensorShape([None, 4]),  # mrcnn_bbox
-                    tf.TensorShape([None, None, None])  # mrcnn_mask
-                ])
-
-        return (tuple(input_shapes), tuple(output_shapes)) if output_shapes else tuple(input_shapes)
-
+    return dataset
 
 ############################################################
 #  MaskRCNN Class
@@ -2500,10 +2467,10 @@ class MaskRCNN():
         #                                  augmentation=augmentation,
         #                                  batch_size=self.config.BATCH_SIZE,
         #                                  no_augmentation_sources=no_augmentation_sources)
-        train_generator = MaskRCNNDataset(train_dataset, self.config, self.config.BATCH_SIZE, augment=False)
+        train_generator = create_dataset(dataset, config)
         # val_generator = create_dataset(val_dataset, self.config, shuffle=True,
         #                                batch_size=self.config.BATCH_SIZE)
-        val_generator = MaskRCNNDataset(val_dataset, self.config, self.config.BATCH_SIZE)
+        val_generator = create_dataset(val_dataset, self.config)
 
         # Create log_dir if it does not exist
         if not os.path.exists(self.log_dir):
