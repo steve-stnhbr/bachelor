@@ -2018,7 +2018,7 @@ class MaskRCNN():
                     return input_shape[0]
 
             # Normalize coordinates
-            gt_boxes = NormBoxesLayer()([input_gt_boxes, input_image])(input_gt_boxes)
+            gt_boxes = NormBoxesLayer()([input_gt_boxes, input_image])
             # 3. GT Masks (zero padded)
             # [batch, height, width, MAX_GT_INSTANCES]
             if config.USE_MINI_MASK:
