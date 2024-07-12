@@ -44,7 +44,8 @@ def preprocess_example(example):
     }
 
 
-train_dataset = tfds.load('coco/2017', data_dir = "_data", download = False, try_gcs = False, shuffle_files = True)
+
+train_dataset = tfds.load('coco/2017')
 train_dataset = train_dataset.batch(config.task.train_data.global_batch_size)
 
 model_builder = factory.build_maskrcnn
