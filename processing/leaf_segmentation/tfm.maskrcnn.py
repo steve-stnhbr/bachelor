@@ -43,8 +43,114 @@ def preprocess_example(example):
         'groundtruth_masks': masks
     }
 
+def masks_to_boxes(masks: torch.Tensor) -> torch.Tensor:
+        """
+        Compute the bounding boxes around the provided masks.
 
+        Returns a [N, 4] tensor containing bounding boxes. The boxes are in ``(x1, y1, x2, y2)`` format with
+        ``0 <= x1 < x2`` and ``0 <= y1 < y2``.
 
+        Args:
+            masks (Tensor[N, H, W]): masks to transform where N is the number of masks
+                and (H, W) are the spatial dimensions.
+
+        Returns:
+            Tensor[N, 4]: bounding boxes
+        """
+        # if masks.numel() == 0:
+        #     return torch.zeros((0, 4), device=masks.device, dtype=torch.float)
+
+        n = masks.shape[0]
+
+        bounding_boxes = torch.zeros(
+            (n, 4), device=masks.device, dtype=torch.float)
+
+        for index, mask in enumerate(masks):
+            if mask.sum() < self.area_threshold:
+                continue
+            y, x = torch.where(mask != 0)
+            bounding_boxes[index, 0] = torch.min(x)
+            bounding_boxes[index, 1] = torch.min(y)
+            bounding_boxes[index, 2] = torch.max(x)
+            bounding_boxes[index, 3] = torch.max(y)
+        bounding_boxes_area = bounding_boxes.sum(dim=1)
+        bounding_boxes = bounding_boxes[~(bounding_boxes_area==0)]
+        return bounding_boxes, bounding_boxes_area
+
+class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
+    """Leaf Instance dataset."""
+
+    VERSION = tfds.core.Version('1.0.0')
+    RELEASE_NOTES = {
+        '1.0.0': 'Initial release.',
+    }
+
+    def _info(self) -> tfds.core.DatasetInfo:
+        """Dataset metadata."""
+        return tfds.core.DatasetInfo(
+            builder=self,
+            description="Leaf instance dataset with RGB images and instance masks.",
+            features=FeaturesDict({
+                'image': tfds.features.Image(shape=(None, None, 3), dtype=uint8),
+                'image/filename': tfds.features.Text(shape=(), dtype=string),
+                'image/id': int64,
+                'objects': tfds.features.Sequence({
+                    'area': int64,
+                    'bbox': tfds.features.BBoxFeature(shape=(4,), dtype=float32),
+                    'id': int64,
+                    'is_crowd': bool,
+                    'label': tfds.features.ClassLabel(shape=(), dtype=int64, num_classes=80),
+                }),
+            }),
+            supervised_keys=('image', 'segmentation_mask'),
+        )
+
+    def _split_generators(self, dl_manager: tfds.download.DownloadManager):
+        """Returns SplitGenerators."""
+        # Specify the path to your dataset
+        path = '/path/to/your/dataset/'
+        return {
+            'train': self._generate_examples(path),
+        }
+
+    def _generate_examples(self, path):
+        """Yields examples."""
+        images_dir = os.path.join(path, 'images')
+        masks_dir = os.path.join(path, 'leaf_instances')
+        
+        for i, filename in enumerate(os.listdir(images_dir)):
+            if filename.endswith('.png'):
+                image_path = os.path.join(images_dir, filename)
+                mask_path = os.path.join(masks_dir, filename)
+                
+                # Load image and mask
+                image = np.array(Image.open(image_path))
+                mask = np.array(Image.open(mask_path))
+                
+                # Ensure mask is 2D (H, W) and convert to 3D (H, W, 1)
+                if mask.ndim == 2:
+                    mask = mask[..., np.newaxis]
+                
+                bbox, area = masks_to_boxes(mask)
+
+                yield {
+                    'image': image,
+                    'image/filename': filename,
+                    'image/id': i,
+                    'objects': [
+                        {
+                            'id': i * j,
+                            'bbox': bbox,
+                            'area': area,
+                            'is_crowd': False,
+                            'label': 1
+                        }
+                        for i, bbox, area in enumerate(masks_to_boxes(mask))
+                    ]
+                }
+
+tfds.load.register_dataset_builder('leaf_detection', LeafDetection)
+train_ dataset = tfds.load('leaf_detection', split='train')
 train_dataset = tfds.load('coco/2017')
 train_dataset = train_dataset.batch(config.task.train_data.global_batch_size)
 
