@@ -2351,7 +2351,7 @@ class MaskRCNN():
             
             metric = keras.metrics.Mean(name=name)
             metric.update_state = lambda x, y=None, sample_weight=None: metric.update_state(metric_fn(x))
-            self.keras_model.add_metric(metric)
+            self.keras_model.add_metric(metric.result())
 
     def set_trainable(self, layer_regex, keras_model=None, indent=0, verbose=1):
         """Sets model layers as trainable if their names match
