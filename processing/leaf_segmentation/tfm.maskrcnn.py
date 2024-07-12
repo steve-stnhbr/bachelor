@@ -44,7 +44,7 @@ def preprocess_example(example):
     }
 
 
-train_dataset = tfds.load('coco', data_dir = "_data/coco", download = False, try_gcs = False,
+train_dataset = tfds.load('coco', data_dir = "_data", download = False, try_gcs = False,
     split = 'train', shuffle_files = True)
 train_dataset = train_dataset.batch(config.task.train_data.global_batch_size)
 
