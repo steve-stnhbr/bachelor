@@ -66,10 +66,12 @@ def masks_to_boxes(masks, area_threshold=50):
     bounding_boxes = bounding_boxes[~(bounding_boxes_area==0)]
     return bounding_boxes, bounding_boxes_area
 
-def _load_data(self, image_path, mask_path):
+def _load_data(self, slice):
+    image_path = slice[0]
     image = tf.io.read_file(image_path)
     image = tf.image.decode_png(image, channels=3)
     
+    mask_path = slice[1]
     mask = tf.io.read_file(mask_path)
     mask = tf.image.decode_png(mask, channels=1)
     
