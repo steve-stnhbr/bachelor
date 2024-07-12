@@ -1654,7 +1654,7 @@ def get_output_signature(config, random_rois):
 
     return (inputs_signature, outputs_signature)
 
-def get_data_generator_output_signature(config):
+def get_data_generator_output_signature(rois):
     """Defines the output_signature for the data_generator based on detection_targets.
 
     Args:
@@ -1667,7 +1667,7 @@ def get_data_generator_output_signature(config):
     output_signature = ()
 
     # If detection_targets is True, define specific output tensors
-    if config.TRAIN_ROIS:
+    if rois:
         batch_size = config.BATCH_SIZE
         mrcnn_class_ids_shape = (batch_size, 1)
         mrcnn_bbox_shape = (batch_size, config.MAX_GT_INSTANCES, 4)
@@ -1689,7 +1689,7 @@ def create_dataset(dataset, config, batch_size=1, shuffle=True, augment=False,
         lambda: data_generator(dataset, config, shuffle, augment, augmentation,
                                 random_rois, batch_size, detection_targets, 
                                 no_augmentation_sources),
-        output_signature=get_data_generator_output_signature(config)
+        output_signature=get_data_generator_output_signature(random_rois)
     ).prefetch(tf.data.AUTOTUNE)
 
 
