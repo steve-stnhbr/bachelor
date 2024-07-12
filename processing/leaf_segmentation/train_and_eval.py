@@ -80,10 +80,10 @@ def execute(model, name=None, lab=False, batch_size=32, epochs=15, data='_data',
 
     if train_data is None:
         train_dir = os.path.join(data, 'train')
-        train_data = gen_dataset(train_dir, MASK_SUBDIR, batch_size=batch_size, lab=lab, input_shape=model.inputs[0].shape[1:3])
+        train_data = gen_dataset(train_dir, MASK_SUBDIR, batch_size=batch_size, lab=lab, input_shape=INPUT_SHAPE[:2])
     if val_data is None:
         val_dir = os.path.join(data, 'val')
-        val_data = gen_dataset(val_dir, MASK_SUBDIR, batch_size=batch_size, lab=lab, input_shape=model.inputs[0].shape[1:3])
+        val_data = gen_dataset(val_dir, MASK_SUBDIR, batch_size=batch_size, lab=lab, input_shape=INPUT_SHAPE[:2])
     # test_dir = os.path.join(data, 'test')
     #test_datagen = gen_dataset(TEST_DATA_PATH, MASK_SUBDIR, batch_size=batch_size, lab=lab)
 
