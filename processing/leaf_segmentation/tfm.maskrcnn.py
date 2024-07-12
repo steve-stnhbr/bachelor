@@ -6,6 +6,7 @@ from official.vision.modeling import factory
 from official.core import exp_factory
 from official.core import config_definitions as cfg
 from official.vision.serving import export_saved_model_lib
+import os
 
 import numpy as np
 
@@ -65,6 +66,31 @@ def masks_to_boxes(masks, area_threshold=50):
     bounding_boxes = bounding_boxes[~(bounding_boxes_area==0)]
     return bounding_boxes, bounding_boxes_area
 
+def _load_data(self, image_path, mask_path):
+    image = tf.io.read_file(image_path)
+    image = tf.image.decode_png(image, channels=3)
+    
+    mask = tf.io.read_file(mask_path)
+    mask = tf.image.decode_png(mask, channels=1)
+    
+    filename = tf.strings.split(image_path, os.path.sep)[-1]
+    image_id = tf.strings.to_number(tf.strings.split(filename, '.')[0], out_type=tf.int32)
+    
+    # You'll need to implement masks_to_boxes function
+    boxes, areas = tf.py_function(self.masks_to_boxes, [mask], [tf.float32, tf.float32])
+    
+    return {
+        'image': image,
+        'image/filename': filename,
+        'image/id': image_id,
+        'objects': {
+            'id': tf.range(tf.shape(boxes)[0], dtype=tf.int32),
+            'bbox': boxes,
+            'area': areas,
+            'is_crowd': tf.zeros(tf.shape(boxes)[0], dtype=tf.bool),
+            'label': tf.ones(tf.shape(boxes)[0], dtype=tf.int32)
+        }
+    }
 
 class LeafInstanceDataset(tf.data.Dataset):
     def __init__(self, path, mask_path='leaf_instance'):
@@ -107,56 +133,14 @@ class LeafInstanceDataset(tf.data.Dataset):
             ]
         }
 
-    
 
-# class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
-#     """Leaf Instance dataset."""
+path = "_data/combined"
+mask_path = "leaf_instances"
 
-#     VERSION = tfds.core.Version('1.0.0')
-#     RELEASE_NOTES = {
-#         '1.0.0': 'Initial release.',
-#     }
-
-#     def _info(self) -> tfds.core.DatasetInfo:
-#         """Dataset metadata."""
-#         return tfds.core.DatasetInfo(
-#             builder=self,
-#             description="Leaf instance dataset with RGB images and instance masks.",
-#             features=tfds.features.FeaturesDict({
-#                 'image': tfds.features.Image(shape=(None, None, 3), dtype=np.uint8),
-#                 'image/filename': tfds.features.Text(),
-#                 'image/id': np.int64,
-#                 'objects': tfds.features.Sequence({
-#                     'area': np.int64,
-#                     'bbox': tfds.features.BBoxFeature(),
-#                     'id': np.int64,
-#                     'is_crowd': tf.bool,
-#                     'label': tfds.features.ClassLabel(num_classes=80),
-#                 }),
-#             }),
-#             supervised_keys=('image', 'segmentation_mask'),
-#         )
-
-#     def _split_generators(self, dl_manager: tfds.download.DownloadManager):
-#         """Returns SplitGenerators."""
-#         # Specify the path to your dataset
-#         path = '_data/combined'
-#         return {
-#             'train': self._generate_examples(os.path.join(path, 'train')),
-#         }
-
-#     def _generate_examples(self, path):
-#         """Yields examples."""
-#         images_dir = os.path.join(path, 'images')
-#         masks_dir = os.path.join(path, 'leaf_instances')
-        
-#         for i, filename in enumerate(os.listdir(images_dir)):
-#             if filename.endswith('.png'):
-                
-
-
-#train_dataset = tfds.load('leaf_detection', split='train')
-train_dataset = LeafInstanceDataset('_data/combined')
+image_files = [os.path.join(path, 'images', file) for file in os.listdir(os.path.join(path, 'images'))]
+mask_files = [os.path.join(path, mask_path, file) for file in os.listdir(os.path.join(path, mask_path))]
+train_dataset = tf.data.Dataset.from_tensor_slices((image_files, mask_files))
+train_dataset = train_dataset.map(_load_data, num_parallel_calls=tf.data.AUTOTUNE)
 train_dataset = train_dataset.batch(config.task.train_data.global_batch_size)
 
 model_builder = factory.build_maskrcnn
