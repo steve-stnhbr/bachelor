@@ -2314,35 +2314,35 @@ class MaskRCNN():
             learning_rate=learning_rate, momentum=momentum,
             clipnorm=self.config.GRADIENT_CLIP_NORM)
 
-        # Add Losses
-        loss_names = [
-            "rpn_class_loss",  "rpn_bbox_loss",
-            "mrcnn_class_loss", "mrcnn_bbox_loss", "mrcnn_mask_loss"]
+        # # Add Losses
+        # loss_names = [
+        #     "rpn_class_loss",  "rpn_bbox_loss",
+        #     "mrcnn_class_loss", "mrcnn_bbox_loss", "mrcnn_mask_loss"]
         
-        def make_loss_function(name):
-            layer = self.keras_model.get_layer(name)
-            def loss_fn(y_true, y_pred):
-                loss = layer.output
-                self.keras_model.add_loss(loss)
-                return loss
-            return loss_fn
+        # def make_loss_function(name):
+        #     layer = self.keras_model.get_layer(name)
+        #     def loss_fn(y_true, y_pred):
+        #         loss = layer.output
+        #         self.keras_model.add_loss(loss)
+        #         return loss
+        #     return loss_fn
 
-        loss_dict = {name: make_loss_function(name) for name in loss_names}
+        # loss_dict = {name: make_loss_function(name) for name in loss_names}
 
-        # Add L2 Regularization
-        # Skip gamma and beta weights of batch normalization layers.
-        reg_losses = [
-            keras.regularizers.l2(self.config.WEIGHT_DECAY)(w) / tf.cast(tf.size(w), tf.float32)
-            for w in self.keras_model.trainable_weights
-            if 'gamma' not in w.name and 'beta' not in w.name]
+        # # Add L2 Regularization
+        # # Skip gamma and beta weights of batch normalization layers.
+        # reg_losses = [
+        #     keras.regularizers.l2(self.config.WEIGHT_DECAY)(w) / tf.cast(tf.size(w), tf.float32)
+        #     for w in self.keras_model.trainable_weights
+        #     if 'gamma' not in w.name and 'beta' not in w.name]
         
-        # Add regularization loss
-        def reg_loss_fn(y_true, y_pred):
-            reg_loss = tf.add_n(reg_losses)
-            self.keras_model.add_loss(reg_loss)
-            return reg_loss
+        # # Add regularization loss
+        # def reg_loss_fn(y_true, y_pred):
+        #     reg_loss = tf.add_n(reg_losses)
+        #     self.keras_model.add_loss(reg_loss)
+        #     return reg_loss
 
-        loss_dict['reg_loss'] = reg_loss_fn
+        # loss_dict['reg_loss'] = reg_loss_fn
 
         # Compile
         self.keras_model.compile(
