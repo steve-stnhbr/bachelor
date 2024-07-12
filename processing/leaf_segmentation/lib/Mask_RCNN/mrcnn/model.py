@@ -2306,45 +2306,47 @@ class MaskRCNN():
         return weights_path
 
     def compile(self, learning_rate, momentum):
-        """Gets the model ready for training. Adds losses, regularization, and
-        metrics. Then calls the Keras compile() function.
-        """
-        # Optimizer object
-        optimizer = keras.optimizers.SGD(
-            learning_rate=learning_rate, momentum=momentum,
-            clipnorm=self.config.GRADIENT_CLIP_NORM)
+    """Gets the model ready for training. Adds losses, regularization, and
+    metrics. Then calls the Keras compile() function.
+    """
+    # Optimizer object
+    optimizer = keras.optimizers.SGD(
+        learning_rate=learning_rate, momentum=momentum,
+        clipnorm=self.config.GRADIENT_CLIP_NORM)
 
-        # Add Losses
-        # First, clear previously set losses to avoid duplication
-        self.keras_model._losses = []
-        self.keras_model._per_input_losses = {}
+    # Add Losses
+    loss_names = [
+        "rpn_class_loss",  "rpn_bbox_loss",
+        "mrcnn_class_loss", "mrcnn_bbox_loss", "mrcnn_mask_loss"]
+    
+    loss_dict = {}
+    for name in loss_names:
+        layer = self.keras_model.get_layer(name)
+        loss_dict[layer.output.name] = lambda y_true, y_pred: y_pred
 
-        loss_names = [
-            "rpn_class_loss",  "rpn_bbox_loss",
-            "mrcnn_class_loss", "mrcnn_bbox_loss", "mrcnn_mask_loss"]
-        
-        loss_dict = {}
-        for name in loss_names:
-            layer = self.keras_model.get_layer(name)
-            loss_dict[layer.output.name] = lambda y_true, y_pred: y_pred
+    # Add L2 Regularization
+    # Skip gamma and beta weights of batch normalization layers.
+    reg_losses = [
+        keras.regularizers.l2(self.config.WEIGHT_DECAY)(w) / tf.cast(tf.size(w), tf.float32)
+        for w in self.keras_model.trainable_weights
+        if 'gamma' not in w.name and 'beta' not in w.name]
+    
+    # Add regularization loss to the loss dictionary
+    loss_dict['reg_loss'] = lambda y_true, y_pred: tf.add_n(reg_losses)
 
-        # Add L2 Regularization
-        # Skip gamma and beta weights of batch normalization layers.
-        reg_losses = [
-            keras.regularizers.l2(self.config.WEIGHT_DECAY)(w) / tf.cast(tf.size(w), tf.float32)
-            for w in self.keras_model.trainable_weights
-            if 'gamma' not in w.name and 'beta' not in w.name]
-        self.keras_model.add_loss(lambda: tf.add_n(reg_losses))
+    # Compile
+    self.keras_model.compile(
+        optimizer=optimizer,
+        loss=loss_dict)
 
-        # Compile
-        self.keras_model.compile(
-            optimizer=optimizer,
-            loss=loss_dict)
-
-        # Add metrics for losses
-        for name in loss_names:
-            if name in self.keras_model.metrics_names:
-                continue
+    # Add metrics for losses
+    for name in loss_names + ['reg_loss']:
+        if name in self.keras_model.metrics_names:
+            continue
+        if name == 'reg_loss':
+            self.keras_model.add_metric(
+                tf.add_n(reg_losses), name=name, aggregation='mean')
+        else:
             layer = self.keras_model.get_layer(name)
             self.keras_model.add_metric(
                 layer.output, name=name, aggregation='mean')
