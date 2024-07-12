@@ -34,7 +34,7 @@ class LeavesConfig(Config):
 
 class LeavesDataset(utils.Dataset):
     def __init__(self, files_dir):
-        super.__init__(self)
+        super().__init__()
 
         self.files_dir = files_dir
 
