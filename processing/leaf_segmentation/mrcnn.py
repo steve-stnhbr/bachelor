@@ -42,9 +42,8 @@ class LeavesDataset(utils.Dataset):
     def load_leaves(self):
         self.add_class(CLASS_NAME, 1, CLASS_NAME)
 
-        for file in self.files_dir:
+        for file in os.listdir(self.files_dir):
             file_path = os.path.join(self.files_dir, file)
-            print(file)
 
             self.add_image(
                 CLASS_NAME,
