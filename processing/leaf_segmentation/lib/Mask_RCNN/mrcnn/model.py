@@ -1178,7 +1178,7 @@ def mrcnn_mask_loss_graph(target_masks, target_class_ids, pred_masks):
     loss = tf.cond(tf.size(y_true) > 0,
                     lambda: tf.keras.losses.binary_crossentropy(y_true, y_pred),
                     lambda: tf.constant(0.0))
-    loss = tf.mean(loss)
+    loss = tf.reduce_mean(loss)
     return loss
 
 
