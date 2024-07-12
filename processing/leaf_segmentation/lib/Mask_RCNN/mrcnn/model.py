@@ -1017,7 +1017,7 @@ def smooth_l1_loss(y_true, y_pred):
     y_true and y_pred are typically: [N, 4], but could be any shape.
     """
     diff = tf.math.abs(y_true - y_pred)
-    less_than_one = tf.cast(tf.mathless(diff, 1.0), "float32")
+    less_than_one = tf.cast(tf.math.less(diff, 1.0), "float32")
     loss = (less_than_one * 0.5 * diff**2) + (1 - less_than_one) * (diff - 0.5)
     return loss
 
