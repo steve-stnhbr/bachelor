@@ -15,6 +15,9 @@ from losses import DiceLoss
 import lib.Mask_RCNN.mrcnn.config as mrcnn_config
 import lib.Mask_RCNN.mrcnn.model as modellib
 from data import CustomMRCNNDataset
+import keras
+from tensorflow.keras import backend as K
+
 #from models import build_pspnet
 from keras_segmentation.models.pspnet import pspnet_101
 from keras_segmentation.models.segnet import vgg_segnet
@@ -37,13 +40,30 @@ def execute(model, name=None, lab=False, batch_size=32, epochs=15, data='_data',
         name = type(model).__name__
     print(f"Starting training for {name}")
 
+    def iou_loss(y_true, y_pred, smooth=1e-6):
+        y_true = K.flatten(y_true)
+        y_pred = K.flatten(y_pred)
+        
+        intersection = K.sum(y_true * y_pred)
+        total = K.sum(y_true) + K.sum(y_pred)
+        union = total - intersection
+        
+        iou = (intersection + smooth) / (union + smooth)
+        return 1 - iou
+
+    def combined_bce_iou_loss(y_true, y_pred):
+        bce_loss = tf.keras.losses.binary_crossentropy(y_true, y_pred)
+        iou = iou_loss(y_true, y_pred)
+        return bce_loss + iou
+
     model.build(keras.Input((batch_size, ) + INPUT_SHAPE))
 
 #    opt = keras.optimizers.SGD(learning_rate=0.01, momentum=0.9, nesterov=True)
     opt = keras.optimizers.Adam(learning_rate=0.01)
     model.compile(
         #loss=DiceLoss(),
-        loss='categorical_crossentropy',
+        #loss='categorical_crossentropy',
+        loss=combined_bce_iou_loss,
         optimizer=opt,
         metrics=[
             keras.metrics.OneHotMeanIoU(
@@ -148,17 +168,17 @@ def main(batch_size, epochs, data):
         #    None
         #),
         (
+           keras_cv.models.DeepLabV3Plus.from_preset("resnet152", num_classes=CLASSES),
+           "DeepLabV3Plus_resnet152",
+           None,
+           None
+        ),
+        (
             pspnet_101(CLASSES, INPUT_SHAPE[0], INPUT_SHAPE[1]),
             "PSPNet",
             None,
             None
         ),
-        #(
-        #    keras_cv.models.DeepLabV3Plus.from_preset("resnet152", num_classes=CLASSES),
-        #    "DeepLabV3Plus_resnet152",
-        #    None,
-        #    None
-        #),
         #(
         #    modellib.MaskRCNN(mode="training", model_dir=os.getcwd(), config=mrcnn_config_instance).keras_model,
         #    "Mask R-CNN",
