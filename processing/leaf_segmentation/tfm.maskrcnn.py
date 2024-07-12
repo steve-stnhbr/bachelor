@@ -61,8 +61,9 @@ class CustomMaskRCNNConfig(MaskRCNNConfig):
         # Add other custom configurations as needed
 
 @click.command()
-@click.argument(input_path)
-def main(input_path):
+@click.argument('input_path')
+@click.option('-e', '--epochs', type=int, default=10)
+def main(input_path, epochs):
     # Create the model
     config = CustomMaskRCNNConfig()
     model = MaskRCNNModel(config)
@@ -101,7 +102,7 @@ def main(input_path):
     # Train the model
     model.fit(
         train_dataset,
-        epochs=10,
+        epochs=epochs,
         validation_data=val_dataset
     )
 
