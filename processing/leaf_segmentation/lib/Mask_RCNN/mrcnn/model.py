@@ -1674,7 +1674,7 @@ def create_dataset(dataset, config, batch_size=1, shuffle=True, augment=False,
             (tf.TensorSpec(shape=(None, None, 1), dtype=tf.int32),  # mrcnn_class_ids
              tf.TensorSpec(shape=(None, None, 4), dtype=tf.float32),  # mrcnn_bbox
              tf.TensorSpec(shape=(None, None, None), dtype=tf.float32)  # mrcnn_mask
-            ) if random_rois else []
+            ) if random_rois else (tf.TensorSpec(shape=(None,))
         )
     ).prefetch(tf.data.AUTOTUNE)
 
