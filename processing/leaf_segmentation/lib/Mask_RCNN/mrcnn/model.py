@@ -2168,13 +2168,17 @@ class MaskRCNN():
         loss_names = [
             "rpn_class_loss",  "rpn_bbox_loss",
             "mrcnn_class_loss", "mrcnn_bbox_loss", "mrcnn_mask_loss"]
+        class MeanLayer(keras.Layer):
+            def call(self, inputs):
+                return tf.reduce_mean(inputs, keepdims=True)
+        mean_layer = MeanLayer()
         for name in loss_names:
             layer = self.keras_model.get_layer(name)
             if layer.output in self.keras_model.losses:
                 continue
-            loss = lambda: (
-                tf.reduce_mean(layer.output, keepdims=True)
-                * self.config.LOSS_WEIGHTS.get(name, 1.))
+            loss = (
+                mean_layer(layer.output)  # Use the custom layer
+                    * self.config.LOSS_WEIGHTS.get(name, 1.))
             self.keras_model.add_loss(loss)
 
         # Add L2 Regularization
