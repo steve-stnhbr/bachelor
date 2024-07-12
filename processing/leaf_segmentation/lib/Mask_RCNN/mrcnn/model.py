@@ -1035,7 +1035,7 @@ def rpn_class_loss_graph(rpn_match, rpn_class_logits):
     anchor_class = tf.cast(tf.math.equal(rpn_match, 1), tf.int32)
     # Positive and Negative anchors contribute to the loss,
     # but neutral anchors (match value = 0) don't.
-    indices = tf.where(K.not_equal(rpn_match, 0))
+    indices = tf.where(tf.math.not_equal(rpn_match, 0))
     # Pick rows that contribute to the loss and filter out the rest.
     rpn_class_logits = tf.gather_nd(rpn_class_logits, indices)
     anchor_class = tf.gather_nd(anchor_class, indices)
