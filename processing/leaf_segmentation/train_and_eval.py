@@ -57,10 +57,10 @@ def execute(model, name=None, lab=False, batch_size=32, epochs=15, data='_data',
 
     if train_data is None:
         train_dir = os.path.join(data, 'train')
-        train_data = gen_dataset(train_dir, MASK_SUBDIR, batch_size=batch_size, lab=lab)
+        train_data = gen_dataset(train_dir, MASK_SUBDIR, batch_size=batch_size, lab=lab, input_shape=model.input.shape[1:3])
     if val_data is None:
         val_dir = os.path.join(data, 'val')
-        val_data = gen_dataset(val_dir, MASK_SUBDIR, batch_size=batch_size, lab=lab)
+        val_data = gen_dataset(val_dir, MASK_SUBDIR, batch_size=batch_size, lab=lab, input_shape=model.input.shape[1:3])
     # test_dir = os.path.join(data, 'test')
     #test_datagen = gen_dataset(TEST_DATA_PATH, MASK_SUBDIR, batch_size=batch_size, lab=lab)
 
@@ -82,15 +82,15 @@ def execute(model, name=None, lab=False, batch_size=32, epochs=15, data='_data',
     result = model.evaluate(val_data)
     print(result)
 
-def gen_dataset(path, mask_subdir, batch_size, lab):
+def gen_dataset(path, mask_subdir, batch_size, lab, input_shape):
     x = keras.utils.image_dataset_from_directory(os.path.join(path, "images"),
                                                  batch_size=1,
-                                                 image_size=INPUT_SHAPE[:2],
+                                                 image_size=input_shape[:2],
                                                  crop_to_aspect_ratio=True,
                                                  labels=None).map(lambda x0: x0 / 255)#.map(lambda x1: tf.expand_dims(x1, 0) if len(x1.shape) == 3 else x1)
     y = keras.utils.image_dataset_from_directory(os.path.join(path, mask_subdir),
                                                  batch_size=1,
-                                                 image_size=INPUT_SHAPE[:2],
+                                                 image_size=input_shape[:2],
                                                  crop_to_aspect_ratio=True,
                                                  labels=None,
                                                  color_mode='grayscale').map(lambda y: to_categorical(y, num_classes=CLASSES))
