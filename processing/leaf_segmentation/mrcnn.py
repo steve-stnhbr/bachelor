@@ -43,7 +43,7 @@ class LeavesDataset(utils.Dataset):
         self.add_class(CLASS_NAME, 1, CLASS_NAME)
 
         for file in self.files_dir:
-            file_path = os.path.join(file)
+            file_path = os.path.join(self.files_dir, file)
 
             self.add_image(
                 CLASS_NAME,
