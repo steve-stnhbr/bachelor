@@ -140,7 +140,11 @@ path = "_data/combined/train"
 mask_path = "leaf_instances"
 
 image_files = [os.path.join(path, 'images', file) for file in os.listdir(os.path.join(path, 'images'))]
+image_files = tf.convert_to_tensor(image_files, dtype=tf.string)
+
 mask_files = [os.path.join(path, mask_path, file) for file in os.listdir(os.path.join(path, mask_path))]
+mask_files = tf.convert_to_tensor(mask_files, dtype=tf.string)
+
 train_dataset = tf.data.Dataset.from_tensor_slices((image_files, mask_files))
 train_dataset = train_dataset.map(_load_data, num_parallel_calls=tf.data.AUTOTUNE)
 train_dataset = train_dataset.batch(config.task.train_data.global_batch_size)
