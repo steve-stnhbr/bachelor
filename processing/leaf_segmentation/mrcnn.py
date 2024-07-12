@@ -67,7 +67,7 @@ class LeavesDataset(utils.Dataset):
         mask_dir = os.path.join(os.path.dirname(os.path.dirname(info['path'])), "leaf_instances")
 
         # Read mask files from .png image
-        mask = skimage.io.imread(os.path.join(mask_dir, info['image_id']), as_gray=True)
+        mask = skimage.io.imread(os.path.join(mask_dir, info['id']), as_gray=True)
         mask = to_categorical(mask)
         # Return mask, and array of class IDs of each instance. Since we have
         # one class ID, we return an array of ones
@@ -76,7 +76,7 @@ class LeavesDataset(utils.Dataset):
     def image_reference(self, image_id):
         """Return the path of the image."""
         info = self.image_info[image_id]
-        if info["source"] == "nucleus":
+        if info["source"] == CLASS_NAME:
             return info["id"]
         else:
             super(self.__class__, self).image_reference(image_id)       
