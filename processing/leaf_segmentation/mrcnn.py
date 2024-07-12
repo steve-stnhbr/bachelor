@@ -1,6 +1,6 @@
 import lib.Mask_RCNN.mrcnn.utils as utils
 import os
-from imgaug import augmenters as iaa
+# from imgaug import augmenters as iaa
 import click
 import numpy as np
 from tensorflow.keras.utils import to_categorical
@@ -82,15 +82,15 @@ class LeavesDataset(utils.Dataset):
             super(self.__class__, self).image_reference(image_id)       
     
 def train(path, epochs=24, batch_size=8, model_dir=os.getcwd()):
-    augmentation = iaa.SomeOf((0, 2), [
-        iaa.Fliplr(0.5),
-        iaa.Flipud(0.5),
-        iaa.OneOf([iaa.Affine(rotate=90),
-                   iaa.Affine(rotate=180),
-                   iaa.Affine(rotate=270)]),
-        iaa.Multiply((0.8, 1.5)),
-        iaa.GaussianBlur(sigma=(0.0, 5.0))
-    ])
+    # augmentation = iaa.SomeOf((0, 2), [
+    #     iaa.Fliplr(0.5),
+    #     iaa.Flipud(0.5),
+    #     iaa.OneOf([iaa.Affine(rotate=90),
+    #                iaa.Affine(rotate=180),
+    #                iaa.Affine(rotate=270)]),
+    #     iaa.Multiply((0.8, 1.5)),
+    #     iaa.GaussianBlur(sigma=(0.0, 5.0))
+    # ])
 
     config = LeavesConfig()
 
@@ -104,7 +104,7 @@ def train(path, epochs=24, batch_size=8, model_dir=os.getcwd()):
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
                 epochs=20,
-                augmentation=augmentation,
+                augmentation=None,
                 layers='heads')
     
 @click.command()
