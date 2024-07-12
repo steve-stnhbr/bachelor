@@ -85,10 +85,10 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
                 'image/id': np.int64,
                 'objects': tfds.features.Sequence({
                     'area': np.int64,
-                    'bbox': tfds.features.BBoxFeature(shape=(4,), dtype=float32),
+                    'bbox': tfds.features.BBoxFeature(shape=(4,), dtype=np.float32),
                     'id': np.int64,
                     'is_crowd': bool,
-                    'label': tfds.features.ClassLabel(shape=(), dtype=int64, num_classes=80),
+                    'label': tfds.features.ClassLabel(shape=(), dtype=np.int64, num_classes=80),
                 }),
             }),
             supervised_keys=('image', 'segmentation_mask'),
