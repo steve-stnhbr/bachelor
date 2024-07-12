@@ -949,7 +949,7 @@ def fpn_classifier_graph(rois, feature_maps, image_meta,
     x = KL.TimeDistributed(KL.Dense(num_classes * 4, activation='linear'),
                            name='mrcnn_bbox_fc')(shared)
     # Reshape to [batch, num_rois, NUM_CLASSES, (dy, dx, log(dh), log(dw))]
-    #s = K.int_shape(x)
+    #s = tf.keras.backend.int_shape(x)
     s = x.shape
     mrcnn_bbox = KL.Reshape((s[1], num_classes, 4), name="mrcnn_bbox")(x)
 
@@ -1122,7 +1122,7 @@ def mrcnn_bbox_loss_graph(target_bbox, target_class_ids, pred_bbox):
     # Reshape to merge batch and roi dimensions for simplicity.
     target_class_ids = K.reshape(target_class_ids, (-1,))
     target_bbox = K.reshape(target_bbox, (-1, 4))
-    pred_bbox = K.reshape(pred_bbox, (-1, K.int_shape(pred_bbox)[2], 4))
+    pred_bbox = K.reshape(pred_bbox, (-1, tf.keras.backend.int_shape(pred_bbox)[2], 4))
 
     # Only positive ROIs contribute to the loss. And only
     # the right class_id of each ROI. Get their indices.
@@ -2005,7 +2005,7 @@ class MaskRCNN():
                 shape=[None, 4], name="input_gt_boxes", dtype=tf.float32)
             # Normalize coordinates
             gt_boxes = KL.Lambda(lambda x: norm_boxes_graph(
-                x, K.shape(input_image)[1:3]), output_shape=(None, 4))(input_gt_boxes)
+                x, tf.shape(input_image)[1:3]), output_shape=(None, 4))(input_gt_boxes)
             # 3. GT Masks (zero padded)
             # [batch, height, width, MAX_GT_INSTANCES]
             if config.USE_MINI_MASK:
@@ -2121,7 +2121,7 @@ class MaskRCNN():
                                       name="input_roi", dtype=np.int32)
                 # Normalize coordinates
                 target_rois = KL.Lambda(lambda x: norm_boxes_graph(
-                    x, K.shape(input_image)[1:3]))(input_rois)
+                    x, tf.shape(input_image)[1:3]))(input_rois)
             else:
                 target_rois = rpn_rois
 
