@@ -134,7 +134,7 @@ class LeafInstanceDataset(tf.data.Dataset):
         }
 
 
-path = "_data/combined"
+path = "_data/combined/train"
 mask_path = "leaf_instances"
 
 image_files = [os.path.join(path, 'images', file) for file in os.listdir(os.path.join(path, 'images'))]
