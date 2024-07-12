@@ -1654,16 +1654,28 @@ def get_output_signature(config, random_rois):
 
     return (inputs_signature, outputs_signature)
 
-def create_dataset(dataset, config, batch_size=1, shuffle=True, augment=False,
-                   augmentation=None, random_rois=True, detection_targets=False,
+def create_dataset(dataset, config, batch_size=1, shuffle=True, augment=False, 
+                   augmentation=None, random_rois=0, detection_targets=False, 
                    no_augmentation_sources=None):
-    output_signature = get_output_signature(config, random_rois)
-
+    
     return tf.data.Dataset.from_generator(
         lambda: data_generator(dataset, config, shuffle, augment, augmentation,
-                                random_rois, batch_size, detection_targets,
+                                random_rois, batch_size, detection_targets, 
                                 no_augmentation_sources),
-        #output_signature=output_signature
+        output_signature=(
+            (tf.TensorSpec(shape=(None, config.IMAGE_SHAPE[0], config.IMAGE_SHAPE[1], 3), dtype=tf.float32),  # images
+             tf.TensorSpec(shape=(None, 10), dtype=tf.float32),  # image_meta
+             tf.TensorSpec(shape=(None, None, 1), dtype=tf.int32),  # rpn_match
+             tf.TensorSpec(shape=(None, config.RPN_TRAIN_ANCHORS_PER_IMAGE, 4), dtype=tf.float32),  # rpn_bbox
+             tf.TensorSpec(shape=(None, config.MAX_GT_INSTANCES), dtype=tf.int32),  # gt_class_ids
+             tf.TensorSpec(shape=(None, config.MAX_GT_INSTANCES, 4), dtype=tf.int32),  # gt_boxes
+             tf.TensorSpec(shape=(None, config.IMAGE_SHAPE[0], config.IMAGE_SHAPE[1], config.MAX_GT_INSTANCES), dtype=tf.float32)  # gt_masks
+            ),
+            (tf.TensorSpec(shape=(None, None, 1), dtype=tf.int32),  # mrcnn_class_ids
+             tf.TensorSpec(shape=(None, None, 4), dtype=tf.float32),  # mrcnn_bbox
+             tf.TensorSpec(shape=(None, None, None), dtype=tf.float32)  # mrcnn_mask
+            ) if random_rois else []
+        )
     ).prefetch(tf.data.AUTOTUNE)
 
 
