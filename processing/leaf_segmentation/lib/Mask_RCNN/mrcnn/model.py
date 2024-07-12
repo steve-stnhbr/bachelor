@@ -2501,13 +2501,13 @@ class MaskRCNN():
             layers = layer_regex[layers]
 
         # Data generators
-        train_generator = create_dataset(train_dataset, self.config, shuffle=True,
-                                         augmentation=augmentation,
-                                         batch_size=self.config.BATCH_SIZE,
-                                         no_augmentation_sources=no_augmentation_sources)
+        # train_generator = create_dataset(train_dataset, self.config, shuffle=True,
+        #                                  augmentation=augmentation,
+        #                                  batch_size=self.config.BATCH_SIZE,
+        #                                  no_augmentation_sources=no_augmentation_sources)
         train_generator = MaskRCNNDataset(train_dataset, self.config, self.config.BATCH_SIZE, no_augmentation_sources=no_augmentation_sources)
-        val_generator = create_dataset(val_dataset, self.config, shuffle=True,
-                                       batch_size=self.config.BATCH_SIZE)
+        # val_generator = create_dataset(val_dataset, self.config, shuffle=True,
+        #                                batch_size=self.config.BATCH_SIZE)
         val_generator = MaskRCNNDataset(val_dataset, self.config, self.config.BATCH_SIZE)
 
         # Create log_dir if it does not exist
