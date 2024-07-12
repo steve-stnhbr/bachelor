@@ -2306,59 +2306,48 @@ class MaskRCNN():
         return weights_path
 
     def compile(self, learning_rate, momentum):
-        """Gets the model ready for training. Adds losses, regularization, and
-        metrics. Then calls the Keras compile() function.
-        """
-        # Optimizer object
-        optimizer = keras.optimizers.SGD(
-            learning_rate=learning_rate, momentum=momentum,
-            clipnorm=self.config.GRADIENT_CLIP_NORM)
-        # Add Losses
-        # First, clear previously set losses to avoid duplication
-        self.keras_model._losses = []
-        self.keras_model._per_input_losses = {}
-        loss_names = [
-            "rpn_class_loss",  "rpn_bbox_loss",
-            "mrcnn_class_loss", "mrcnn_bbox_loss", "mrcnn_mask_loss"]
-        class MeanLayer(keras.Layer):
-            def call(self, inputs):
-                return tf.reduce_mean(inputs, keepdims=True)
-        mean_layer = MeanLayer()
-        losses = []
-        for name in loss_names:
-            layer = self.keras_model.get_layer(name)
-            if layer.output in self.keras_model.losses:
-                continue
-            loss = (
-                mean_layer(layer.output)  # Use the custom layer
-                    * self.config.LOSS_WEIGHTS.get(name, 1.))
-            #self.keras_model.add_loss(loss)
-            losses.append(loss)
+    """Gets the model ready for training. Adds losses, regularization, and
+    metrics. Then calls the Keras compile() function.
+    """
+    # Optimizer object
+    optimizer = keras.optimizers.SGD(
+        learning_rate=learning_rate, momentum=momentum,
+        clipnorm=self.config.GRADIENT_CLIP_NORM)
 
-        # Add L2 Regularization
-        # Skip gamma and beta weights of batch normalization layers.
-        reg_losses = [
-            keras.regularizers.l2(self.config.WEIGHT_DECAY)(w) / tf.cast(tf.size(w), tf.float32)
-            for w in self.keras_model.trainable_weights
-            if 'gamma' not in w.name and 'beta' not in w.name]
-        #self.keras_model.add_loss(tf.add_n(reg_losses))
-        losses.append(tf.add_n(reg_losses))
+    # Add Losses
+    # First, clear previously set losses to avoid duplication
+    self.keras_model._losses = []
+    self.keras_model._per_input_losses = {}
 
-        # Compile
-        self.keras_model.compile(
-            optimizer=optimizer,
-            loss=losses)
+    loss_names = [
+        "rpn_class_loss",  "rpn_bbox_loss",
+        "mrcnn_class_loss", "mrcnn_bbox_loss", "mrcnn_mask_loss"]
+    
+    loss_dict = {}
+    for name in loss_names:
+        layer = self.keras_model.get_layer(name)
+        loss_dict[layer.output.name] = lambda y_true, y_pred: y_pred
 
-        # # Add metrics for losses
-        # for name in loss_names:
-        #     if name in self.keras_model.metrics_names:
-        #         continue
-        #     layer = self.keras_model.get_layer(name)
-        #     self.keras_model.metrics_names.append(name)
-        #     loss = (
-        #         mean_layer(layer.output)
-        #             * self.config.LOSS_WEIGHTS.get(name, 1.))
-        #     self.keras_model.metrics_tensors.append(loss)
+    # Add L2 Regularization
+    # Skip gamma and beta weights of batch normalization layers.
+    reg_losses = [
+        keras.regularizers.l2(self.config.WEIGHT_DECAY)(w) / tf.cast(tf.size(w), tf.float32)
+        for w in self.keras_model.trainable_weights
+        if 'gamma' not in w.name and 'beta' not in w.name]
+    self.keras_model.add_loss(lambda: tf.add_n(reg_losses))
+
+    # Compile
+    self.keras_model.compile(
+        optimizer=optimizer,
+        loss=loss_dict)
+
+    # Add metrics for losses
+    for name in loss_names:
+        if name in self.keras_model.metrics_names:
+            continue
+        layer = self.keras_model.get_layer(name)
+        self.keras_model.add_metric(
+            layer.output, name=name, aggregation='mean')
 
     def set_trainable(self, layer_regex, keras_model=None, indent=0, verbose=1):
         """Sets model layers as trainable if their names match
