@@ -87,7 +87,7 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
                     'area': np.int64,
                     'bbox': tfds.features.BBoxFeature(),
                     'id': np.int64,
-                    'is_crowd': bool,
+                    'is_crowd': tf.bool,
                     'label': tfds.features.ClassLabel(num_classes=80),
                 }),
             }),
