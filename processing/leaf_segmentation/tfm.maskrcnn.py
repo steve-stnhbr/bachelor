@@ -147,7 +147,7 @@ train_dataset = tf.data.Dataset.from_tensor_slices((image_files, mask_files))
 train_dataset = train_dataset.map(_load_data, num_parallel_calls=tf.data.AUTOTUNE)
 train_dataset = train_dataset.batch(config.task.train_data.global_batch_size)
 
-model_builder = factory.build_maskrcnn
+model_builder = factory.build_maskrcnn(config)
 model = model_builder(config.task.model)
 
 model.fit(train_dataset)
