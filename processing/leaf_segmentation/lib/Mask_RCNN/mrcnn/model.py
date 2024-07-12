@@ -1664,7 +1664,7 @@ def create_dataset(dataset, config, batch_size=1, shuffle=True, augment=False,
                                 random_rois, batch_size, detection_targets,
                                 no_augmentation_sources),
         output_signature=output_signature
-    ).batch(batch_size).prefetch(tf.data.AUTOTUNE)
+    ).prefetch(tf.data.AUTOTUNE)
 
 
 def data_generator(dataset, config, shuffle=True, augment=False, augmentation=None,
