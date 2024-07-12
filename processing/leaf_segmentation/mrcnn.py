@@ -67,9 +67,9 @@ def train(path, epochs=24, batch_size=8, model_dir=os.getcwd()):
                                   model_dir=model_dir)
 
     dataset_train = LeavesDataset(os.path.join(path, 'train'))
-    print(len(dataset_train.image_ids))
+    print(len(os.listdir(os.path.join(path, 'val'))), len(dataset_train.image_ids))
     dataset_val = LeavesDataset(os.path.join(path, 'val'))
-    print(len(dataset_val.image_ids))
+    print(len(os.listdir(os.path.join(path, 'val'))), len(dataset_val.image_ids))
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
                 epochs=20,
