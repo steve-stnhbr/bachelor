@@ -20,7 +20,7 @@ class LeavesConfig(Config):
     GPU_COUNT = 1
     IMAGES_PER_GPU = 1
     IMAGE_SHAPE = (1024, 1024, 3)
-    USE_MINI_MASK = True
+    USE_MINI_MASK = False
     MINI_MASK_SHAPE = (56, 56)  # Adjust this if needed
     MAX_GT_INSTANCES = 100
 
