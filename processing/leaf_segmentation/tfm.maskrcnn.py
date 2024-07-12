@@ -4,8 +4,8 @@ from PIL import Image
 import os
 import click
 import tensorflow as tf
-from official.modeling.maskrcnn_model import MaskRCNNModel
-from official.vision.configs.maskrcnn_config import MaskRCNNConfig
+from official.vision.models import MaskRCNNModel
+from official.vision.configs import MaskRCNN as MaskRCNNConfig
 
 CLASSES = 1
 
