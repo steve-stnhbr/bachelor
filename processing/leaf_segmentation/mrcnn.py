@@ -43,7 +43,6 @@ class LeavesDataset(utils.Dataset):
         self.add_class(CLASS_NAME, 1, CLASS_NAME)
 
         for file in self.files_dir:
-            print("ADDD")
             file_path = os.path.join(file)
 
             self.add_image(
@@ -68,9 +67,9 @@ def train(path, epochs=24, batch_size=8, model_dir=os.getcwd()):
                                   model_dir=model_dir)
 
     dataset_train = LeavesDataset(os.path.join(path, 'train'))
-    print(len(os.listdir(os.path.join(path, 'train'))), len(dataset_train.image_ids))
+    dataset_train.prepare()
     dataset_val = LeavesDataset(os.path.join(path, 'val'))
-    print(len(os.listdir(os.path.join(path, 'val'))), len(dataset_val.image_ids))
+    dataset_val.prepare()
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
                 epochs=20,
