@@ -2342,7 +2342,7 @@ class MaskRCNN():
             self.keras_model.add_loss(reg_loss)
             return reg_loss
 
-        print(len(model.outputs), len(loss_dict))
+        print(len(self.keras_model.outputs), len(loss_dict))
 
         # Compile
         self.keras_model.compile(
