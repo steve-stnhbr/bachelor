@@ -98,7 +98,7 @@ def execute(model, name=None, lab=False, batch_size=32, epochs=15, data='_data',
     model.compile(
         #loss=DiceLoss(),
         #loss='categorical_crossentropy',
-        loss=multiclass_weighted_tanimoto_loss(None),
+        loss=multiclass_weighted_tanimoto_loss([1] * CLASSES),
         optimizer=opt,
         metrics=[
             keras.metrics.OneHotMeanIoU(
