@@ -138,7 +138,7 @@ def main(input_path, epochs):
     mask_roi_aligner = tf.keras.layers.Lambda(lambda x: x)  # Placeholder
 
     # Instantiate the MaskRCNNModel
-    mask_rcnn_model = MaskRCNNModel(
+    model = MaskRCNNModel(
         backbone=backbone,
         decoder=decoder,
         rpn_head=rpn_head,
