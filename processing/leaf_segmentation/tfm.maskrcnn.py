@@ -7,6 +7,8 @@ from official.core import exp_factory
 from official.core import config_definitions as cfg
 from official.vision.serving import export_saved_model_lib
 
+import numpy as np
+
 
 experiment_type = 'maskrcnn_resnetfpn_coco'
 config = exp_factory.get_exp_config(experiment_type)
@@ -62,17 +64,17 @@ def masks_to_boxes(masks: torch.Tensor) -> torch.Tensor:
 
         n = masks.shape[0]
 
-        bounding_boxes = torch.zeros(
+        bounding_boxes = np.zeros(
             (n, 4), device=masks.device, dtype=torch.float)
 
         for index, mask in enumerate(masks):
             if mask.sum() < self.area_threshold:
                 continue
-            y, x = torch.where(mask != 0)
-            bounding_boxes[index, 0] = torch.min(x)
-            bounding_boxes[index, 1] = torch.min(y)
-            bounding_boxes[index, 2] = torch.max(x)
-            bounding_boxes[index, 3] = torch.max(y)
+            y, x = np.nonzero(mask)
+            bounding_boxes[index, 0] = np.min(x)
+            bounding_boxes[index, 1] = np.min(y)
+            bounding_boxes[index, 2] = np.max(x)
+            bounding_boxes[index, 3] = np.max(y)
         bounding_boxes_area = bounding_boxes.sum(dim=1)
         bounding_boxes = bounding_boxes[~(bounding_boxes_area==0)]
         return bounding_boxes, bounding_boxes_area
@@ -91,13 +93,13 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
             builder=self,
             description="Leaf instance dataset with RGB images and instance masks.",
             features=FeaturesDict({
-                'image': tfds.features.Image(shape=(None, None, 3), dtype=uint8),
-                'image/filename': tfds.features.Text(shape=(), dtype=string),
-                'image/id': int64,
+                'image': tfds.features.Image(shape=(None, None, 3), dtype=np.uint8),
+                'image/filename': tfds.features.Text(shape=(), dtype=str),
+                'image/id': np.int64,
                 'objects': tfds.features.Sequence({
-                    'area': int64,
+                    'area': np.int64,
                     'bbox': tfds.features.BBoxFeature(shape=(4,), dtype=float32),
-                    'id': int64,
+                    'id': np.int64,
                     'is_crowd': bool,
                     'label': tfds.features.ClassLabel(shape=(), dtype=int64, num_classes=80),
                 }),
@@ -108,9 +110,9 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
     def _split_generators(self, dl_manager: tfds.download.DownloadManager):
         """Returns SplitGenerators."""
         # Specify the path to your dataset
-        path = '/path/to/your/dataset/'
+        path = '_data/combined'
         return {
-            'train': self._generate_examples(path),
+            'train': self._generate_examples(os.path.join(path, 'train')),
         }
 
     def _generate_examples(self, path):
@@ -130,8 +132,6 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
                 # Ensure mask is 2D (H, W) and convert to 3D (H, W, 1)
                 if mask.ndim == 2:
                     mask = mask[..., np.newaxis]
-                
-                bbox, area = masks_to_boxes(mask)
 
                 yield {
                     'image': image,
