@@ -2172,7 +2172,7 @@ class MaskRCNN():
             def call(self, inputs):
                 return tf.reduce_mean(inputs, keepdims=True)
         mean_layer = MeanLayer()
-        print(self.keras_model.add_loss)
+        losses = []
         for name in loss_names:
             layer = self.keras_model.get_layer(name)
             if layer.output in self.keras_model.losses:
@@ -2180,7 +2180,8 @@ class MaskRCNN():
             loss = (
                 mean_layer(layer.output)  # Use the custom layer
                     * self.config.LOSS_WEIGHTS.get(name, 1.))
-            self.keras_model.add_loss(loss)
+            #self.keras_model.add_loss(loss)
+            losses.append(loss)
 
         # Add L2 Regularization
         # Skip gamma and beta weights of batch normalization layers.
@@ -2193,7 +2194,7 @@ class MaskRCNN():
         # Compile
         self.keras_model.compile(
             optimizer=optimizer,
-            loss=[None] * len(self.keras_model.outputs))
+            loss=([None] * len(self.keras_model.outputs)) + losses)
 
         # Add metrics for losses
         for name in loss_names:
