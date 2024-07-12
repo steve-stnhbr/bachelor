@@ -35,7 +35,7 @@ MASK_SUBDIR = "leaf_instances"
 def load_transform(paths):
     return cai.datasets.load_images_from_files(paths, target_size=INPUT_SHAPE[:2], lab=True, rescale=True, smart_resize=True)
 
-def execute(model, name=None, lab=False, batch_size=32, epochs=15, data='_data', train_data=None, val_data=None):
+def execute(model, name=None, lab=False, batch_size=32, epochs=15, data='_data', train_data=None, val_data=None, input_shape=INPUT_SHAPE):
     if name is None:
         name = type(model).__name__
     print(f"Starting training for {name}")
@@ -80,10 +80,10 @@ def execute(model, name=None, lab=False, batch_size=32, epochs=15, data='_data',
 
     if train_data is None:
         train_dir = os.path.join(data, 'train')
-        train_data = gen_dataset(train_dir, MASK_SUBDIR, batch_size=batch_size, lab=lab, input_shape=INPUT_SHAPE[:2])
+        train_data = gen_dataset(train_dir, MASK_SUBDIR, batch_size=batch_size, lab=lab, input_shape=input_shape[:2])
     if val_data is None:
         val_dir = os.path.join(data, 'val')
-        val_data = gen_dataset(val_dir, MASK_SUBDIR, batch_size=batch_size, lab=lab, input_shape=INPUT_SHAPE[:2])
+        val_data = gen_dataset(val_dir, MASK_SUBDIR, batch_size=batch_size, lab=lab, input_shape=input_shape[:2])
     # test_dir = os.path.join(data, 'test')
     #test_datagen = gen_dataset(TEST_DATA_PATH, MASK_SUBDIR, batch_size=batch_size, lab=lab)
 
