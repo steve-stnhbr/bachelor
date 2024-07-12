@@ -2003,9 +2003,22 @@ class MaskRCNN():
             # [batch, MAX_GT_INSTANCES, (y1, x1, y2, x2)] in image coordinates
             input_gt_boxes = KL.Input(
                 shape=[None, 4], name="input_gt_boxes", dtype=tf.float32)
+            class NormBoxesLayer(tf.keras.layers.Layer):
+                def __init__(self, **kwargs):
+                    super(NormBoxesLayer, self).__init__(**kwargs)
+
+                def call(self, inputs):
+                    boxes, image = inputs
+                    h, w = tf.cast(tf.shape(image)[1], tf.float32), tf.cast(tf.shape(image)[2], tf.float32)
+                    scale = tf.stack([h, w, h, w])
+                    shift = tf.stack([0., 0., 0., 0.])
+                    return tf.divide(boxes - shift, scale)
+
+                def compute_output_shape(self, input_shape):
+                    return input_shape[0]
+
             # Normalize coordinates
-            gt_boxes = KL.Lambda(lambda x: norm_boxes_graph(
-                x, tf.shape(input_image)[1:3]), output_shape=(None, 4))(input_gt_boxes)
+            gt_boxes = NormBoxesLayer()([input_gt_boxes, input_image])(input_gt_boxes)
             # 3. GT Masks (zero padded)
             # [batch, height, width, MAX_GT_INSTANCES]
             if config.USE_MINI_MASK:
