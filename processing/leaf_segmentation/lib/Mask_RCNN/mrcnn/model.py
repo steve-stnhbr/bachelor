@@ -2319,10 +2319,15 @@ class MaskRCNN():
             "rpn_class_loss",  "rpn_bbox_loss",
             "mrcnn_class_loss", "mrcnn_bbox_loss", "mrcnn_mask_loss"]
         
-        loss_dict = {}
-        for name in loss_names:
+        def make_loss_function(name):
             layer = self.keras_model.get_layer(name)
-            loss_dict[layer.output.name] = lambda y_true, y_pred: y_pred
+            def loss_fn(y_true, y_pred):
+                loss = layer.output
+                self.keras_model.add_loss(loss)
+                return loss
+            return loss_fn
+
+        loss_dict = {name: make_loss_function(name) for name in loss_names}
 
         # Add L2 Regularization
         # Skip gamma and beta weights of batch normalization layers.
@@ -2331,27 +2336,18 @@ class MaskRCNN():
             for w in self.keras_model.trainable_weights
             if 'gamma' not in w.name and 'beta' not in w.name]
         
-        # Add regularization loss to the loss dictionary
-        loss_dict['reg_loss'] = lambda y_true, y_pred: tf.add_n(reg_losses)
+        # Add regularization loss
+        def reg_loss_fn(y_true, y_pred):
+            reg_loss = tf.add_n(reg_losses)
+            self.keras_model.add_loss(reg_loss)
+            return reg_loss
+
+        loss_dict['reg_loss'] = reg_loss_fn
 
         # Compile
         self.keras_model.compile(
             optimizer=optimizer,
             loss=loss_dict)
-
-        # Add metrics for losses
-        for name in loss_names + ['reg_loss']:
-            if name in self.keras_model.metrics_names:
-                continue
-            if name == 'reg_loss':
-                metric_fn = lambda x: reg_loss
-            else:
-                layer = self.keras_model.get_layer(name)
-                metric_fn = lambda x, name=name: self.keras_model.get_layer(name).output
-            
-            metric = keras.metrics.Mean(name=name)
-            metric.update_state = lambda x, y=None, sample_weight=None: metric.update_state(metric_fn(x))
-            self.keras_model.add_metric(metric.result())
 
     def set_trainable(self, layer_regex, keras_model=None, indent=0, verbose=1):
         """Sets model layers as trainable if their names match
