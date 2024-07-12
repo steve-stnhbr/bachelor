@@ -2056,6 +2056,17 @@ class MaskRCNN():
         rpn_feature_maps = [P2, P3, P4, P5, P6]
         mrcnn_feature_maps = [P2, P3, P4, P5]
 
+        class AnchorsLayer(tf.keras.layers.Layer):
+            def __init__(self, anchors, **kwargs):
+                super(AnchorsLayer, self).__init__(**kwargs)
+                self.anchors = anchors
+
+            def call(self, inputs):
+                return tf.cast(self.anchors, dtype=inputs.dtype)
+
+            def compute_output_shape(self, input_shape):
+                return self.anchors.shape
+
         # Anchors
         if mode == "training":
             anchors = self.get_anchors(config.IMAGE_SHAPE)
@@ -2063,7 +2074,8 @@ class MaskRCNN():
             # TODO: can this be optimized to avoid duplicating the anchors?
             anchors = np.broadcast_to(anchors, (config.BATCH_SIZE,) + anchors.shape)
             # A hack to get around Keras's bad support for constants
-            anchors = KL.Lambda(lambda x: tf.Variable(anchors), output_shape=anchors.shape, name="anchors")(input_image)
+            #anchors = KL.Lambda(lambda x: tf.Variable(anchors), output_shape=anchors.shape, name="anchors")(input_image)
+            anchors = AnchorsLayer(anchors, name="anchors")(input_image)
         else:
             anchors = input_anchors
 
