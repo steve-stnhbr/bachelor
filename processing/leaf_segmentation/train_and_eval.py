@@ -51,45 +51,36 @@ def execute(model, name=None, lab=False, batch_size=32, epochs=15, data='_data',
         
         iou = (intersection + smooth) / (union + smooth)
         return 1 - iou
+    
+    def multiclass_iou_loss(y_true, y_pred, smooth=1e-6):
+        """
+        Compute the IoU loss for multiclass segmentation.
+
+        :param y_true: True labels, one-hot encoded, shape (batch_size, height, width, num_classes)
+        :param y_pred: Predictions, shape (batch_size, height, width, num_classes)
+        :param smooth: Smoothing factor to avoid division by zero
+        :return: Average IoU loss across all classes
+        """
+        num_classes = y_pred.shape[-1]
+        iou_loss_per_class = []
+
+        for c in range(num_classes):
+            y_true_c = y_true[..., c]
+            y_pred_c = y_pred[..., c]
+            
+            intersection = K.sum(y_true_c * y_pred_c)
+            total = K.sum(y_true_c) + K.sum(y_pred_c)
+            union = total - intersection
+
+            iou = (intersection + smooth) / (union + smooth)
+            iou_loss_per_class.append(1 - iou)
+
+        return K.mean(tf.stack(iou_loss_per_class))
 
     def combined_bce_iou_loss(y_true, y_pred):
         bce_loss = tf.keras.losses.binary_crossentropy(y_true, y_pred)
-        iou = iou_loss(y_true, y_pred)
-        return bce_loss - iou
-    
-    def multiclass_weighted_tanimoto_loss(class_weights: Union[list, np.ndarray, tf.Tensor]) -> Callable[[tf.Tensor, tf.Tensor], tf.Tensor]:
-        """
-        Weighted Tanimoto loss.
-
-        Defined in the paper "ResUNet-a: a deep learning framework for semantic segmentation of remotely sensed data",
-        under 3.2.4. Generalization to multiclass imbalanced problems. See https://arxiv.org/pdf/1904.00592.pdf
-
-        Used as loss function for multi-class image segmentation with one-hot encoded masks.
-
-        :param class_weights: Class weight coefficients (Union[list, np.ndarray, tf.Tensor], len=<N_CLASSES>)
-        :return: Weighted Tanimoto loss function (Callable[[tf.Tensor, tf.Tensor], tf.Tensor])
-        """
-        if not isinstance(class_weights, tf.Tensor):
-            class_weights = tf.constant(class_weights)
-
-        def loss(y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
-            """
-            Compute weighted Tanimoto loss.
-
-            :param y_true: True masks (tf.Tensor, shape=(<BATCH_SIZE>, <IMAGE_HEIGHT>, <IMAGE_WIDTH>, <N_CLASSES>))
-            :param y_pred: Predicted masks (tf.Tensor, shape=(<BATCH_SIZE>, <IMAGE_HEIGHT>, <IMAGE_WIDTH>, <N_CLASSES>))
-            :return: Weighted Tanimoto loss (tf.Tensor, shape=(None, ))
-            """
-            axis_to_reduce = range(1, K.ndim(y_pred))  # All axis but first (batch)
-            numerator = y_true * y_pred * class_weights
-            numerator = K.sum(numerator, axis=axis_to_reduce)
-
-            denominator = (y_true**2 + y_pred**2 - y_true * y_pred) * class_weights
-            denominator = K.sum(denominator, axis=axis_to_reduce)
-            return 1 - numerator / denominator
-
-        return loss
-
+        iou = multiclass_iou_loss(y_true, y_pred)
+        return bce_loss + iou
 
     model.build(keras.Input((batch_size, ) + INPUT_SHAPE))
 
@@ -98,7 +89,7 @@ def execute(model, name=None, lab=False, batch_size=32, epochs=15, data='_data',
     model.compile(
         #loss=DiceLoss(),
         #loss='categorical_crossentropy',
-        loss=multiclass_weighted_tanimoto_loss([1.] * CLASSES),
+        loss=combined_bce_iou_loss,
         optimizer=opt,
         metrics=[
             keras.metrics.OneHotMeanIoU(
