@@ -1659,6 +1659,8 @@ def create_dataset(dataset, config, batch_size=1, shuffle=True, augment=False,
                    no_augmentation_sources=None):
     output_signature = get_output_signature(config, random_rois)
 
+    print(output_signature)
+
     return tf.data.Dataset.from_generator(
         lambda: data_generator(dataset, config, shuffle, augment, augmentation,
                                 random_rois, batch_size, detection_targets,
