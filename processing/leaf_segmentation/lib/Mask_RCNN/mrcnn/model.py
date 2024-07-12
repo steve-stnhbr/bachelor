@@ -1655,7 +1655,7 @@ def get_output_signature(config, random_rois):
     return (inputs_signature, outputs_signature)
 
 def create_dataset(dataset, config, batch_size=1, shuffle=True, augment=False,
-                   augmentation=None, random_rois=0, detection_targets=False,
+                   augmentation=None, random_rois=True, detection_targets=False,
                    no_augmentation_sources=None):
     output_signature = get_output_signature(config, random_rois)
 
@@ -2376,7 +2376,6 @@ class MaskRCNN():
                                          augmentation=augmentation,
                                          batch_size=self.config.BATCH_SIZE,
                                          no_augmentation_sources=no_augmentation_sources)
-        train_generator = tf.Da
         val_generator = create_dataset(val_dataset, self.config, shuffle=True,
                                        batch_size=self.config.BATCH_SIZE)
 
