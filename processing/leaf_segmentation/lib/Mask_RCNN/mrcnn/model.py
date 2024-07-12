@@ -2310,55 +2310,55 @@ class MaskRCNN():
         metrics. Then calls the Keras compile() function.
         """
         # Optimizer object
-        optimizer = keras.optimizers.SGD(
+        optimizer = tf.keras.optimizers.SGD(
             learning_rate=learning_rate, momentum=momentum,
             clipnorm=self.config.GRADIENT_CLIP_NORM)
-        # Add Losses
-        # First, clear previously set losses to avoid duplication
-        self.keras_model._losses = []
-        self.keras_model._per_input_losses = {}
-        loss_names = [
-            "rpn_class_loss",  "rpn_bbox_loss",
-            "mrcnn_class_loss", "mrcnn_bbox_loss", "mrcnn_mask_loss"]
-        class MeanLayer(keras.Layer):
-            def call(self, inputs):
-                return tf.reduce_mean(inputs, keepdims=True)
-        mean_layer = MeanLayer()
-        losses = []
-        for name in loss_names:
-            layer = self.keras_model.get_layer(name)
-            if layer.output in self.keras_model.losses:
-                continue
-            loss = (
-                mean_layer(layer.output)  # Use the custom layer
-                    * self.config.LOSS_WEIGHTS.get(name, 1.))
-            #self.keras_model.add_loss(loss)
-            losses.append(loss)
 
-        # Add L2 Regularization
-        # Skip gamma and beta weights of batch normalization layers.
-        reg_losses = [
-            keras.regularizers.l2(self.config.WEIGHT_DECAY)(w) / tf.cast(tf.size(w), tf.float32)
-            for w in self.keras_model.trainable_weights
-            if 'gamma' not in w.name and 'beta' not in w.name]
-        #self.keras_model.add_loss(tf.add_n(reg_losses))
-        losses.append(tf.add_n(reg_losses))
+        # Define loss functions
+        def rpn_class_loss(y_true, y_pred):
+            return tf.reduce_mean(y_pred) * self.config.LOSS_WEIGHTS.get("rpn_class_loss", 1.)
 
-        # Compile
+        def rpn_bbox_loss(y_true, y_pred):
+            return tf.reduce_mean(y_pred) * self.config.LOSS_WEIGHTS.get("rpn_bbox_loss", 1.)
+
+        def mrcnn_class_loss(y_true, y_pred):
+            return tf.reduce_mean(y_pred) * self.config.LOSS_WEIGHTS.get("mrcnn_class_loss", 1.)
+
+        def mrcnn_bbox_loss(y_true, y_pred):
+            return tf.reduce_mean(y_pred) * self.config.LOSS_WEIGHTS.get("mrcnn_bbox_loss", 1.)
+
+        def mrcnn_mask_loss(y_true, y_pred):
+            return tf.reduce_mean(y_pred) * self.config.LOSS_WEIGHTS.get("mrcnn_mask_loss", 1.)
+
+        # L2 Regularization loss
+        def regularization_loss(y_true, y_pred):
+            reg_losses = [
+                tf.keras.regularizers.l2(self.config.WEIGHT_DECAY)(w) / tf.cast(tf.size(w), tf.float32)
+                for w in self.keras_model.trainable_weights
+                if 'gamma' not in w.name and 'beta' not in w.name
+            ]
+            return tf.add_n(reg_losses)
+
+        # Compile the model
         self.keras_model.compile(
             optimizer=optimizer,
-            loss=losses)
+            loss={
+                'rpn_class_loss': rpn_class_loss,
+                'rpn_bbox_loss': rpn_bbox_loss,
+                'mrcnn_class_loss': mrcnn_class_loss,
+                'mrcnn_bbox_loss': mrcnn_bbox_loss,
+                'mrcnn_mask_loss': mrcnn_mask_loss,
+                'regularization_loss': regularization_loss
+            }
+        )
 
-        # # Add metrics for losses
-        # for name in loss_names:
-        #     if name in self.keras_model.metrics_names:
-        #         continue
-        #     layer = self.keras_model.get_layer(name)
-        #     self.keras_model.metrics_names.append(name)
-        #     loss = (
-        #         mean_layer(layer.output)
-        #             * self.config.LOSS_WEIGHTS.get(name, 1.))
-        #     self.keras_model.metrics_tensors.append(loss)
+        # Add metrics
+        self.keras_model.add_metric(rpn_class_loss(None, self.keras_model.get_layer('rpn_class_loss').output), name='rpn_class_loss', aggregation='mean')
+        self.keras_model.add_metric(rpn_bbox_loss(None, self.keras_model.get_layer('rpn_bbox_loss').output), name='rpn_bbox_loss', aggregation='mean')
+        self.keras_model.add_metric(mrcnn_class_loss(None, self.keras_model.get_layer('mrcnn_class_loss').output), name='mrcnn_class_loss', aggregation='mean')
+        self.keras_model.add_metric(mrcnn_bbox_loss(None, self.keras_model.get_layer('mrcnn_bbox_loss').output), name='mrcnn_bbox_loss', aggregation='mean')
+        self.keras_model.add_metric(mrcnn_mask_loss(None, self.keras_model.get_layer('mrcnn_mask_loss').output), name='mrcnn_mask_loss', aggregation='mean')
+        self.keras_model.add_metric(regularization_loss(None, None), name='regularization_loss', aggregation='mean')
 
     def set_trainable(self, layer_regex, keras_model=None, indent=0, verbose=1):
         """Sets model layers as trainable if their names match
