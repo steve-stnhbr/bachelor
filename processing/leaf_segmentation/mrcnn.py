@@ -1,4 +1,4 @@
-import lib.Mask_RCNN.mrcnn.utils as utils
+import lib.mrcnn_tf2.mrcnn.utils as utils
 import os
 # from imgaug import augmenters as iaa
 import click
@@ -6,10 +6,10 @@ import numpy as np
 from tensorflow.keras.utils import to_categorical
 import skimage.io
 
-from lib.Mask_RCNN.mrcnn.config import Config
-from lib.Mask_RCNN.mrcnn import utils
-from lib.Mask_RCNN.mrcnn import model as modellib
-from lib.Mask_RCNN.mrcnn import visualize
+from lib.mrcnn_tf2.mrcnn.config import Config
+from lib.mrcnn_tf2.mrcnn import utils
+from lib.mrcnn_tf2.mrcnn import model as modellib
+from lib.mrcnn_tf2.mrcnn import visualize
 
 CLASS_NAME = "leaf"
 CLASSES = 2
@@ -118,8 +118,6 @@ def train(path, epochs=24, batch_size=8, model_dir=os.getcwd()):
 @click.option('-m', '--model_dir', default=os.getcwd())
 def main(file_path, epochs, batch_size, model_dir):
     train(file_path, model_dir=model_dir)
-
-
 
 if __name__ == '__main__':
     main()
