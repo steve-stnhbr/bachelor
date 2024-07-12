@@ -73,6 +73,10 @@ def _load_data(image_path, mask_path):
     mask = tf.io.read_file(mask_path)
     mask = tf.image.decode_png(mask, channels=1)
     
+    image = tf.image.resize(image, [640, 640])
+    mask = tf.image.resize(mask, [640, 640])
+    image = tf.keras.applications.resnet.preprocess_input(image)
+    
     filename = tf.strings.split(image_path, os.path.sep)[-1]
     image_id = tf.strings.to_number(tf.strings.split(filename, '.')[0], out_type=tf.int32)
     
@@ -147,7 +151,24 @@ train_dataset = tf.data.Dataset.from_tensor_slices((image_files, mask_files))
 train_dataset = train_dataset.map(_load_data, num_parallel_calls=tf.data.AUTOTUNE)
 train_dataset = train_dataset.batch(config.task.train_data.global_batch_size)
 
-model_builder = factory.build_maskrcnn(config)
+input_spec = {
+        'image': tf.TensorSpec(shape=(None, None, 3), dtype=tf.uint8),
+        'image/filename': tf.TensorSpec(shape=(), dtype=tf.string),
+        'image/id': tf.TensorSpec(shape=(), dtype=tf.int64),
+        'image/source_id': tf.TensorSpec(shape=(), dtype=tf.string),
+        'image/height': tf.TensorSpec(shape=(), dtype=tf.int64),
+        'image/width': tf.TensorSpec(shape=(), dtype=tf.int64),
+        'objects': {
+            'id': tf.TensorSpec(shape=(None,), dtype=tf.int64),
+            'area': tf.TensorSpec(shape=(None,), dtype=tf.float32),
+            'bbox': tf.TensorSpec(shape=(None, 4), dtype=tf.float32),
+            'label': tf.TensorSpec(shape=(None,), dtype=tf.int64),
+            'is_crowd': tf.TensorSpec(shape=(None,), dtype=tf.bool),
+            'segmentation': tf.TensorSpec(shape=(None, None, None), dtype=tf.float32),
+        }
+    }
+
+model_builder = factory.build_maskrcnn(input_spec, config)
 model = model_builder(config.task.model)
 
 model.fit(train_dataset)
