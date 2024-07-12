@@ -1879,26 +1879,29 @@ def create_dataset(dataset, config, shuffle=True, augment=False, augmentation=No
                 gt_boxes = gt_boxes[ids]
                 gt_masks = gt_masks[:, :, ids]
 
-            # Prepare the data to be yielded
-            inputs = {
-                'input_image': mold_image(image.astype(np.float32), config),
-                'input_image_meta': image_meta,
-                'input_rpn_match': rpn_match[:, np.newaxis],
-                'input_rpn_bbox': rpn_bbox,
-                'input_gt_class_ids': gt_class_ids,
-                'input_gt_boxes': gt_boxes,
-                'input_gt_masks': gt_masks
-            }
+            # Prepare the inputs list
+            inputs = [
+                mold_image(image.astype(np.float32), config),
+                image_meta,
+                rpn_match[:, np.newaxis],
+                rpn_bbox,
+                gt_class_ids,
+                gt_boxes,
+                gt_masks
+            ]
+
+            # Prepare the outputs list
+            outputs = []
 
             if random_rois:
-                inputs['input_rpn_rois'] = rpn_rois
+                inputs.extend([rpn_rois])
                 if detection_targets:
-                    inputs['input_rois'] = rois
-                    inputs['input_mrcnn_class_ids'] = mrcnn_class_ids
-                    inputs['input_mrcnn_bbox'] = mrcnn_bbox
-                    inputs['input_mrcnn_mask'] = mrcnn_mask
+                    inputs.extend([rois])
+                    # Keras requires that output and targets have the same number of dimensions
+                    mrcnn_class_ids = np.expand_dims(mrcnn_class_ids, -1)
+                    outputs.extend([mrcnn_class_ids, mrcnn_bbox, mrcnn_mask])
 
-            yield inputs
+            yield inputs, outputs
 
     # Create the tf.data.Dataset
     output_shapes = {
