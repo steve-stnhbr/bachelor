@@ -64,9 +64,6 @@ class CustomMaskRCNNConfig(MaskRCNNConfig):
 @click.argument('input_path')
 @click.option('-e', '--epochs', type=int, default=10)
 def main(input_path, epochs):
-    # Create the model
-    config = CustomMaskRCNNConfig()
-    model = MaskRCNNModel(config)
 
     train_dir = os.path.join(input_path, "train")
     train_images_dir = os.path.join(train_dir, 'images')
@@ -93,6 +90,71 @@ def main(input_path, epochs):
         class_ids=class_ids,  # Adjust based on your class IDs
         image_size=(224, 224),
         batch_size=2
+    )
+
+    # Create a simple backbone
+    backbone = tf.keras.applications.ResNet50(
+        include_top=False, weights='imagenet', input_shape=(224, 224, 3))
+
+    # Create a simple decoder (Feature Pyramid Network)
+    def build_fpn_decoder(backbone):
+        c3 = backbone.get_layer('conv3_block4_out').output
+        c4 = backbone.get_layer('conv4_block6_out').output
+        c5 = backbone.get_layer('conv5_block3_out').output
+        
+        p5 = tf.keras.layers.Conv2D(256, 1, 1, 'same')(c5)
+        p4 = tf.keras.layers.Add()([
+            tf.keras.layers.UpSampling2D()(p5),
+            tf.keras.layers.Conv2D(256, 1, 1, 'same')(c4)
+        ])
+        p3 = tf.keras.layers.Add()([
+            tf.keras.layers.UpSampling2D()(p4),
+            tf.keras.layers.Conv2D(256, 1, 1, 'same')(c3)
+        ])
+        
+        return tf.keras.Model(inputs=backbone.inputs, outputs=[p3, p4, p5])
+
+    decoder = build_fpn_decoder(backbone)
+
+    # Create other necessary components
+    rpn_head = tf.keras.layers.Conv2D(512, 3, padding='same', activation='relu')
+    detection_head = tf.keras.Sequential([
+        tf.keras.layers.Dense(1024, activation='relu'),
+        tf.keras.layers.Dense(512, activation='relu'),
+        tf.keras.layers.Dense(4 + 91)  # 4 for bbox, 91 for COCO classes
+    ])
+    roi_generator = tf.keras.layers.Lambda(lambda x: x)  # Placeholder
+    roi_sampler = tf.keras.layers.Lambda(lambda x: x)  # Placeholder
+    roi_aligner = tf.keras.layers.Lambda(lambda x: x)  # Placeholder
+    detection_generator = tf.keras.layers.Lambda(lambda x: x)  # Placeholder
+
+    # Create mask-specific components
+    mask_head = tf.keras.Sequential([
+        tf.keras.layers.Conv2D(256, 3, padding='same', activation='relu'),
+        tf.keras.layers.Conv2DTranspose(256, 2, 2, activation='relu'),
+        tf.keras.layers.Conv2D(91, 1, 1, activation='sigmoid')  # 91 for COCO classes
+    ])
+    mask_sampler = tf.keras.layers.Lambda(lambda x: x)  # Placeholder
+    mask_roi_aligner = tf.keras.layers.Lambda(lambda x: x)  # Placeholder
+
+    # Instantiate the MaskRCNNModel
+    mask_rcnn_model = MaskRCNNModel(
+        backbone=backbone,
+        decoder=decoder,
+        rpn_head=rpn_head,
+        detection_head=detection_head,
+        roi_generator=roi_generator,
+        roi_sampler=roi_sampler,
+        roi_aligner=roi_aligner,
+        detection_generator=detection_generator,
+        mask_head=mask_head,
+        mask_sampler=mask_sampler,
+        mask_roi_aligner=mask_roi_aligner,
+        min_level=3,
+        max_level=5,
+        num_scales=3,
+        aspect_ratios=[0.5, 1.0, 2.0],
+        anchor_size=4.0
     )
 
     # Compile the model
