@@ -179,7 +179,6 @@ input_spec = {
 
 input_spec = tf.keras.layers.InputSpec(shape=(BATCH_SIZE,) + IMAGE_SIZE + (3,))
 
-model_builder = factory.build_maskrcnn(input_spec, config)
-model = model_builder(config.task.model)
+model = factory.build_maskrcnn(input_spec, config)
 
 model.fit(train_dataset)
