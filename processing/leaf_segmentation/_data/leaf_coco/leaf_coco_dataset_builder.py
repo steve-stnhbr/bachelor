@@ -133,6 +133,8 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
                 masks = class_labels_to_masks(labels)
                 bboxes, areas = masks_to_boxes(masks)
 
+                width, height, _ = image.shape
+
                 # example = {
                 #     'image': image,
                 #     'image/filename': filename,
