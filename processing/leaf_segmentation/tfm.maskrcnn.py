@@ -9,6 +9,7 @@ from official.vision.serving import export_saved_model_lib
 from official.vision.configs.maskrcnn import maskrcnn_resnetfpn_coco
 from official.vision.modeling.backbones.mobilenet import MobileNet
 from official.vision.modeling.decoders.fpn import FPN
+from official.vision.configs.maskrcnn import MaskRCNN as MaskRCNNConfig
 import os
 
 import numpy as np
@@ -16,7 +17,8 @@ import numpy as np
 
 #experiment_type = 'maskrcnn_resnetfpn_coco'
 #config = exp_factory.get_exp_config(experiment_type)
-config = maskrcnn_resnetfpn_coco()
+#config = maskrcnn_resnetfpn_coco()
+config = MaskRCNNConfig()
 
 # Modify the configuration as needed
 config.task.model.num_classes = 91  # Number of COCO classes
@@ -34,8 +36,6 @@ config.trainer.optimizer_config.learning_rate.type = 'stepwise'
 config.trainer.optimizer_config.learning_rate.stepwise.boundaries = [6000, 8000]
 config.trainer.optimizer_config.learning_rate.stepwise.values = [0.08, 0.008, 0.0008]
 config.norm_activation = 1
-config.task.model.backbone = MobileNet()
-config.task.model.decoder = FPN(config.backbone.outputs)
 
 def preprocess_example(example):
     image = example['image']
