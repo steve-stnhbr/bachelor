@@ -149,7 +149,7 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
                     'image/object/class/label': [1] * len(bboxes),  # Assuming all objects are of class 1
                     'image/object/area': areas,
                     'image/object/is_crowd': [0] * len(bboxes),  # Assuming no crowd annotations
-                    'image/objects/mask': [mask.astype(np.uint8) for mask in masks],
+                    'image/object/mask': [mask.astype(np.uint8) for mask in masks],
                 }
                 
                 yield i, example
