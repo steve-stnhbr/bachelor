@@ -186,7 +186,7 @@ opt = tf.keras.optimizers.SGD(learning_rate=0.0001)
 
 model.compile(
     loss='categorical_crossentropy',
-    optimizer=opt,
+    optimizer='sgd',
 )
 
 model.fit(train_dataset)
