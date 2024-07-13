@@ -13,6 +13,7 @@ import os
 IMAGE_SIZE = (640, 640)
 BATCH_SIZE = 4
 TFDS_NAME = 'leaf_instance_dataset'
+INPUT_PATH = "/home/stefan.steinheber/tensorflow_datasets/leaf_instance_dataset/1.0.0/"
 
 def build_experiment_config():
     # Create a base experiment config
@@ -24,16 +25,22 @@ def build_experiment_config():
     exp_config.task.model.mask_head.num_filters = 256
     exp_config.task.model.mask_head.use_separable_conv = False
     
-    # Set the input config to use your custom dataset
-    exp_config.task.train_data.input_path = ''  # Not used with custom dataset
-    exp_config.task.train_data.tfds_name = TFDS_NAME
-    exp_config.task.train_data.tfds_split = 'train'
-    exp_config.task.train_data.global_batch_size = BATCH_SIZE  # Adjust as needed
-    exp_config.task.train_data.dtype = 'float32'
+    # # Set the input config to use your custom dataset
+    # exp_config.task.train_data.input_path = ''  # Not used with custom dataset
+    # exp_config.task.train_data.tfds_name = TFDS_NAME
+    # exp_config.task.train_data.tfds_split = 'train'
+    # exp_config.task.train_data.global_batch_size = BATCH_SIZE  # Adjust as needed
+    # exp_config.task.train_data.dtype = 'float32'
     
-    exp_config.task.validation_data.input_path = ''
-    exp_config.task.validation_data.tfds_name = TFDS_NAME
-    exp_config.task.validation_data.tfds_split = 'test'
+    # exp_config.task.validation_data.input_path = ''
+    # exp_config.task.validation_data.tfds_name = TFDS_NAME
+    # exp_config.task.validation_data.tfds_split = 'test'
+    # exp_config.task.validation_data.global_batch_size = BATCH_SIZE
+
+    exp_config.task.train_data.input_path = INPUT_PATH + "*train*"
+    exp_config.task.validation_data.input_path = INPUT_PATH + "*val*"
+
+    exp_config.task.train_data.global_batch_size = BATCH_SIZE
     exp_config.task.validation_data.global_batch_size = BATCH_SIZE
 
     train_steps = 2000
@@ -49,17 +56,6 @@ def build_experiment_config():
     exp_config.trainer.optimizer_config.learning_rate.cosine.decay_steps = train_steps
     exp_config.trainer.optimizer_config.learning_rate.cosine.initial_learning_rate = 0.07
     exp_config.trainer.optimizer_config.warmup.linear.warmup_learning_rate = 0.05
-
-
-    # Set up the decoder configuration
-    exp_config.task.train_data.decoder = common.DataDecoder()
-    exp_config.task.train_data.decoder.type = 'tf_example'
-    exp_config.task.train_data.decoder.tf_example_decoder = common.TfExampleDecoder()
-
-    # Set up the decoder configuration
-    exp_config.task.validation_data.decoder = common.DataDecoder()
-    exp_config.task.validation_data.decoder.type = 'tf_example'
-    exp_config.task.validation_data.decoder.tf_example_decoder = common.TfExampleDecoder()
 
     return exp_config
 
