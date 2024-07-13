@@ -11,6 +11,7 @@ from official.vision.modeling.backbones.mobilenet import MobileNet
 from official.vision.modeling.decoders.fpn import FPN
 from official.vision.configs.maskrcnn import MaskRCNN as MaskRCNNConfig
 import os
+import keras
 
 import numpy as np
 
@@ -184,8 +185,14 @@ model = factory.build_maskrcnn(input_spec, config)
 opt = keras.optimizers.SDG(learning_rate=0.0001)
 
 model.compile(
-    opt,
-    loss='categorical_crossentropy'
+    loss='categorical_crossentropy',
+    optimizer=opt,
+    metrics=[
+        keras.metrics.OneHotMeanIoU(
+            num_classes=CLASSES, sparse_y_pred=False
+        ),
+        keras.metrics.CategoricalAccuracy(),
+    ],
 )
 
 model.fit(train_dataset)
