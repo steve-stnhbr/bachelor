@@ -97,7 +97,7 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
                 'image/object/class/label': tfds.features.Sequence(tf.int64),
                 'image/object/area': tfds.features.Sequence(tf.float32),
                 'image/object/is_crowd': tfds.features.Sequence(tf.int64),
-                'image/object/mask': tfds.features.Sequence(tfds.features.Image(shape=(None, None, 1))),
+                'image/object/mask': tfds.features.Sequence(tfds.features.Image(shape=(None, None, 1), dtype=tf.uint8)),
             }),
             supervised_keys=None,
         )
