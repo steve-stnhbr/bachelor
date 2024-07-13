@@ -5,6 +5,7 @@ from official.vision.configs import maskrcnn as exp_cfg
 from official.core import config_definitions as cfg
 from official.core import exp_factory
 from official.vision.tasks import maskrcnn
+import tensorflow_datasets as tfds
 import os
 
 
