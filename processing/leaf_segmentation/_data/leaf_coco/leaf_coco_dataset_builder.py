@@ -111,21 +111,34 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
                     labels = labels[..., np.newaxis]
                     
                 masks = class_labels_to_masks(labels)
+                bboxes, areas = masks_to_boxes(masks)
 
+                # example = {
+                #     'image': image,
+                #     'image/filename': filename,
+                #     'image/id': i,
+                #     'objects': [
+                #         {
+                #             'id': i * j,
+                #             'bbox': bbox[0],
+                #             'area': bbox[1],
+                #             'is_crowd': False,
+                #             'label': 1
+                #         }
+                #         for j, bbox in enumerate(masks_to_boxes(masks))
+                #     ]
+                # }
                 example = {
-                    'image': image,
-                    'image/filename': filename,
-                    'image/id': i,
-                    'objects': [
-                        {
-                            'id': i * j,
-                            'bbox': bbox[0],
-                            'area': bbox[1],
-                            'is_crowd': False,
-                            'label': 1
-                        }
-                        for j, bbox in enumerate(masks_to_boxes(masks))
-                    ]
+                    'image/encoded': image,
+                    'image/height': height,
+                    'image/width': width,
+                    'image/object/bbox/xmin': bboxes[:, 0].tolist(),
+                    'image/object/bbox/xmax': bboxes[:, 2].tolist(),
+                    'image/object/bbox/ymin': bboxes[:, 1].tolist(),
+                    'image/object/bbox/ymax': bboxes[:, 3].tolist(),
+                    'image/object/class/label': [1] * len(bboxes),  # Assuming all objects are of class 1
+                    'image/object/area': areas,
+                    'image/object/is_crowd': [0] * len(bboxes),  # Assuming no crowd annotations
                 }
                 
                 yield i, example
