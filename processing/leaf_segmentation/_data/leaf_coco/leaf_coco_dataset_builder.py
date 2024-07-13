@@ -63,7 +63,7 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
         '1.0.0': 'Initial release.',
     }
 
-    def _info(self) -> tfds.core.DatasetInfo:
+    def _info_alt(self) -> tfds.core.DatasetInfo:
         """Dataset metadata."""
         return tfds.core.DatasetInfo(
             builder=self,
@@ -79,6 +79,26 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
                     'is_crowd': tf.bool,
                     'label': tfds.features.ClassLabel(num_classes=80),
                 }),
+            }),
+            supervised_keys=None,
+        )
+    
+    def _info(self) -> tfds.core.DatasetInfo:
+        """Dataset metadata."""
+        return tfds.core.DatasetInfo(
+            builder=self,
+            description="Leaf instance dataset with RGB images and instance masks.",
+            features=tfds.features.FeaturesDict({
+                'image/encoded': tfds.features.Image(shape=(None, None, 3), dtype=tf.uint8),
+                'image/height': tf.int64,
+                'image/width': tf.int64,
+                'image/object/bbox/xmin': tfds.features.Sequence(tf.float32),
+                'image/object/bbox/xmax': tfds.features.Sequence(tf.float32),
+                'image/object/bbox/ymin': tfds.features.Sequence(tf.float32),
+                'image/object/bbox/ymax': tfds.features.Sequence(tf.float32),
+                'image/object/class/label': tfds.features.Sequence(tf.int64),
+                'image/object/area': tfds.features.Sequence(tf.float32),
+                'image/object/is_crowd': tfds.features.Sequence(tf.int64),
             }),
             supervised_keys=None,
         )
