@@ -40,7 +40,7 @@ def build_experiment_config(train_dataset):
         return train_dataset
 
     task.build_inputs = build_inputs.__get__(task)
-    exp_config.task = task
+    #exp_config.task = task
     return exp_config
 
 
