@@ -122,7 +122,7 @@ with distribution_strategy.scope():
     model, eval_logs = tfm.core.train_lib.run_experiment(
         distribution_strategy=distribution_strategy,
         task=task,
-        mode='train_and_eval',
+        mode='train',
         params=exp_config,
         model_dir=model_dir,
         run_post_eval=True)
