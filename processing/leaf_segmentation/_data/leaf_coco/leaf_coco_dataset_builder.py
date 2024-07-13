@@ -97,6 +97,7 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
                 'image/object/class/label': tfds.features.Sequence(tf.int64),
                 'image/object/area': tfds.features.Sequence(tf.float32),
                 'image/object/is_crowd': tfds.features.Sequence(tf.int64),
+                'image/object/mask': tfds.features.Sequence(tfds.features.Image(shape=(None, None, 1))),
             }),
             supervised_keys=None,
         )
@@ -148,6 +149,7 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
                     'image/object/class/label': [1] * len(bboxes),  # Assuming all objects are of class 1
                     'image/object/area': areas,
                     'image/object/is_crowd': [0] * len(bboxes),  # Assuming no crowd annotations
+                    'image/objects/mask': [mask.astype(np.uint8) for mask in masks],
                 }
                 
                 yield i, example
