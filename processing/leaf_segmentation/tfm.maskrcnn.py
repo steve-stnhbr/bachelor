@@ -6,13 +6,15 @@ from official.vision.modeling import factory
 from official.core import exp_factory
 from official.core import config_definitions as cfg
 from official.vision.serving import export_saved_model_lib
+from official.vision.configs.maskrcnn import maskrcnn_resnetfpn_coco
 import os
 
 import numpy as np
 
 
-experiment_type = 'maskrcnn_resnetfpn_coco'
-config = exp_factory.get_exp_config(experiment_type)
+#experiment_type = 'maskrcnn_resnetfpn_coco'
+#config = exp_factory.get_exp_config(experiment_type)
+config = maskrcnn_resnetfpn_coco()
 
 # Modify the configuration as needed
 config.task.model.num_classes = 91  # Number of COCO classes
