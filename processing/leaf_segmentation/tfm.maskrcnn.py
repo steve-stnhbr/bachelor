@@ -34,8 +34,8 @@ config.trainer.optimizer_config.learning_rate.type = 'stepwise'
 config.trainer.optimizer_config.learning_rate.stepwise.boundaries = [6000, 8000]
 config.trainer.optimizer_config.learning_rate.stepwise.values = [0.08, 0.008, 0.0008]
 config.norm_activation = 1
-config.backbone = MobileNet()
-config.decoder = FPN(config.backbone.outputs)
+config.task.model.backbone = MobileNet()
+config.task.model.decoder = FPN(config.backbone.outputs)
 
 def preprocess_example(example):
     image = example['image']
