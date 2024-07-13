@@ -28,36 +28,47 @@ def build_experiment_config():
     exp_config.task.model.mask_head.num_filters = 256
     exp_config.task.model.mask_head.use_separable_conv = False
     
-    # # Set the input config to use your custom dataset
-    # exp_config.task.train_data.input_path = ''  # Not used with custom dataset
-    # exp_config.task.train_data.tfds_name = TFDS_NAME
-    # exp_config.task.train_data.tfds_split = 'train'
-    # exp_config.task.train_data.global_batch_size = BATCH_SIZE  # Adjust as needed
-    # exp_config.task.train_data.dtype = 'float32'
-    
-    # exp_config.task.validation_data.input_path = ''
-    # exp_config.task.validation_data.tfds_name = TFDS_NAME
-    # exp_config.task.validation_data.tfds_split = 'test'
-    # exp_config.task.validation_data.global_batch_size = BATCH_SIZE
-
-    exp_config.task.annotation_file = None
-
+    # Configure for custom dataset
     exp_config.task.train_data.input_path = INPUT_PATH + "*train*"
     exp_config.task.validation_data.input_path = INPUT_PATH + "*val*"
-
     exp_config.task.train_data.global_batch_size = BATCH_SIZE
     exp_config.task.validation_data.global_batch_size = BATCH_SIZE
 
-    exp_config.task.train_data.parser = exp_cfg.Parser()
-    exp_config.task.validation_data.parser = exp_cfg.Parser()
+    # Disable COCO-specific configurations
+    exp_config.task.annotation_file = None
+    exp_config.task.use_coco_metrics = False
 
+    # Configure data decoders
+    exp_config.task.train_data.decoder = exp_cfg.DataDecoder(
+        decode_jpeg=True,
+        decode_jpg=True,
+        decode_png=True
+    )
+    exp_config.task.validation_data.decoder = exp_cfg.DataDecoder(
+        decode_jpeg=True,
+        decode_jpg=True,
+        decode_png=True
+    )
+
+    # Configure data parsers
+    exp_config.task.train_data.parser = exp_cfg.Parser(
+        num_classes=2,
+        mask_binarize_threshold=0.5,
+        mask_crop_size=112
+    )
+    exp_config.task.validation_data.parser = exp_cfg.Parser(
+        num_classes=2,
+        mask_binarize_threshold=0.5,
+        mask_crop_size=112
+    )
+
+    # Training parameters
     train_steps = 2000
-    exp_config.trainer.steps_per_loop = 200 # steps_per_loop = num_of_training_examples // train_batch_size
-
+    exp_config.trainer.steps_per_loop = 200
     exp_config.trainer.summary_interval = 200
     exp_config.trainer.checkpoint_interval = 200
     exp_config.trainer.validation_interval = 200
-    exp_config.trainer.validation_steps =  200 # validation_steps = num_of_validation_examples // eval_batch_size
+    exp_config.trainer.validation_steps = 200
     exp_config.trainer.train_steps = train_steps
     exp_config.trainer.optimizer_config.warmup.linear.warmup_steps = 200
     exp_config.trainer.optimizer_config.learning_rate.type = 'cosine'
