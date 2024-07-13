@@ -38,18 +38,6 @@ def build_experiment_config():
     exp_config.task.annotation_file = None
     exp_config.task.use_coco_metrics = False
 
-    # Configure data decoders
-    exp_config.task.train_data.decoder = exp_cfg.DataDecoder(
-        decode_jpeg=True,
-        decode_jpg=True,
-        decode_png=True
-    )
-    exp_config.task.validation_data.decoder = exp_cfg.DataDecoder(
-        decode_jpeg=True,
-        decode_jpg=True,
-        decode_png=True
-    )
-
     # Configure data parsers
     exp_config.task.train_data.parser = exp_cfg.Parser(
         num_classes=2,
