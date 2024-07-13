@@ -189,7 +189,7 @@ model.compile(
     optimizer=opt,
     metrics=[
         keras.metrics.OneHotMeanIoU(
-            num_classes=CLASSES, sparse_y_pred=False
+            num_classes=2, sparse_y_pred=False
         ),
         keras.metrics.CategoricalAccuracy(),
     ],
