@@ -7,6 +7,7 @@ from official.core import exp_factory
 from official.vision.tasks import maskrcnn
 from official.vision.dataloaders.tf_example_decoder import TfExampleDecoder
 import tensorflow_datasets as tfds
+import matplotlib.pyplot as plt
 import os
 
 
@@ -110,7 +111,8 @@ with distribution_strategy.scope():
             plt.imshow(image)
             plt.axis("off")
             plt.title(f"Image-{i+1}")
-        plt.show()
+        #plt.show()
+        plt.savefig("out/fig.png")
 
     buffer_size = 100
     num_of_examples = 3
