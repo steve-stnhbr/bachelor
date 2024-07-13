@@ -13,7 +13,6 @@ def masks_to_boxes(masks, area_threshold=50):
     n = masks.shape[0]
     width = masks.shape[1]
     height = masks.shape[2]
-    
 
     bounding_boxes = np.zeros(
         (n, 4), dtype=np.float16)
@@ -33,6 +32,25 @@ def masks_to_boxes(masks, area_threshold=50):
     bounding_boxes[:, 2] /= width
     bounding_boxes[:, 3] /= height
     return bounding_boxes#, bounding_boxes_area
+
+def class_labels_to_masks(labels):
+# Get the shape of the input array
+    x, y, _ = labels.shape
+
+    # Find unique values in the n dimension
+    unique_values = np.unique(labels)
+
+    # Number of unique values
+    u = len(unique_values)
+
+    # Initialize the new array with zeros
+    masks = np.zeros((u, x, y), dtype=int)
+
+    # Create the binary mask for each unique value
+    for i, val in enumerate(unique_values):
+        masks[i] = np.any(mask == val, axis=2).astype(int)
+
+    return masks
 
 class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
     """Leaf Instance dataset."""
@@ -83,13 +101,13 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
                 
                 # Load image and mask
                 image = np.array(Image.open(image_path))
-                mask = np.array(Image.open(mask_path))
+                labels = np.array(Image.open(mask_path))
                 
-                # Ensure mask is 2D (H, W) and convert to 3D (H, W, 1)
-                if mask.ndim == 2:
-                    mask = mask[..., np.newaxis]
+                # Ensure labels is 2D (H, W) and convert to 3D (H, W, 1)
+                if labels.ndim == 2:
+                    labels = labels[..., np.newaxis]
                     
-                mask = np.transpose(mask, (2, 0, 1))
+                masks = class_labels_to_masks(labels)
 
                 example = {
                     'image': image,
@@ -103,7 +121,7 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
                             'is_crowd': False,
                             'label': 1
                         }
-                        for j, bbox in enumerate(masks_to_boxes(mask))
+                        for j, bbox in enumerate(masks_to_boxes(masks))
                     ]
                 }
                 
