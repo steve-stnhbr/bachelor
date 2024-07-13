@@ -67,7 +67,7 @@ exp_config = build_experiment_config()
 
 logical_device_names = [logical_device.name for logical_device in tf.config.list_logical_devices('GPU')]
 
-if empty(logical_device_names):
+if len(logical_device_names) == 0:
     logical_device_names = [logical_device.name for logical_device in tf.config.list_logical_devices()]
 
 distribution_strategy = tf.distribute.OneDeviceStrategy(logical_device_names[0])
