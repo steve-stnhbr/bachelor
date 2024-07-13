@@ -76,6 +76,15 @@ with distribution_strategy.scope():
     model_dir = "out"
     task = tfm.core.task_factory.get_task(exp_config.task, logging_dir=model_dir)
 
+    def inspect_tfrecords(file_pattern):
+        raw_dataset = tf.data.TFRecordDataset(tf.io.gfile.glob(file_pattern))
+        for raw_record in raw_dataset.take(1):
+            example = tf.train.Example()
+            example.ParseFromString(raw_record.numpy())
+            print(example)
+
+    inspect_tfrecords(INPUT_PATH + "*train*")
+
     for images, labels in task.build_inputs(exp_config.task.train_data).take(1):
         print()
         print(labels)
