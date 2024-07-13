@@ -27,11 +27,14 @@ def masks_to_boxes(masks, area_threshold=50):
         bounding_boxes[index, 3] = np.max(y) 
     bounding_boxes_area = bounding_boxes.sum(axis=1)
     bounding_boxes = bounding_boxes[~(bounding_boxes_area==0)]
+
+    bounding_boxes_area = (bounding_boxes[2] - bounding_boxes[0]) * (bounding_boxes[3] - bounding_boxes[1])
+    
     bounding_boxes[:, 0] /= width
     bounding_boxes[:, 1] /= height
     bounding_boxes[:, 2] /= width
     bounding_boxes[:, 3] /= height
-    return bounding_boxes#, bounding_boxes_area
+    return bounding_boxes, bounding_boxes_area
 
 def class_labels_to_masks(labels):
 # Get the shape of the input array
@@ -116,8 +119,8 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
                     'objects': [
                         {
                             'id': i * j,
-                            'bbox': bbox,
-                            'area': (bbox[2] - bbox[0]) * (bbox[3] - bbox[1]),
+                            'bbox': bbox[0],
+                            'area': bbox[1],
                             'is_crowd': False,
                             'label': 1
                         }
