@@ -30,7 +30,9 @@ def build_experiment_config():
     
     # Configure for custom dataset
     exp_config.task.train_data.input_path = INPUT_PATH + "*train*"
+    exp_config.task.validation_data.input_path = INPUT_PATH + "*val*"
     exp_config.task.train_data.global_batch_size = BATCH_SIZE
+    exp_config.task.validation_data.global_batch_size = BATCH_SIZE
 
     # Disable COCO-specific configurations
     exp_config.task.annotation_file = None
