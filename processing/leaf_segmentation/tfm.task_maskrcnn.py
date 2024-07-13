@@ -48,6 +48,12 @@ def build_experiment_config():
     exp_config.trainer.optimizer_config.learning_rate.cosine.initial_learning_rate = 0.07
     exp_config.trainer.optimizer_config.warmup.linear.warmup_learning_rate = 0.05
 
+    def simple_decoder(serialized_example):
+        print("Raw example:", serialized_example)
+        return serialized_example
+
+    exp_config.task.train_data.decoder = simple_decoder
+
     return exp_config
 
 
