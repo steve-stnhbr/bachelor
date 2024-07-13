@@ -60,6 +60,72 @@ class CustomMaskRCNNConfig(MaskRCNNConfig):
         self.image_size = [224, 224, 3]  # Adjust based on your image size
         # Add other custom configurations as needed
 
+
+
+def masks_to_boxes(masks, area_threshold=50):
+    # if masks.numel() == 0:
+    #     return torch.zeros((0, 4), device=masks.device, dtype=torch.float)
+
+    n = masks.shape[0]
+
+    bounding_boxes = np.zeros(
+        (n, 4), dtype=np.float16)
+
+    for index, mask in enumerate(masks):
+        if mask.sum() < area_threshold:
+            continue
+        y, x = np.nonzero(mask)
+        bounding_boxes[index, 0] = np.min(x)
+        bounding_boxes[index, 1] = np.min(y)
+        bounding_boxes[index, 2] = np.max(x)
+        bounding_boxes[index, 3] = np.max(y)
+    bounding_boxes_area = bounding_boxes.sum(axis=1)
+    bounding_boxes = bounding_boxes[~(bounding_boxes_area==0)]
+    return bounding_boxes, bounding_boxes_area
+
+def _load_data(image_path, mask_path):
+    image = tf.io.read_file(image_path)
+    image = tf.image.decode_png(image, channels=3)
+    
+    mask = tf.io.read_file(mask_path)
+    mask = tf.image.decode_png(mask, channels=1)
+    
+    image = tf.image.resize(image, IMAGE_SIZE)
+    mask = tf.image.resize(mask, IMAGE_SIZE)
+    image = tf.keras.applications.resnet.preprocess_input(image)
+    
+    filename = tf.strings.split(image_path, os.path.sep)[-1]
+    image_id = tf.strings.to_number(tf.strings.split(filename, '.')[0], out_type=tf.int32)
+    
+    # You'll need to implement masks_to_boxes function
+    boxes, areas = tf.py_function(masks_to_boxes, [mask], [tf.float32, tf.float32])
+    
+    return {
+        'image': image,
+        'image/filename': filename,
+        'image/id': image_id,
+        'objects': {
+            'id': tf.range(tf.shape(boxes)[0], dtype=tf.int32),
+            'bbox': boxes,
+            'area': areas,
+            'is_crowd': tf.zeros(tf.shape(boxes)[0], dtype=tf.bool),
+            'label': tf.ones(tf.shape(boxes)[0], dtype=tf.int32)
+        }
+    }
+
+path = "_data/combined/train"
+mask_path = "leaf_instances"
+
+image_files = [os.path.join(path, 'images', file) for file in os.listdir(os.path.join(path, 'images'))]
+image_files = tf.convert_to_tensor(image_files, dtype=tf.string)
+
+mask_files = [os.path.join(path, mask_path, file) for file in os.listdir(os.path.join(path, mask_path))]
+mask_files = tf.convert_to_tensor(mask_files, dtype=tf.string)
+
+train_dataset = tf.data.Dataset.from_tensor_slices((image_files, mask_files))
+train_dataset = train_dataset.map(_load_data, num_parallel_calls=tf.data.AUTOTUNE)
+train_dataset = train_dataset.batch(BATCH_SIZE)
+
 @click.command()
 @click.argument('input_path')
 @click.option('-e', '--epochs', type=int, default=10)
