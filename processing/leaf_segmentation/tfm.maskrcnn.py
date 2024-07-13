@@ -14,6 +14,7 @@ import os
 
 import numpy as np
 
+IMAGE_SIZE = (640, 640)
 
 #experiment_type = 'maskrcnn_resnetfpn_coco'
 #config = exp_factory.get_exp_config(experiment_type)
@@ -43,7 +44,7 @@ def preprocess_example(example):
     classes = example['objects']['label']
     masks = example['objects']['mask']
     
-    image = tf.image.resize(image, [640, 640])
+    image = tf.image.resize(image, IMAGE_SIZE)
     image = tf.keras.applications.resnet.preprocess_input(image)
     return {
         'image': image,
@@ -80,8 +81,8 @@ def _load_data(image_path, mask_path):
     mask = tf.io.read_file(mask_path)
     mask = tf.image.decode_png(mask, channels=1)
     
-    image = tf.image.resize(image, [640, 640])
-    mask = tf.image.resize(mask, [640, 640])
+    image = tf.image.resize(image, IMAGE_SIZE)
+    mask = tf.image.resize(mask, IMAGE_SIZE)
     image = tf.keras.applications.resnet.preprocess_input(image)
     
     filename = tf.strings.split(image_path, os.path.sep)[-1]
@@ -174,6 +175,8 @@ input_spec = {
             'segmentation': tf.TensorSpec(shape=(None, None, None), dtype=tf.float32),
         }
     }
+
+input_spec = tf.keras.layers.InputSpec(shape=IMAGE_SIZE + (3,))
 
 model_builder = factory.build_maskrcnn(input_spec, config)
 model = model_builder(config.task.model)
