@@ -99,12 +99,12 @@ with distribution_strategy.scope():
                 scores,
                 category_index={
                     1: {
-                        0: 'background',
-                        1: 'leaf',
+                        'id': 0,
+                        'name': 'background',
                     },
                     2: {
-                        0: 'background',
-                        1: 'leaf',
+                        'id': 1,
+                        'name': 'leaf',
                     },
                 },
                 use_normalized_coordinates=use_normalized_coordinates,
