@@ -79,15 +79,6 @@ with distribution_strategy.scope():
     model_dir = "out"
     task = tfm.core.task_factory.get_task(exp_config.task, logging_dir=model_dir)
 
-    def inspect_tfrecords(file_pattern):
-        raw_dataset = tf.data.TFRecordDataset(tf.io.gfile.glob(file_pattern))
-        for raw_record in raw_dataset.take(1):
-            example = tf.train.Example()
-            example.ParseFromString(raw_record.numpy())
-            print(example)
-
-    inspect_tfrecords(INPUT_PATH + "*train*")
-
     def show_batch(raw_records):
         tf_ex_decoder = TfExampleDecoder(include_mask=True)
         plt.figure(figsize=(20, 20))
@@ -105,7 +96,16 @@ with distribution_strategy.scope():
                 decoded_tensors['groundtruth_boxes'].numpy(),
                 decoded_tensors['groundtruth_classes'].numpy().astype('int'),
                 scores,
-                category_index=category_index,
+                category_index={
+                    1: {
+                        0: 'background',
+                        1: 'leaf',
+                    },
+                    2: {
+                        0: 'background',
+                        1: 'leaf',
+                    },
+                },
                 use_normalized_coordinates=use_normalized_coordinates,
                 min_score_thresh=min_score_thresh,
                 instance_masks=decoded_tensors['groundtruth_instance_masks'].numpy().astype('uint8'),
