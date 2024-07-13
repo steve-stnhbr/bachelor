@@ -71,10 +71,11 @@ with distribution_strategy.scope():
     model_dir = "out"
     task = tfm.core.task_factory.get_task(exp_config.task, logging_dir=model_dir)
 
-    # for images, labels in task.build_inputs(exp_config.task.train_data).take(1):
-    #     print()
-    #     print(f'images.shape: {str(images.shape):16}  images.dtype: {images.dtype!r}')
-    #     print(f'labels.shape: {str(labels.shape):16}  labels.dtype: {labels.dtype!r}')
+    for images, labels in task.build_inputs(exp_config.task.train_data).take(1):
+        print()
+        print(labels)
+        print(f'images.shape: {str(images.shape):16}  images.dtype: {images.dtype!r}')
+        print(f'labels.shape: {str(labels.shape):16}  labels.dtype: {labels.dtype!r}')
 
     model, eval_logs = tfm.core.train_lib.run_experiment(
         distribution_strategy=distribution_strategy,
