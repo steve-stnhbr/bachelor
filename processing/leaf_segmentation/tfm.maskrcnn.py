@@ -15,6 +15,7 @@ import os
 import numpy as np
 
 IMAGE_SIZE = (640, 640)
+BATCH_SIZE = 4
 
 #experiment_type = 'maskrcnn_resnetfpn_coco'
 #config = exp_factory.get_exp_config(experiment_type)
@@ -157,7 +158,7 @@ mask_files = tf.convert_to_tensor(mask_files, dtype=tf.string)
 
 train_dataset = tf.data.Dataset.from_tensor_slices((image_files, mask_files))
 train_dataset = train_dataset.map(_load_data, num_parallel_calls=tf.data.AUTOTUNE)
-train_dataset = train_dataset.batch(8)
+train_dataset = train_dataset.batch(BATCH_SIZE)
 
 input_spec = {
         'image': tf.TensorSpec(shape=(None, None, 3), dtype=tf.uint8),
@@ -176,7 +177,7 @@ input_spec = {
         }
     }
 
-input_spec = tf.keras.layers.InputSpec(shape=IMAGE_SIZE + (3,))
+input_spec = tf.keras.layers.InputSpec(shape=(BATCH_SIZE,) + IMAGE_SIZE + (3,))
 
 model_builder = factory.build_maskrcnn(input_spec, config)
 model = model_builder(config.task.model)
