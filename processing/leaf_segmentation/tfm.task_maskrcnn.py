@@ -87,6 +87,7 @@ with distribution_strategy.scope():
         for i, serialized_example in enumerate(raw_records):
             plt.subplot(1, 3, i + 1)
             decoded_tensors = tf_ex_decoder.decode(serialized_example)
+            print(decoded_tensors)
             image = decoded_tensors['image'].numpy().astype('uint8')
             scores = np.ones(shape=(len(decoded_tensors['groundtruth_boxes'])))
             # print(decoded_tensors['groundtruth_instance_masks'].numpy().shape)
