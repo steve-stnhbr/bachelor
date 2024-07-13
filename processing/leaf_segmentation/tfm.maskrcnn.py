@@ -182,7 +182,7 @@ input_spec = tf.keras.layers.InputSpec(shape=(BATCH_SIZE,) + IMAGE_SIZE + (3,))
 
 model = factory.build_maskrcnn(input_spec, config)
 
-opt = keras.optimizers.SGD(learning_rate=0.0001)
+opt = tf.keras.optimizers.SGD(learning_rate=0.0001)
 
 model.compile(
     loss='categorical_crossentropy',
