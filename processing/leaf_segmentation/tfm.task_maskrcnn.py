@@ -10,6 +10,7 @@ import tensorflow_datasets as tfds
 import matplotlib.pyplot as plt
 import os
 import numpy as np
+from official.vision.utils.object_detection import visualization_utils
 
 
 IMAGE_SIZE = (640, 640)
