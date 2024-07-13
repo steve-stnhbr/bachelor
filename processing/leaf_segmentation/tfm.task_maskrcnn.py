@@ -87,6 +87,7 @@ with distribution_strategy.scope():
     inspect_tfrecords(INPUT_PATH + "*train*")
 
     def show_batch(raw_records):
+        tf_ex_decoder = TfExampleDecoder(include_mask=True)
         plt.figure(figsize=(20, 20))
         use_normalized_coordinates=True
         min_score_thresh = 0.30
