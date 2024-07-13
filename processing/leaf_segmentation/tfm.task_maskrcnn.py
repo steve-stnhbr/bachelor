@@ -39,16 +39,8 @@ def build_experiment_config():
     exp_config.task.use_coco_metrics = False
 
     # Configure data parsers
-    exp_config.task.train_data.parser = exp_cfg.Parser(
-        num_classes=2,
-        mask_binarize_threshold=0.5,
-        mask_crop_size=112
-    )
-    exp_config.task.validation_data.parser = exp_cfg.Parser(
-        num_classes=2,
-        mask_binarize_threshold=0.5,
-        mask_crop_size=112
-    )
+    exp_config.task.train_data.parser = exp_cfg.Parser()
+    exp_config.task.validation_data.parser = exp_cfg.Parser()
 
     # Training parameters
     train_steps = 2000
