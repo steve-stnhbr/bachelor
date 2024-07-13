@@ -12,7 +12,7 @@ IMAGE_SIZE = (640, 640)
 BATCH_SIZE = 4
 TFDS_NAME = 'leaf_instance_dataset'
 
-def build_experiment_config(train_dataset):
+def build_experiment_config():
     # Create a base experiment config
     exp_config = exp_factory.get_exp_config('maskrcnn_mobilenet_coco')
 
@@ -49,15 +49,6 @@ def build_experiment_config(train_dataset):
     exp_config.trainer.optimizer_config.learning_rate.cosine.initial_learning_rate = 0.07
     exp_config.trainer.optimizer_config.warmup.linear.warmup_learning_rate = 0.05
 
-    # Create the task instance
-    task = maskrcnn.MaskRCNNTask(exp_config.task)
-
-    # Override the task's build_inputs method to use your custom dataset
-    def build_inputs(self, params, input_context=None):
-        return train_dataset
-
-    #task.build_inputs = build_inputs.__get__(task)
-    #exp_config.task = task
     return exp_config
 
 
