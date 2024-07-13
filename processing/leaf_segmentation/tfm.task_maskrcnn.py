@@ -43,7 +43,7 @@ def build_experiment_config():
     exp_config.task.validation_data.parser = exp_cfg.Parser()
 
     # Training parameters
-    train_steps = 20000
+    train_steps = 224_000
     exp_config.trainer.steps_per_loop = 200
     exp_config.trainer.summary_interval = 200
     exp_config.trainer.checkpoint_interval = 200
