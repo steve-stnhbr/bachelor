@@ -13,7 +13,7 @@ BATCH_SIZE = 4
 
 def build_experiment_config(train_dataset):
     # Create a base experiment config
-    exp_config = exp_factory.get_exp_config('mask_rcnn')
+    exp_config = exp_factory.get_exp_config('maskrcnn_mobilenet_coco')
 
     # Modify the config as needed
     exp_config.task.model.num_classes = 2  # Adjust based on your number of classes
