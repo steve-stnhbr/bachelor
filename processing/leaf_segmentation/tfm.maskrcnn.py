@@ -156,7 +156,7 @@ mask_files = tf.convert_to_tensor(mask_files, dtype=tf.string)
 
 train_dataset = tf.data.Dataset.from_tensor_slices((image_files, mask_files))
 train_dataset = train_dataset.map(_load_data, num_parallel_calls=tf.data.AUTOTUNE)
-train_dataset = train_dataset.batch(config.task.train_data.global_batch_size)
+train_dataset = train_dataset.batch(8)
 
 input_spec = {
         'image': tf.TensorSpec(shape=(None, None, 3), dtype=tf.uint8),
