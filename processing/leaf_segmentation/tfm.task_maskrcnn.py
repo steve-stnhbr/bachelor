@@ -5,7 +5,7 @@ from official.vision.configs import maskrcnn as exp_cfg
 from official.core import config_definitions as cfg
 from official.core import exp_factory
 from official.vision.tasks import maskrcnn
-from official.vision.dataloaders import TfExampleDecoder
+from official.vision.dataloaders.tf_example_decoder import TfExampleDecoder
 import tensorflow_datasets as tfds
 import os
 
