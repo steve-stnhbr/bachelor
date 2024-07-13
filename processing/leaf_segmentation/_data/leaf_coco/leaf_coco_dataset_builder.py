@@ -48,7 +48,7 @@ def class_labels_to_masks(labels):
 
     # Create the binary mask for each unique value
     for i, val in enumerate(unique_values):
-        masks[i] = np.any(mask == val, axis=2).astype(int)
+        masks[i] = np.any(labels == val, axis=2).astype(int)
 
     return masks
 
