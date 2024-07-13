@@ -68,6 +68,8 @@ exp_config = build_experiment_config()
 logical_device_names = [logical_device.name for logical_device in tf.config.list_logical_devices()]
 distribution_strategy = tf.distribute.OneDeviceStrategy(logical_device_names[0])
 
+print("Created distribution Strategy on Device", logical_device_names[0])
+
 with distribution_strategy.scope():
     model_dir = "out"
     task = tfm.core.task_factory.get_task(exp_config.task, logging_dir=model_dir)
