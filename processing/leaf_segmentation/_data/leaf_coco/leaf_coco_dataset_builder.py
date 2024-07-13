@@ -39,6 +39,9 @@ def class_labels_to_masks(labels):
     # Find unique values in the n dimension
     unique_values = np.unique(labels)
 
+    #remove background class
+    unique_values = np.delete(unique_values, 0)
+
     # Number of unique values
     u = len(unique_values)
 
