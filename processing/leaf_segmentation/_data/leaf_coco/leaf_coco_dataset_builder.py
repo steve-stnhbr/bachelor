@@ -144,7 +144,7 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
                     'image/encoded': image,
                     'image/height': height,
                     'image/width': width,
-                    'image/source_id': source_id,
+                    'image/source_id': str(i),
                     'image/id': i,
                     'image/object/bbox/xmin': bboxes[:, 0].tolist(),
                     'image/object/bbox/xmax': bboxes[:, 2].tolist(),
