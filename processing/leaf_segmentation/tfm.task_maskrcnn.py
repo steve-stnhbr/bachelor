@@ -121,12 +121,6 @@ with distribution_strategy.scope():
     raw_records = tf.data.TFRecordDataset(train_tfrecords).shuffle(buffer_size=buffer_size).take(num_of_examples)
     show_batch(raw_records)
 
-    for images, labels in task.build_inputs(exp_config.task.train_data).take(1):
-        print()
-        print(labels)
-        print(f'images.shape: {str(images.shape):16}  images.dtype: {images.dtype!r}')
-        print(f'labels.shape: {str(labels.shape):16}  labels.dtype: {labels.dtype!r}')
-
     model, eval_logs = tfm.core.train_lib.run_experiment(
         distribution_strategy=distribution_strategy,
         task=task,
