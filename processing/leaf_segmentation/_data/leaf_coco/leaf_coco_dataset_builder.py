@@ -88,6 +88,8 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
                 'image/encoded': tfds.features.Image(shape=(None, None, 3), dtype=tf.uint8),
                 'image/height': tf.int64,
                 'image/width': tf.int64,
+                'image/source_id': tf.string,
+                'image/id': tf.float32,
                 'image/object/bbox/xmin': tfds.features.Sequence(tf.float32),
                 'image/object/bbox/xmax': tfds.features.Sequence(tf.float32),
                 'image/object/bbox/ymin': tfds.features.Sequence(tf.float32),
@@ -131,25 +133,14 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
 
                 width, height, _ = image.shape
 
-                # example = {
-                #     'image': image,
-                #     'image/filename': filename,
-                #     'image/id': i,
-                #     'objects': [
-                #         {
-                #             'id': i * j,
-                #             'bbox': bbox[0],
-                #             'area': bbox[1],
-                #             'is_crowd': False,
-                #             'label': 1
-                #         }
-                #         for j, bbox in enumerate(masks_to_boxes(masks))
-                #     ]
-                # }
+                source_id = os.path.splitext(filename)[0]
+
                 example = {
                     'image/encoded': image,
                     'image/height': height,
                     'image/width': width,
+                    'image/source_id': source_id,
+                    'image/id': tf.strings.to_number(source_id),
                     'image/object/bbox/xmin': bboxes[:, 0].tolist(),
                     'image/object/bbox/xmax': bboxes[:, 2].tolist(),
                     'image/object/bbox/ymin': bboxes[:, 1].tolist(),
