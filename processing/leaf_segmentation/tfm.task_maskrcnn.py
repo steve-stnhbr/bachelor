@@ -28,7 +28,6 @@ def build_experiment_config():
     exp_config.task.train_data.tfds_split = 'train'
     exp_config.task.train_data.global_batch_size = BATCH_SIZE  # Adjust as needed
     exp_config.task.train_data.dtype = 'float32'
-    exp_config.task.train_data.parser = None  # We're not using the default COCO parser
     
     exp_config.task.validation_data.input_path = ''
     exp_config.task.validation_data.tfds_name = TFDS_NAME
