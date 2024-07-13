@@ -7,6 +7,8 @@ from official.core import exp_factory
 from official.core import config_definitions as cfg
 from official.vision.serving import export_saved_model_lib
 from official.vision.configs.maskrcnn import maskrcnn_resnetfpn_coco
+from official.vision.modeling.backbones.mobilenet import MobileNet
+from official.vision.modeling.decoders.fpn import FPN
 import os
 
 import numpy as np
@@ -32,6 +34,8 @@ config.trainer.optimizer_config.learning_rate.type = 'stepwise'
 config.trainer.optimizer_config.learning_rate.stepwise.boundaries = [6000, 8000]
 config.trainer.optimizer_config.learning_rate.stepwise.values = [0.08, 0.008, 0.0008]
 config.norm_activation = 1
+config.backbone = MobileNet()
+config.decoder = FPN(config.backbone.outputs)
 
 def preprocess_example(example):
     image = example['image']
