@@ -11,7 +11,7 @@ import os
 IMAGE_SIZE = (640, 640)
 BATCH_SIZE = 4
 
-def build_maskrcnn_task(train_dataset):
+def build_experiment_config(train_dataset):
     # Create a base experiment config
     exp_config = exp_factory.get_exp_config('mask_rcnn')
 
@@ -40,8 +40,8 @@ def build_maskrcnn_task(train_dataset):
         return train_dataset
 
     task.build_inputs = build_inputs.__get__(task)
-
-    return task
+    exp_config.task = task
+    return exp_config
 
 
 def masks_to_boxes(masks, area_threshold=50):
@@ -109,4 +109,37 @@ train_dataset = train_dataset.map(_load_data, num_parallel_calls=tf.data.AUTOTUN
 train_dataset = train_dataset.batch(BATCH_SIZE)
 
 # Build the task with your custom dataset
-maskrcnn_task = build_maskrcnn_task(train_dataset)
+exp_config = build_experiment_config(train_dataset)
+
+logical_device_names = [logical_device.name for logical_device in tf.config.list_logical_devices()]
+distribution_strategy = tf.distribute.OneDeviceStrategy(logical_device_names[0])
+
+with distribution_strategy.scope():
+    model_dir = "out"
+    task = tfm.core.task_factory.get_task(exp_config.task, logging_dir=model_dir)
+
+    for images, labels in task.build_inputs(exp_config.task.train_data).take(1):
+        print()
+        print(f'images.shape: {str(images.shape):16}  images.dtype: {images.dtype!r}')
+        print(f'labels.shape: {str(labels.shape):16}  labels.dtype: {labels.dtype!r}')
+
+    model, eval_logs = tfm.core.train_lib.run_experiment(
+        distribution_strategy=distribution_strategy,
+        task=task,
+        mode='train_and_eval',
+        params=exp_config,
+        model_dir=model_dir,
+        run_post_eval=True)
+    
+    tf.keras.utils.plot_model(model, show_shapes=True)
+
+    for key, value in eval_logs.items():
+        if isinstance(value, tf.Tensor):
+            value = value.numpy()
+        print(f'{key:20}: {value:.3f}')
+
+    for images, labels in task.build_inputs(exp_config.task.train_data).take(1):
+        predictions = model.predict(images)
+        predictions = tf.argmax(predictions, axis=-1)
+
+        show_batch(images, labels, tf.cast(predictions, tf.int32))
