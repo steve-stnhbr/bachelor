@@ -16,25 +16,21 @@ def masks_to_boxes(masks, area_threshold=50):
 
     bounding_boxes = np.zeros(
         (n, 4), dtype=np.float16)
+    
+    areas = np.zeros((n, ), dtype=np.float16)
 
     for index, mask in enumerate(masks):
         if mask.sum() < area_threshold:
             continue
         y, x = np.nonzero(mask)
-        bounding_boxes[index, 0] = np.min(x)
-        bounding_boxes[index, 1] = np.min(y)
-        bounding_boxes[index, 2] = np.max(x)
-        bounding_boxes[index, 3] = np.max(y) 
+        bounding_boxes[index, 0] = np.min(x) / width
+        bounding_boxes[index, 1] = np.min(y) / height
+        bounding_boxes[index, 2] = np.max(x) / width
+        bounding_boxes[index, 3] = np.max(y) / height
+        areas[index] = (bounding_boxes[index, 2] - bounding_boxes[index, 0]) * (bounding_boxes[index, 3] - bounding_boxes[index, 1])
     bounding_boxes_area = bounding_boxes.sum(axis=1)
     bounding_boxes = bounding_boxes[~(bounding_boxes_area==0)]
-
-    bounding_boxes_area = (bounding_boxes[:, 2] - bounding_boxes[:, 0]) * (bounding_boxes[:, 3] - bounding_boxes[:, 1])
-    
-    bounding_boxes[:, 0] /= width
-    bounding_boxes[:, 1] /= height
-    bounding_boxes[:, 2] /= width
-    bounding_boxes[:, 3] /= height
-    return bounding_boxes, bounding_boxes_area
+    return bounding_boxes, areas
 
 def class_labels_to_masks(labels):
 # Get the shape of the input array
