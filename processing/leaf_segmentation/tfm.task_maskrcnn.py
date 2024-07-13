@@ -57,9 +57,9 @@ def build_experiment_config():
 
     return exp_config
 
-dataset = tfds.load('leaf_instance_dataset', split='train')
-for example in dataset.take(1):
-    print(example)
+# dataset = tfds.load('leaf_instance_dataset', split='train')
+# for example in dataset.take(1):
+#     print(example)
 
 # Build the task with your custom dataset
 exp_config = build_experiment_config()
