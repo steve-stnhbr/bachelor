@@ -95,6 +95,7 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
                 'image/object/bbox/ymin': tfds.features.Sequence(tf.float32),
                 'image/object/bbox/ymax': tfds.features.Sequence(tf.float32),
                 'image/object/class/label': tfds.features.Sequence(tf.int64),
+                'image/object/class/name': tfds.features.Sequence(tf.string),
                 'image/object/area': tfds.features.Sequence(tf.float32),
                 'image/object/is_crowd': tfds.features.Sequence(tf.int64),
                 'image/object/mask': tfds.features.Sequence(tfds.features.Image(shape=(None, None, 1), dtype=tf.uint8)),
@@ -147,6 +148,7 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
                     'image/object/bbox/ymin': bboxes[:, 1].tolist(),
                     'image/object/bbox/ymax': bboxes[:, 3].tolist(),
                     'image/object/class/label': [1] * len(bboxes),  # Assuming all objects are of class 1
+                    'image/object/class/name': ['leaf'] * len(bboxes),  # Assuming all objects are of class 1
                     'image/object/area': areas,
                     'image/object/is_crowd': [0] * len(bboxes),  # Assuming no crowd annotations
                     'image/object/mask': [np.expand_dims(mask.astype(np.uint8), -1) for mask in masks],
