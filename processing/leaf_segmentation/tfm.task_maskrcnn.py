@@ -26,14 +26,14 @@ def build_experiment_config():
     exp_config.task.train_data.input_path = ''  # Not used with custom dataset
     exp_config.task.train_data.tfds_name = TFDS_NAME
     exp_config.task.train_data.tfds_split = 'train'
-    exp_config.task.train_data.global_batch_size = 16  # Adjust as needed
+    exp_config.task.train_data.global_batch_size = BATCH_SIZE  # Adjust as needed
     exp_config.task.train_data.dtype = 'float32'
     exp_config.task.train_data.parser = None  # We're not using the default COCO parser
     
     exp_config.task.validation_data.input_path = ''
     exp_config.task.validation_data.tfds_name = TFDS_NAME
     exp_config.task.validation_data.tfds_split = 'test'
-    exp_config.task.validation_data.global_batch_size = batch_size
+    exp_config.task.validation_data.global_batch_size = BATCH_SIZE
 
     train_steps = 2000
     exp_config.trainer.steps_per_loop = 200 # steps_per_loop = num_of_training_examples // train_batch_size
