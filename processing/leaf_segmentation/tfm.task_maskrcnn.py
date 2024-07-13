@@ -40,6 +40,8 @@ def build_experiment_config():
     # exp_config.task.validation_data.tfds_split = 'test'
     # exp_config.task.validation_data.global_batch_size = BATCH_SIZE
 
+    exp_config.task.annotation_file = None
+
     exp_config.task.train_data.input_path = INPUT_PATH + "*train*"
     exp_config.task.validation_data.input_path = INPUT_PATH + "*val*"
 
