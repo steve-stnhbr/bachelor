@@ -187,12 +187,6 @@ opt = keras.optimizers.SGD(learning_rate=0.0001)
 model.compile(
     loss='categorical_crossentropy',
     optimizer=opt,
-    metrics=[
-        keras.metrics.OneHotMeanIoU(
-            num_classes=2, sparse_y_pred=False
-        ),
-        keras.metrics.CategoricalAccuracy(),
-    ],
 )
 
 model.fit(train_dataset)
