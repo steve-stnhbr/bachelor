@@ -85,6 +85,40 @@ with distribution_strategy.scope():
 
     inspect_tfrecords(INPUT_PATH + "*train*")
 
+    def show_batch(raw_records):
+        plt.figure(figsize=(20, 20))
+        use_normalized_coordinates=True
+        min_score_thresh = 0.30
+        for i, serialized_example in enumerate(raw_records):
+            plt.subplot(1, 3, i + 1)
+            decoded_tensors = tf_ex_decoder.decode(serialized_example)
+            image = decoded_tensors['image'].numpy().astype('uint8')
+            scores = np.ones(shape=(len(decoded_tensors['groundtruth_boxes'])))
+            # print(decoded_tensors['groundtruth_instance_masks'].numpy().shape)
+            # print(decoded_tensors.keys())
+            visualization_utils.visualize_boxes_and_labels_on_image_array(
+                image,
+                decoded_tensors['groundtruth_boxes'].numpy(),
+                decoded_tensors['groundtruth_classes'].numpy().astype('int'),
+                scores,
+                category_index=category_index,
+                use_normalized_coordinates=use_normalized_coordinates,
+                min_score_thresh=min_score_thresh,
+                instance_masks=decoded_tensors['groundtruth_instance_masks'].numpy().astype('uint8'),
+                line_thickness=4)
+
+            plt.imshow(image)
+            plt.axis("off")
+            plt.title(f"Image-{i+1}")
+        plt.show()
+
+    buffer_size = 100
+    num_of_examples = 3
+
+    train_tfrecords = tf.io.gfile.glob(exp_config.task.train_data.input_path)
+    raw_records = tf.data.TFRecordDataset(train_tfrecords).shuffle(buffer_size=buffer_size).take(num_of_examples)
+    show_batch(raw_records)
+
     for images, labels in task.build_inputs(exp_config.task.train_data).take(1):
         print()
         print(labels)
