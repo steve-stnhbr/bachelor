@@ -9,6 +9,7 @@ from official.vision.dataloaders.tf_example_decoder import TfExampleDecoder
 import tensorflow_datasets as tfds
 import matplotlib.pyplot as plt
 import os
+import numpy as np
 
 
 IMAGE_SIZE = (640, 640)
