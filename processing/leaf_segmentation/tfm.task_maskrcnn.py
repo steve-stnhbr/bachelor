@@ -5,6 +5,7 @@ from official.vision.configs import maskrcnn as exp_cfg
 from official.core import config_definitions as cfg
 from official.core import exp_factory
 from official.vision.tasks import maskrcnn
+from official.vision.dataloaders import TfExampleDecoder
 import tensorflow_datasets as tfds
 import os
 
@@ -49,7 +50,7 @@ def build_experiment_config():
     exp_config.trainer.optimizer_config.learning_rate.cosine.initial_learning_rate = 0.07
     exp_config.trainer.optimizer_config.warmup.linear.warmup_learning_rate = 0.05
 
-    class CustomTfExampleDecoder(official.vision.dataloaders.TfExampleDecoder):
+    class CustomTfExampleDecoder(TfExampleDecoder):
         def __init__(self):
             super().__init__()
 
