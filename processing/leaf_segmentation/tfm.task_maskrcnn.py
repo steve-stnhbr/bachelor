@@ -43,6 +43,9 @@ def build_experiment_config():
     exp_config.task.train_data.global_batch_size = BATCH_SIZE
     exp_config.task.validation_data.global_batch_size = BATCH_SIZE
 
+    exp_config.task.train_data.parser = exp_cfg.Parser()
+    exp_config.task.validation_data.parser = exp_cfg.Parser()
+
     train_steps = 2000
     exp_config.trainer.steps_per_loop = 200 # steps_per_loop = num_of_training_examples // train_batch_size
 
