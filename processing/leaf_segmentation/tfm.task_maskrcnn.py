@@ -50,17 +50,9 @@ def build_experiment_config():
     exp_config.trainer.optimizer_config.learning_rate.cosine.initial_learning_rate = 0.07
     exp_config.trainer.optimizer_config.warmup.linear.warmup_learning_rate = 0.05
 
-    class CustomTfExampleDecoder(TfExampleDecoder):
-        def __init__(self):
-            super().__init__()
-
-        def decode(self, serialized_example):
-            print(serialized_example)
-            return {}
-
     # In your build_experiment_config function:
-    exp_config.task.train_data.decoder = CustomTfExampleDecoder()
-    exp_config.task.validation_data.decoder = CustomTfExampleDecoder()
+    exp_config.task.train_data.decoder = TfExampleDecoder()
+    exp_config.task.validation_data.decoder =   TfExampleDecoder()
 
     return exp_config
 
