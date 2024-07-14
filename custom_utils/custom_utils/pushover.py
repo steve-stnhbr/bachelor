@@ -19,7 +19,7 @@ def send_pushover_notification(message, title=None):
         "token": API_TOKEN,
         "user": USER_KEY,
         "message": message,
-        "title": title
+        #"title": title
     }), { "Content-type": "application/x-www-form-urlencoded" })
     conn.getresponse()
 
