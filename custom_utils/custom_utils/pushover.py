@@ -1,19 +1,20 @@
 import os
 import click
 import http.client, urllib
-
+from dotenv import load_dotenv
 
 def send_pushover_notification(message, title=None):
-    if "PUSHOVER_USER_KEY" not in os.environ:
+    load_dotenv()
+    USER_KEY = os.getenv("PUSHOVER_USER_KEY")
+    API_TOKEN = os.getenv("PUSHOVER_API_TOKEN")
+    if "PUSHOVER_USER_KEY" is None:
         print("No user key provided, aborting pushover notification")
         print("Consider adding 'PUSHOVER_USER_KEY' to your environment variables")
         return
-    if "PUSHOVER_API_TOKEN" not in os.environ:
+    if "PUSHOVER_API_TOKEN" is None:
         print("No user key provided, aborting pushover notification")
         print("Consider adding 'PUSHOVER_API_TOKEN' to your environment variables")
         return
-    USER_KEY = os.environ["PUSHOVER_USER_KEY"]
-    API_TOKEN = os.environ["PUSHOVER_API_TOKEN"]
     conn = http.client.HTTPSConnection("api.pushover.net:443")
     conn.request("POST", "/1/messages.json",
     urllib.parse.urlencode({
