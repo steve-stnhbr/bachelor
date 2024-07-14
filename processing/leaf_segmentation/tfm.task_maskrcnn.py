@@ -6,11 +6,13 @@ from official.core import config_definitions as cfg
 from official.core import exp_factory
 from official.vision.tasks import maskrcnn
 from official.vision.dataloaders.tf_example_decoder import TfExampleDecoder
+from official.vision.serving import export_saved_model_lib
 import tensorflow_datasets as tfds
 import matplotlib.pyplot as plt
 import os
 import numpy as np
 from official.vision.utils.object_detection import visualization_utils
+import time
 
 
 IMAGE_SIZE = (640, 640)
@@ -127,15 +129,17 @@ with distribution_strategy.scope():
         model_dir=model_dir,
         run_post_eval=False)
     
-    tf.keras.utils.plot_model(model, show_shapes=True)
+    # tf.keras.utils.plot_model(model, show_shapes=True)
 
-    for key, value in eval_logs.items():
-        if isinstance(value, tf.Tensor):
-            value = value.numpy()
-        print(f'{key:20}: {value:.3f}')
+    # for key, value in eval_logs.items():
+    #     if isinstance(value, tf.Tensor):
+    #         value = value.numpy()
+    #     print(f'{key:20}: {value:.3f}')
 
-    for images, labels in task.build_inputs(exp_config.task.train_data).take(1):
-        predictions = model.predict(images)
-        predictions = tf.argmax(predictions, axis=-1)
-
-        show_batch(images, labels, tf.cast(predictions, tf.int32))
+    export_saved_model_lib.export_inference_graph(
+        input_type='image_tensor',
+        batch_size=1,
+        input_image_size=[IMAGE_SIZE[1], IMAGE_SIZE[0]],
+        params=exp_config,
+        checkpoint_path=tf.train.latest_checkpoint(model_dir),
+        export_dir=f'out/mask_rcnn_{time.time()}')
