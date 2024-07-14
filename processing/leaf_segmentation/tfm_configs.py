@@ -21,11 +21,15 @@ def maskrcnn_vit_fpn(path, classes=2, image_size=(640, 640)):
                 )
             ),
             decoder=decoders.Decoder(
-                type='fpn',
-                fpn=decoders.FPN(
-                    num_filters=256,
-                    use_separable_conv=False,
+                type='assp',
+                assp=decoders.ASSP(
+                    level=5
                 )
+                # type='fpn',
+                # fpn=decoders.FPN(
+                #     num_filters=256,
+                #     use_separable_conv=False,
+                # )
             ),
             roi_sampler=maskrcnn_cfg.ROISampler(
                 mix_gt_boxes=True,
