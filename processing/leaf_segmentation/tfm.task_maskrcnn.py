@@ -125,7 +125,7 @@ with distribution_strategy.scope():
         mode='train',
         params=exp_config,
         model_dir=model_dir,
-        run_post_eval=True)
+        run_post_eval=False)
     
     tf.keras.utils.plot_model(model, show_shapes=True)
 
