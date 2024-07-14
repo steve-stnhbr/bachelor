@@ -73,7 +73,7 @@ def maskrcnn_vit_fpn(path, classes=2):
         ),
     )
 
-    config_from_task(task)
+    config = config_from_task(task)
     return config
 
 
