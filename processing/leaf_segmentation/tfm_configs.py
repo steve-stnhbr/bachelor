@@ -8,8 +8,8 @@ def maskrcnn_vit_fpn(path):
     task = maskrcnn_cfg.MaskRCNNTask(
         model=maskrcnn_cfg.MaskRCNN(
             backbone=backbones.Backbone(
-                type='vision_transformer',
-                vision_transformer=backbones.VisionTransformer(
+                type='vit',
+                vit=backbones.VisionTransformer(
                     model_name='vit-b16',
                     representation_size=768,
                     init_stochastic_depth_rate=0.1,
