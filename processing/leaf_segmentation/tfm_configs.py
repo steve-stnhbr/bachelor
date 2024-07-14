@@ -19,12 +19,8 @@ def maskrcnn_vit_fpn(path):
             decoder=decoders.Decoder(
                 type='fpn',
                 fpn=decoders.FPN(
-                    min_level=3,
-                    max_level=7,
                     num_filters=256,
-                    fusion_type='sum',
                     use_separable_conv=False,
-                    use_batch_norm=True,
                 )
             ),
             roi_sampler=maskrcnn_cfg.ROISampler(
