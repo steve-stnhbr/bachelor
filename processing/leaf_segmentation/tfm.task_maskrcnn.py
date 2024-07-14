@@ -41,8 +41,8 @@ def build_experiment_config():
             )
         )
     )
-    
-    base_config.model.backbone.vit.output_shape = (14, 14, 768) 
+
+    exp_config.task.model.backbone.vit.output_shape = (14, 14, 768) 
 
     exp_config.task.model.input_size = [IMAGE_SIZE[1], IMAGE_SIZE[0], 3]
 
