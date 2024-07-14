@@ -1,10 +1,8 @@
 import os
 import click
 import http.client, urllib
-from dotenv import load_dotenv
 
 def send_pushover_notification(message, title=None):
-    load_dotenv()
     USER_KEY = os.getenv("PUSHOVER_USER_KEY")
     API_TOKEN = os.getenv("PUSHOVER_API_TOKEN")
     if "PUSHOVER_USER_KEY" is None:
