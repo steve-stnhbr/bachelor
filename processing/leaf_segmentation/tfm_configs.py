@@ -49,7 +49,7 @@ def maskrcnn_vit_fpn(path, classes=2):
                 num_convs=4,
                 num_filters=256,
                 use_separable_conv=False,
-                class_agnostic_mask_pred=False,
+                class_agnostic=False,
             ),
             use_gt_boxes_for_masks=True,
         ),
