@@ -5,9 +5,10 @@ from official.vision.configs import maskrcnn as maskrcnn_cfg
 from official.vision.configs import backbones
 from official.vision.configs import decoders
 
-def maskrcnn_vit_fpn(path):
+def maskrcnn_vit_fpn(path, classes=2):
     task = maskrcnn_cfg.MaskRCNNTask(
         model=maskrcnn_cfg.MaskRCNN(
+            num_classes=classes,
             backbone=backbones.Backbone(
                 type='vit',
                 vit=backbones.VisionTransformer(
@@ -36,7 +37,6 @@ def maskrcnn_vit_fpn(path):
                 sample_offset=0.5,
             ),
             detection_head=maskrcnn_cfg.DetectionHead(
-                num_classes=91,
                 num_convs=4,
                 num_filters=256,
                 use_separable_conv=False,
@@ -45,7 +45,6 @@ def maskrcnn_vit_fpn(path):
                 class_agnostic_bbox_pred=False,
             ),
             mask_head=maskrcnn_cfg.MaskHead(
-                num_classes=91,
                 upsample_factor=2,
                 num_convs=4,
                 num_filters=256,
