@@ -83,6 +83,9 @@ def maskrcnn_vit_fpn(path, classes=2, image_size=(640, 640)):
 def retinanet_resnet_fpn(path, batch_size=8, image_size=(640, 640)):
     exp_config = exp_factory.get_exp_config('retinanet_resnetfpn_coco')
 
+    exp_config.task.init_checkpoint = None
+    exp_config.task.init_checkpoint_module = None
+
     exp_config.task.model.input_size = [image_size[1], image_size[0], 3]
 
     config = config_from_task(exp_config.task, path)
