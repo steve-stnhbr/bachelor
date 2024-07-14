@@ -9,7 +9,7 @@ from official.vision.configs import decoders
 def maskrcnn_vit_fpn(path, classes=2, image_size=(640, 640)):
     task = maskrcnn_cfg.MaskRCNNTask(
         model=maskrcnn_cfg.MaskRCNN(
-            input_size = [image_size[1], image_size[0], 3]
+            input_size = [image_size[1], image_size[0], 3],
             num_classes=classes,
             backbone=backbones.Backbone(
                 type='vit',
