@@ -42,7 +42,7 @@ def build_experiment_config():
         )
     )
 
-    exp_config.task.model.input_size = (IMAGE_SIZE[1], IMAGE_SIZE[0], 3)
+    exp_config.task.model.input_size = [IMAGE_SIZE[1], IMAGE_SIZE[0], 3]
 
     # Modify the config as needed
     exp_config.task.model.num_classes = 2  # Adjust based on your number of classes
