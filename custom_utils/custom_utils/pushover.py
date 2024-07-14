@@ -24,6 +24,8 @@ def send_pushover_notification(message, title=None):
         },
         timeout=800
     )
+    print("Sent notification:", title)
+    return r
 
 @click.command()
 @click.argument('message')
