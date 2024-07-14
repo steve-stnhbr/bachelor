@@ -61,7 +61,7 @@ def build_experiment_config():
     exp_config.task.validation_data.global_batch_size = BATCH_SIZE
 
     # Disable COCO-specific configurations
-    exp_config.task.annotation_file = None
+    exp_config.task.annotation_file = INPUT_PATH + "instances.json"
     exp_config.task.use_coco_metrics = False
 
     # Configure data parsers
