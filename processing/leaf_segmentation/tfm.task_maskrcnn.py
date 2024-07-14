@@ -98,7 +98,7 @@ with distribution_strategy.scope():
                 decoded_tensors['groundtruth_classes'].numpy().astype('int'),
                 scores,
                 category_index={
-                    2: {
+                    1: {
                         'id': 1,
                         'name': 'leaf',
                     },
