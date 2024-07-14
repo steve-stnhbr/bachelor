@@ -1,6 +1,7 @@
 import os
 import click
 import http.client, urllib
+from pushover import Client
 
 def send_pushover_notification(message, title=None):
     USER_KEY = os.getenv("PUSHOVER_USER_KEY")
@@ -13,15 +14,8 @@ def send_pushover_notification(message, title=None):
         print("No user key provided, aborting pushover notification")
         print("Consider adding 'PUSHOVER_API_TOKEN' to your environment variables")
         return
-    conn = http.client.HTTPSConnection("api.pushover.net:443")
-    conn.request("POST", "/1/messages.json",
-    urllib.parse.urlencode({
-        "token": API_TOKEN,
-        "user": USER_KEY,
-        "message": message,
-        "title": title
-    }), { "Content-type": "application/x-www-form-urlencoded" })
-    conn.getresponse()
+    client = Client("YOUR_USER_KEY", api_token="YOUR_API_TOKEN")
+    client.send_message(message, title=title)
 
 @click.command()
 @click.argument('message')
