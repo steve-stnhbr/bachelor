@@ -3,6 +3,7 @@ from official.core import config_definitions as cfg
 from official.core import exp_factory
 from official.vision.configs import maskrcnn as maskrcnn_cfg
 from official.vision.configs import backbones
+from official.vision.configs import decoders
 
 def maskrcnn_vit_fpn(path):
     task = maskrcnn_cfg.MaskRCNNTask(
@@ -15,9 +16,9 @@ def maskrcnn_vit_fpn(path):
                     init_stochastic_depth_rate=0.1,
                 )
             ),
-            decoder=maskrcnn_cfg.DecoderConfig(
+            decoder=decoders.Decoder(
                 type='fpn',
-                fpn=maskrcnn_cfg.FPNConfig(
+                fpn=decoders.FPN(
                     min_level=3,
                     max_level=7,
                     num_filters=256,
