@@ -152,7 +152,7 @@ with distribution_strategy.scope():
             self.buffer = StringIO()
 
         def write(self, output):
-            processed_output = send_pushover_notification(output, "Tensorflow Model Training")
+            processed_output = send_pushover_notification(output, "Tensorflow Model Training", priority=-1)
             self.stdout.write(processed_output)
 
         def flush(self):
