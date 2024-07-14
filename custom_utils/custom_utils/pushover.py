@@ -6,11 +6,11 @@ import requests
 def send_pushover_notification(message, title=None, file=None, file_format=None):
     USER_KEY = os.getenv("PUSHOVER_USER_KEY")
     API_TOKEN = os.getenv("PUSHOVER_API_TOKEN")
-    if "PUSHOVER_USER_KEY" == None:
+    if USER_KEY is None:
         print("No user key provided, aborting pushover notification")
         print("Consider adding 'PUSHOVER_USER_KEY' to your environment variables")
         return
-    if "PUSHOVER_API_TOKEN" == None:
+    if API_TOKEN is None:
         print("No user key provided, aborting pushover notification")
         print("Consider adding 'PUSHOVER_API_TOKEN' to your environment variables")
         return
