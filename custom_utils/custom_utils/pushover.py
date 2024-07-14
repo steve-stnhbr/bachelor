@@ -1,6 +1,7 @@
 import os
 import click
 import http.client, urllib
+import requests
 
 def send_pushover_notification(message, title=None):
     USER_KEY = os.getenv("PUSHOVER_USER_KEY")
@@ -13,15 +14,16 @@ def send_pushover_notification(message, title=None):
         print("No user key provided, aborting pushover notification")
         print("Consider adding 'PUSHOVER_API_TOKEN' to your environment variables")
         return
-    conn = http.client.HTTPSConnection("api.pushover.net:443")
-    conn.request("POST", "/1/messages.json",
-    urllib.parse.urlencode({
-        "token": API_TOKEN,
-        "user": USER_KEY,
-        "message": message,
-        #"title": title
-    }), { "Content-type": "application/x-www-form-urlencoded" })
-    conn.getresponse()
+    r = requests.post("https://api.pushover.net/1/messages.json", data = {
+            "token": "APP_TOKEN",
+            "user": "USER_KEY",
+            "message": "hello world"
+        },
+        files = {
+            "attachment": ("image.jpg", open("your_image.jpg", "rb"), "image/jpeg")
+        },
+        timeout=800
+    )
 
 @click.command()
 @click.argument('message')
