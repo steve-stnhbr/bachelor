@@ -13,7 +13,6 @@ def maskrcnn_vit_fpn(path):
                     model_name='vit-b16',
                     representation_size=768,
                     init_stochastic_depth_rate=0.1,
-                    scale_init_value=0.02,
                 )
             ),
             decoder=maskrcnn_cfg.DecoderConfig(
