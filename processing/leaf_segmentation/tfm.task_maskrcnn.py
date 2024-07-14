@@ -7,6 +7,7 @@ from official.core import exp_factory
 from official.vision.tasks import maskrcnn
 from official.vision.dataloaders.tf_example_decoder import TfExampleDecoder
 from official.vision.serving import export_saved_model_lib
+from official.vision.configs import backbones as backbones_cfg
 import tensorflow_datasets as tfds
 import matplotlib.pyplot as plt
 import os
@@ -23,6 +24,23 @@ INPUT_PATH = "/home/stefan.steinheber/tensorflow_datasets/leaf_instance_dataset/
 def build_experiment_config():
     # Create a base experiment config
     exp_config = exp_factory.get_exp_config('maskrcnn_mobilenet_coco')
+
+    exp_config.model.backbone = backbones_cfg.Backbone(
+        type='vit',
+        vit=backbones_cfg.VisionTransformer(
+            model_name='vit-b16',
+            representation_size=768,
+            patch_size=16,
+            hidden_size=768,
+            transformer=backbones_cfg.Transformer(
+                num_layers=12,
+                mlp_dim=3072,
+                num_heads=12,
+                dropout_rate=0.1,
+                attention_dropout_rate=0.1
+            )
+        )
+    )
 
     # Modify the config as needed
     exp_config.task.model.num_classes = 2  # Adjust based on your number of classes
