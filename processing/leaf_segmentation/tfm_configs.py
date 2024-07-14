@@ -84,10 +84,6 @@ def retinanet_resnet_fpn(path, batch_size=8, image_size=(640, 640)):
     exp_config = exp_factory.get_exp_config('retinanet_resnetfpn_coco')
 
     exp_config.task.model.input_size = [image_size[1], image_size[0], 3]
-    
-    # Configure data parsers
-    exp_config.task.train_data.parser = exp_cfg.Parser()
-    exp_config.task.validation_data.parser = exp_cfg.Parser()
 
     config = config_from_task(exp_config.task, path)
     return config
