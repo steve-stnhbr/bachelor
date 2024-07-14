@@ -6,9 +6,10 @@ from official.vision.configs import backbones
 from official.vision.configs import decoders
 
 @exp_factory.register_config_factory('maskrcnn_vit_fpn')
-def maskrcnn_vit_fpn(path, classes=2):
+def maskrcnn_vit_fpn(path, classes=2, image_size=(640, 640)):
     task = maskrcnn_cfg.MaskRCNNTask(
         model=maskrcnn_cfg.MaskRCNN(
+            input_size = [image_size[1], image_size[0], 3]
             num_classes=classes,
             backbone=backbones.Backbone(
                 type='vit',
