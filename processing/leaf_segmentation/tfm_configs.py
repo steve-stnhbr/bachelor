@@ -84,8 +84,7 @@ def retinanet_resnet_fpn(path, batch_size=8, image_size=(640, 640)):
     exp_config = exp_factory.get_exp_config('retinanet_resnetfpn_coco')
 
     exp_config.task.model.input_size = [image_size[1], image_size[0], 3]
-
-
+    
     # Configure data parsers
     exp_config.task.train_data.parser = exp_cfg.Parser()
     exp_config.task.validation_data.parser = exp_cfg.Parser()
@@ -94,7 +93,7 @@ def retinanet_resnet_fpn(path, batch_size=8, image_size=(640, 640)):
     return config
 
 
-def config_from_task(task, path):
+def config_from_task(task, path, batch_size=8):
     config = cfg.ExperimentConfig(
         task=task,
         trainer=cfg.TrainerConfig(
@@ -133,18 +132,17 @@ def config_from_task(task, path):
         ],
     )
 
-
     # Modify the config as needed
-    exp_config.task.model.num_classes = 2  # Adjust based on your number of classes
+    config.task.model.num_classes = 2  # Adjust based on your number of classes
     
     # Configure for custom dataset
-    exp_config.task.train_data.input_path = path + "*train*"
-    exp_config.task.validation_data.input_path = path + "*val*"
-    exp_config.task.train_data.global_batch_size = batch_size
-    exp_config.task.validation_data.global_batch_size = batch_size
+    config.task.train_data.input_path = path + "*train*"
+    config.task.validation_data.input_path = path + "*val*"
+    config.task.train_data.global_batch_size = batch_size
+    config.task.validation_data.global_batch_size = batch_size
 
     # Disable COCO-specific configurations
-    exp_config.task.annotation_file = path + "instances.json"
-    exp_config.task.use_coco_metrics = True
+    config.task.annotation_file = path + "instances.json"
+    config.task.use_coco_metrics = True
     
     return config
