@@ -3,7 +3,7 @@ import click
 import http.client, urllib
 import requests
 
-def send_pushover_notification(message, title=None, file=None, file_format=None):
+def send_pushover_notification(message, title=None, file=None, file_format=None, verbose=False):
     USER_KEY = os.getenv("PUSHOVER_USER_KEY")
     API_TOKEN = os.getenv("PUSHOVER_API_TOKEN")
     if USER_KEY is None:
@@ -26,7 +26,8 @@ def send_pushover_notification(message, title=None, file=None, file_format=None)
             "attachment": (file, open(file, "rb"), file_format)
         }
     r = requests.post("https://api.pushover.net/1/messages.json", data=data, files=files,timeout=800)
-    print("Sent notification:", title)
+    if verbose:
+        print("Sent notification:", title)
     return r
 
 @click.command()

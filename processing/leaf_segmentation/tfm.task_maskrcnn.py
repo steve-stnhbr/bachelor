@@ -32,6 +32,7 @@ def build_experiment_config():
             representation_size=768,
             patch_size=16,
             hidden_size=768,
+            output_2d_feature_maps=True,
             transformer=backbones_cfg.Transformer(
                 num_layers=12,
                 mlp_dim=3072,
