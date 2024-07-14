@@ -146,6 +146,18 @@ with distribution_strategy.scope():
 
     send_pushover_notification("Starting Training", "Tensorflow Models")
 
+    class OutputInterceptor:
+        def __init__(self, stdout):
+            self.stdout = stdout
+            self.buffer = StringIO()
+
+        def write(self, output):
+            processed_output = send_pushover_notification(output, "Tensorflow Model Training")
+            self.stdout.write(processed_output)
+
+        def flush(self):
+            self.stdout.flush()
+
     model, eval_logs = tfm.core.train_lib.run_experiment(
         distribution_strategy=distribution_strategy,
         task=task,
