@@ -17,6 +17,7 @@ def maskrcnn_vit_fpn(path, classes=2, image_size=(640, 640)):
                     model_name='vit-b16',
                     representation_size=768,
                     init_stochastic_depth_rate=0.1,
+                    output_2d_feature_maps=True,
                 )
             ),
             decoder=decoders.Decoder(
