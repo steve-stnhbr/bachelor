@@ -60,6 +60,9 @@ def build_experiment_config():
     exp_config.task.train_data.global_batch_size = BATCH_SIZE
     exp_config.task.validation_data.global_batch_size = BATCH_SIZE
 
+    exp_config.task.init_checkpoint=None
+    exp_config.task.init_checkpoint_modules=None
+
     # Disable COCO-specific configurations
     exp_config.task.annotation_file = INPUT_PATH + "instances.json"
     exp_config.task.use_coco_metrics = False
