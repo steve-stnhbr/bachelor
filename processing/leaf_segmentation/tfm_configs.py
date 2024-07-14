@@ -51,7 +51,6 @@ def maskrcnn_vit_fpn(path, classes=2):
                 use_separable_conv=False,
                 class_agnostic=False,
             ),
-            use_gt_boxes_for_masks=True,
         ),
         train_data=maskrcnn_cfg.DataConfig(
             input_path=path + '/*train*',
