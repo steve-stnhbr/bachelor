@@ -14,7 +14,7 @@ import os
 import numpy as np
 from official.vision.utils.object_detection import visualization_utils
 import time
-
+from custom_utils import send_pushover_notification
 
 IMAGE_SIZE = (640, 640)
 BATCH_SIZE = 4
@@ -141,6 +141,8 @@ with distribution_strategy.scope():
     raw_records = tf.data.TFRecordDataset(train_tfrecords).shuffle(buffer_size=buffer_size).take(num_of_examples)
     show_batch(raw_records)
 
+    send_pushover_notification("Starting Training", "Tensorflow Models")
+
     model, eval_logs = tfm.core.train_lib.run_experiment(
         distribution_strategy=distribution_strategy,
         task=task,
@@ -148,6 +150,9 @@ with distribution_strategy.scope():
         params=exp_config,
         model_dir=model_dir,
         run_post_eval=False)
+
+    send_pushover_notification("Finished Training", "Tensorflow Models")
+    
     
     # tf.keras.utils.plot_model(model, show_shapes=True)
 
