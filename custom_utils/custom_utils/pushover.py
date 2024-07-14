@@ -1,13 +1,20 @@
 import os
 import click
-from pushover import Client
+import http.client, urllib
 
 USER_KEY = os.environ["PUSHOVER_USER_KEY"]
 API_TOKEN = os.environ["PUSHOVER_API_TOKEN"]
 
 def send_pushover_notification(message, title=None):
-    client = Client(USER_KEY, api_token=API_TOKEN)
-    client.send_message(message, title=title)
+    conn = http.client.HTTPSConnection("api.pushover.net:443")
+    conn.request("POST", "/1/messages.json",
+    urllib.parse.urlencode({
+        "token": APP_TOKEN,
+        "user": USER_KEY,
+        "message": message,
+        "title": title
+    }), { "Content-type": "application/x-www-form-urlencoded" })
+    conn.getresponse()
 
 @click.command()
 @click.argument('message')
