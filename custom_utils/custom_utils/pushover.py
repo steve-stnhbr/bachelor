@@ -14,7 +14,7 @@ def send_pushover_notification(message, title=None):
         print("No user key provided, aborting pushover notification")
         print("Consider adding 'PUSHOVER_API_TOKEN' to your environment variables")
         return
-    client = Client("YOUR_USER_KEY", api_token="YOUR_API_TOKEN")
+    client = Client(USER_KEY), api_token=API_TOKEN)
     client.send_message(message, title=title)
 
 @click.command()
