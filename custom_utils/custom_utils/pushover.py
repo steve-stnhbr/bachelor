@@ -14,6 +14,7 @@ def send_pushover_notification(message, title=None, file=None, file_format=None)
         print("No user key provided, aborting pushover notification")
         print("Consider adding 'PUSHOVER_API_TOKEN' to your environment variables")
         return
+    print(API_TOKEN, USER_KEY)
     data = {
             "token": API_TOKEN,
             "user": USER_KEY,
