@@ -22,7 +22,7 @@ def maskrcnn_vit_fpn(path, classes=2, image_size=(640, 640)):
             ),
             decoder=decoders.Decoder(
                 type='aspp',
-                assp=decoders.ASPP(
+                aspp=decoders.ASPP(
                     level=5
                 )
                 # type='fpn',
