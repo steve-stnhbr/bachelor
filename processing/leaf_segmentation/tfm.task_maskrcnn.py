@@ -25,7 +25,7 @@ def build_experiment_config():
     # Create a base experiment config
     exp_config = exp_factory.get_exp_config('maskrcnn_mobilenet_coco')
 
-    exp_config.model.backbone = backbones_cfg.Backbone(
+    exp_config.task.model.backbone = backbones_cfg.Backbone(
         type='vit',
         vit=backbones_cfg.VisionTransformer(
             model_name='vit-b16',
@@ -41,6 +41,8 @@ def build_experiment_config():
             )
         )
     )
+
+    exp_config.task.model.input_size = (IMAGE_SIZE[1], IMAGE_SIZE[0], 3)
 
     # Modify the config as needed
     exp_config.task.model.num_classes = 2  # Adjust based on your number of classes
