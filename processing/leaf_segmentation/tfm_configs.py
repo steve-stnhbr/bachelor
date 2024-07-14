@@ -5,6 +5,7 @@ from official.vision.configs import maskrcnn as maskrcnn_cfg
 from official.vision.configs import backbones
 from official.vision.configs import decoders
 
+@exp_factory.register_config_factory('maskrcnn_vit_fpn')
 def maskrcnn_vit_fpn(path, classes=2):
     task = maskrcnn_cfg.MaskRCNNTask(
         model=maskrcnn_cfg.MaskRCNN(
@@ -75,6 +76,8 @@ def maskrcnn_vit_fpn(path, classes=2):
     config_from_task(task)
     return config
 
+
+@exp_factory.register_config_factory('retinanet_resnet_fpn')
 def retinanet_resnet_fpn():
     exp_config = exp_factory.get_exp_config('retinanet_resnetfpn_coco')
 
@@ -152,6 +155,5 @@ def config_from_task(task):
             'task.validation_data.is_training != None',
         ],
     )
-
-    exp_factory.register_config_factory('maskrcnn_vit_coco', lambda: config)
+    
     return config
