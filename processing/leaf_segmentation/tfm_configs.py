@@ -75,38 +75,26 @@ def maskrcnn_vit_fpn(path, classes=2, image_size=(640, 640)):
         ),
     )
 
-    config = config_from_task(task)
+    config = config_from_task(task, path)
     return config
 
 
 @exp_factory.register_config_factory('retinanet_resnet_fpn')
-def retinanet_resnet_fpn(path, batch_size=8):
+def retinanet_resnet_fpn(path, batch_size=8, image_size=(640, 640)):
     exp_config = exp_factory.get_exp_config('retinanet_resnetfpn_coco')
 
-    exp_config.task.model.input_size = [IMAGE_SIZE[1], IMAGE_SIZE[0], 3]
+    exp_config.task.model.input_size = [image_size[1], image_size[0], 3]
 
-    # Modify the config as needed
-    exp_config.task.model.num_classes = 2  # Adjust based on your number of classes
-    
-    # Configure for custom dataset
-    exp_config.task.train_data.input_path = path + "*train*"
-    exp_config.task.validation_data.input_path = path + "*val*"
-    exp_config.task.train_data.global_batch_size = batch_size
-    exp_config.task.validation_data.global_batch_size = batch_size
-
-    # Disable COCO-specific configurations
-    exp_config.task.annotation_file = path + "instances.json"
-    exp_config.task.use_coco_metrics = True
 
     # Configure data parsers
     exp_config.task.train_data.parser = exp_cfg.Parser()
     exp_config.task.validation_data.parser = exp_cfg.Parser()
 
-    config = config_from_task(exp_config.task)
+    config = config_from_task(exp_config.task, path)
     return config
 
 
-def config_from_task(task):
+def config_from_task(task, path):
     config = cfg.ExperimentConfig(
         task=task,
         trainer=cfg.TrainerConfig(
@@ -144,5 +132,19 @@ def config_from_task(task):
             'task.validation_data.is_training != None',
         ],
     )
+
+
+    # Modify the config as needed
+    exp_config.task.model.num_classes = 2  # Adjust based on your number of classes
+    
+    # Configure for custom dataset
+    exp_config.task.train_data.input_path = path + "*train*"
+    exp_config.task.validation_data.input_path = path + "*val*"
+    exp_config.task.train_data.global_batch_size = batch_size
+    exp_config.task.validation_data.global_batch_size = batch_size
+
+    # Disable COCO-specific configurations
+    exp_config.task.annotation_file = path + "instances.json"
+    exp_config.task.use_coco_metrics = True
     
     return config
