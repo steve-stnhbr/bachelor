@@ -21,15 +21,11 @@ def maskrcnn_vit_fpn(path, classes=2, image_size=(640, 640)):
                 )
             ),
             decoder=decoders.Decoder(
-                type='aspp',
-                aspp=decoders.ASPP(
-                    level=5
+                type='fpn',
+                fpn=decoders.FPN(
+                    num_filters=256,
+                    use_separable_conv=False,
                 )
-                # type='fpn',
-                # fpn=decoders.FPN(
-                #     num_filters=256,
-                #     use_separable_conv=False,
-                # )
             ),
             roi_sampler=maskrcnn_cfg.ROISampler(
                 mix_gt_boxes=True,
@@ -84,7 +80,7 @@ def maskrcnn_vit_fpn(path, classes=2, image_size=(640, 640)):
 
 
 @exp_factory.register_config_factory('retinanet_resnet_fpn')
-def retinanet_resnet_fpn():
+def retinanet_resnet_fpn(path, batch_size=8):
     exp_config = exp_factory.get_exp_config('retinanet_resnetfpn_coco')
 
     exp_config.task.model.input_size = [IMAGE_SIZE[1], IMAGE_SIZE[0], 3]
@@ -93,41 +89,28 @@ def retinanet_resnet_fpn():
     exp_config.task.model.num_classes = 2  # Adjust based on your number of classes
     
     # Configure for custom dataset
-    exp_config.task.train_data.input_path = INPUT_PATH + "*train*"
-    exp_config.task.validation_data.input_path = INPUT_PATH + "*val*"
-    exp_config.task.train_data.global_batch_size = BATCH_SIZE
-    exp_config.task.validation_data.global_batch_size = BATCH_SIZE
+    exp_config.task.train_data.input_path = path + "*train*"
+    exp_config.task.validation_data.input_path = path + "*val*"
+    exp_config.task.train_data.global_batch_size = batch_size
+    exp_config.task.validation_data.global_batch_size = batch_size
 
     # Disable COCO-specific configurations
-    exp_config.task.annotation_file = INPUT_PATH + "instances.json"
-    exp_config.task.use_coco_metrics = False
+    exp_config.task.annotation_file = path + "instances.json"
+    exp_config.task.use_coco_metrics = True
 
     # Configure data parsers
     exp_config.task.train_data.parser = exp_cfg.Parser()
     exp_config.task.validation_data.parser = exp_cfg.Parser()
 
-    # Training parameters
-    train_steps = 224_000
-    exp_config.trainer.steps_per_loop = 200
-    exp_config.trainer.summary_interval = 200
-    exp_config.trainer.checkpoint_interval = 200
-    exp_config.trainer.validation_interval = 200
-    exp_config.trainer.validation_steps = 200
-    exp_config.trainer.train_steps = train_steps
-    exp_config.trainer.optimizer_config.warmup.linear.warmup_steps = 200
-    exp_config.trainer.optimizer_config.learning_rate.type = 'cosine'
-    exp_config.trainer.optimizer_config.learning_rate.cosine.decay_steps = train_steps
-    exp_config.trainer.optimizer_config.learning_rate.cosine.initial_learning_rate = 0.07
-    exp_config.trainer.optimizer_config.warmup.linear.warmup_learning_rate = 0.05
-
-    return exp_config
+    config = config_from_task(exp_config.task)
+    return config
 
 
 def config_from_task(task):
     config = cfg.ExperimentConfig(
         task=task,
         trainer=cfg.TrainerConfig(
-            train_steps=22500,
+            train_steps=22_500,
             validation_steps=278,
             steps_per_loop=100,
             summary_interval=100,
