@@ -14,7 +14,7 @@ import os
 import numpy as np
 from official.vision.utils.object_detection import visualization_utils
 import time
-from custom_utils import send_pushover_notification
+from custom_utils import send_pushover_notification, intercept_stdout
 
 IMAGE_SIZE = (640, 640)
 BATCH_SIZE = 4
@@ -104,61 +104,50 @@ with distribution_strategy.scope():
     model_dir = "out/" + MODEL
     task = tfm.core.task_factory.get_task(exp_config.task, logging_dir=model_dir)
 
-    def show_batch(raw_records):
-        tf_ex_decoder = TfExampleDecoder(include_mask=True)
-        plt.figure(figsize=(20, 20))
-        use_normalized_coordinates=True
-        min_score_thresh = 0.30
-        for i, serialized_example in enumerate(raw_records):
-            plt.subplot(1, 3, i + 1)
-            decoded_tensors = tf_ex_decoder.decode(serialized_example)
-            image = decoded_tensors['image'].numpy().astype('uint8')
-            scores = np.ones(shape=(len(decoded_tensors['groundtruth_boxes'])))
-            # print(decoded_tensors['groundtruth_instance_masks'].numpy().shape)
-            # print(decoded_tensors.keys())
-            visualization_utils.visualize_boxes_and_labels_on_image_array(
-                image,
-                decoded_tensors['groundtruth_boxes'].numpy(),
-                decoded_tensors['groundtruth_classes'].numpy().astype('int'),
-                scores,
-                category_index={
-                    1: {
-                        'id': 1,
-                        'name': 'leaf',
-                    },
+def show_batch(raw_records):
+    tf_ex_decoder = TfExampleDecoder(include_mask=True)
+    plt.figure(figsize=(20, 20))
+    use_normalized_coordinates=True
+    min_score_thresh = 0.30
+    for i, serialized_example in enumerate(raw_records):
+        plt.subplot(1, 3, i + 1)
+        decoded_tensors = tf_ex_decoder.decode(serialized_example)
+        image = decoded_tensors['image'].numpy().astype('uint8')
+        scores = np.ones(shape=(len(decoded_tensors['groundtruth_boxes'])))
+        # print(decoded_tensors['groundtruth_instance_masks'].numpy().shape)
+        # print(decoded_tensors.keys())
+        visualization_utils.visualize_boxes_and_labels_on_image_array(
+            image,
+            decoded_tensors['groundtruth_boxes'].numpy(),
+            decoded_tensors['groundtruth_classes'].numpy().astype('int'),
+            scores,
+            category_index={
+                1: {
+                    'id': 1,
+                    'name': 'leaf',
                 },
-                use_normalized_coordinates=use_normalized_coordinates,
-                min_score_thresh=min_score_thresh,
-                instance_masks=decoded_tensors['groundtruth_instance_masks'].numpy().astype('uint8'),
-                line_thickness=4)
+            },
+            use_normalized_coordinates=use_normalized_coordinates,
+            min_score_thresh=min_score_thresh,
+            instance_masks=decoded_tensors['groundtruth_instance_masks'].numpy().astype('uint8'),
+            line_thickness=4)
 
-            plt.imshow(image)
-            plt.axis("off")
-            plt.title(f"Image-{i+1}")
-        #plt.show()
-        plt.savefig("out/fig.png")
+        plt.imshow(image)
+        plt.axis("off")
+        plt.title(f"Image-{i+1}")
+    #plt.show()
+    plt.savefig("out/fig.png")
 
-    buffer_size = 100
-    num_of_examples = 3
+buffer_size = 100
+num_of_examples = 3
 
-    train_tfrecords = tf.io.gfile.glob(exp_config.task.train_data.input_path)
-    raw_records = tf.data.TFRecordDataset(train_tfrecords).shuffle(buffer_size=buffer_size).take(num_of_examples)
-    show_batch(raw_records)
+train_tfrecords = tf.io.gfile.glob(exp_config.task.train_data.input_path)
+raw_records = tf.data.TFRecordDataset(train_tfrecords).shuffle(buffer_size=buffer_size).take(num_of_examples)
+show_batch(raw_records)
 
-    send_pushover_notification("Starting Training", "Tensorflow Models")
+send_pushover_notification("Starting Training", "Tensorflow Models")
 
-    class OutputInterceptor:
-        def __init__(self, stdout):
-            self.stdout = stdout
-            self.buffer = StringIO()
-
-        def write(self, output):
-            processed_output = send_pushover_notification(output, "Tensorflow Model Training", priority=-1)
-            self.stdout.write(processed_output)
-
-        def flush(self):
-            self.stdout.flush()
-
+with intercept_stdout(partial(send_pushover_notification, title="Tensorflow Models Training", priority=-1)):
     model, eval_logs = tfm.core.train_lib.run_experiment(
         distribution_strategy=distribution_strategy,
         task=task,
@@ -167,20 +156,20 @@ with distribution_strategy.scope():
         model_dir=model_dir,
         run_post_eval=False)
 
-    send_pushover_notification("Finished Training", "Tensorflow Models")
-    
-    
-    # tf.keras.utils.plot_model(model, show_shapes=True)
+send_pushover_notification("Finished Training", "Tensorflow Models")
 
-    # for key, value in eval_logs.items():
-    #     if isinstance(value, tf.Tensor):
-    #         value = value.numpy()
-    #     print(f'{key:20}: {value:.3f}')
 
-    export_saved_model_lib.export_inference_graph(
-        input_type='image_tensor',
-        batch_size=1,
-        input_image_size=[IMAGE_SIZE[1], IMAGE_SIZE[0]],
-        params=exp_config,
-        checkpoint_path=tf.train.latest_checkpoint(model_dir),
-        export_dir=f'out/mask_rcnn_{time.time()}')
+# tf.keras.utils.plot_model(model, show_shapes=True)
+
+# for key, value in eval_logs.items():
+#     if isinstance(value, tf.Tensor):
+#         value = value.numpy()
+#     print(f'{key:20}: {value:.3f}')
+
+export_saved_model_lib.export_inference_graph(
+    input_type='image_tensor',
+    batch_size=1,
+    input_image_size=[IMAGE_SIZE[1], IMAGE_SIZE[0]],
+    params=exp_config,
+    checkpoint_path=tf.train.latest_checkpoint(model_dir),
+    export_dir=f'out/mask_rcnn_{time.time()}')
