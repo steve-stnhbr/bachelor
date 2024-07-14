@@ -20,6 +20,7 @@ IMAGE_SIZE = (640, 640)
 BATCH_SIZE = 4
 TFDS_NAME = 'leaf_instance_dataset'
 INPUT_PATH = "/home/stefan.steinheber/tensorflow_datasets/leaf_instance_dataset/1.0.0/"
+MODEL = "retina_net"
 
 def build_experiment_config():
     # Create a base experiment config
@@ -100,7 +101,7 @@ distribution_strategy = tf.distribute.OneDeviceStrategy(logical_device_names[0])
 print("Created distribution Strategy on Device", logical_device_names[0])
 
 with distribution_strategy.scope():
-    model_dir = "out"
+    model_dir = "out/" + MODEL
     task = tfm.core.task_factory.get_task(exp_config.task, logging_dir=model_dir)
 
     def show_batch(raw_records):
