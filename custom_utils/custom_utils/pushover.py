@@ -5,11 +5,11 @@ import http.client, urllib
 def send_pushover_notification(message, title=None):
     USER_KEY = os.getenv("PUSHOVER_USER_KEY")
     API_TOKEN = os.getenv("PUSHOVER_API_TOKEN")
-    if "PUSHOVER_USER_KEY" is None:
+    if "PUSHOVER_USER_KEY" == None:
         print("No user key provided, aborting pushover notification")
         print("Consider adding 'PUSHOVER_USER_KEY' to your environment variables")
         return
-    if "PUSHOVER_API_TOKEN" is None:
+    if "PUSHOVER_API_TOKEN" == None:
         print("No user key provided, aborting pushover notification")
         print("Consider adding 'PUSHOVER_API_TOKEN' to your environment variables")
         return
