@@ -49,9 +49,9 @@ def build_experiment_config():
 
     # Modify the config as needed
     exp_config.task.model.num_classes = 2  # Adjust based on your number of classes
-    exp_config.task.model.mask_head.num_convs = 4
-    exp_config.task.model.mask_head.num_filters = 256
-    exp_config.task.model.mask_head.use_separable_conv = False
+    # exp_config.task.model.mask_head.num_convs = 4
+    # exp_config.task.model.mask_head.num_filters = 256
+    # exp_config.task.model.mask_head.use_separable_conv = False
     
     # Configure for custom dataset
     exp_config.task.train_data.input_path = INPUT_PATH + "*train*"
