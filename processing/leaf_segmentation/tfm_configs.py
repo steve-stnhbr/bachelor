@@ -20,13 +20,15 @@ def maskrcnn_vit_fpn(path, classes=2, image_size=(640, 640)):
                     output_2d_feature_maps=True,
                 )
             ),
+            # decoder=decoders.Decoder(
+            #     type='fpn',
+            #     fpn=decoders.FPN(
+            #         num_filters=256,
+            #         use_separable_conv=False,
+            #     )
+            # ),
             decoder=decoders.Decoder(
-                type='fpn',
-                fpn=decoders.FPN(
-                    num_filters=256,
-                    use_separable_conv=False,
-                )
-            ),
+                  type='identity', identity=decoders.Identity(),
             roi_sampler=maskrcnn_cfg.ROISampler(
                 mix_gt_boxes=True,
                 num_sampled_rois=512,
