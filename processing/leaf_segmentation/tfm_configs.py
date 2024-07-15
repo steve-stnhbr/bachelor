@@ -28,7 +28,7 @@ def maskrcnn_vit_fpn(path, classes=2, image_size=(640, 640)):
             #     )
             # ),
             decoder=decoders.Decoder(
-                  type='identity', identity=decoders.Identity(),
+                  type='identity', identity=decoders.Identity()),
             roi_sampler=maskrcnn_cfg.ROISampler(
                 mix_gt_boxes=True,
                 num_sampled_rois=512,
@@ -143,7 +143,7 @@ def config_from_task(task, path, batch_size=8):
     config.task.validation_data.global_batch_size = batch_size
 
     # Disable COCO-specific configurations
-    config.task.annotation_file = path + "instances.json"
+    config.task.annotation_file = None
     config.task.use_coco_metrics = True
     
     return config
