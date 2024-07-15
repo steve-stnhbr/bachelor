@@ -137,8 +137,12 @@ def config_from_task(task, path, batch_size=8):
     config.task.model.num_classes = 2  # Adjust based on your number of classes
     
     # Configure for custom dataset
-    config.task.train_data.input_path = path + "*train*"
-    config.task.validation_data.input_path = path + "*val*"
+    # config.task.train_data.input_path = path + "*train*"
+    # config.task.validation_data.input_path = path + "*val*"
+    config.task.train_data.tfds_name = "leaf_instance_dataset"
+    config.task.train_data.tfds_split = "train"
+    config.task.validation_data.tfds_name = "leaf_instance_dataset"
+    config.task.validation_data.tfds_split = "val"
     config.task.train_data.global_batch_size = batch_size
     config.task.validation_data.global_batch_size = batch_size
 
