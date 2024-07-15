@@ -144,6 +144,6 @@ def config_from_task(task, path, batch_size=8):
 
     # Disable COCO-specific configurations
     config.task.annotation_file = None
-    config.task.use_coco_metrics = True
+    config.task.use_coco_metrics = False
     
     return config
