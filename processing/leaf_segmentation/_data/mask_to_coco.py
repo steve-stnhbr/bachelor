@@ -94,7 +94,13 @@ def convert_masks_to_coco(image_dir, mask_dir, output_path, pool_size=None, cate
             categories.update(cats)
     
     if default_categories:
-        categories = DEFAULT_COCO_CATEGORIES
+        categories = [
+            {
+                'id': index,
+                'name': name
+            }
+            for index, name in enumerate(DEFAULT_COCO_CATEGORIES)
+        ]
     elif category is None:
         categories = [
             {
