@@ -47,7 +47,7 @@ from detectron2.solver.build import maybe_add_gradient_clipping
 from detectron2.utils.logger import setup_logger
 
 # MaskFormer
-from mask2former import (
+from .mask2former import (
     COCOInstanceNewBaselineDatasetMapper,
     COCOPanopticNewBaselineDatasetMapper,
     InstanceSegEvaluator,
