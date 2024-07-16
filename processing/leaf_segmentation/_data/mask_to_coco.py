@@ -138,7 +138,7 @@ def convert_masks_to_coco(image_dir, mask_dir, output_path, pool_size=None, cate
 @click.option('--fixed-category-name', type=str)
 @click.option('--default-categories', is_flag=True)
 def main(images, masks, output, pool_size, fixed_category_id, fixed_category_name, default_categories):
-    convert_masks_to_coco(images, masks, output, pool_size=pool_size, category=(fixed_category_id, fixed_category_name), default_categories)
+    convert_masks_to_coco(images, masks, output, pool_size=pool_size, category=(fixed_category_id, fixed_category_name), default_categories=default_categories)
 
 if __name__ == "__main__":
     main()
