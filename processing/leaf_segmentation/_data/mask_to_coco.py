@@ -91,6 +91,8 @@ def convert_masks_to_coco(image_dir, mask_dir, output_path, pool_size=None, cate
             images.append(image_info)
             annotations.extend(annots)
             categories.update(cats)
+
+    print("Categories: ", categories)
     
     categories = [
         {
