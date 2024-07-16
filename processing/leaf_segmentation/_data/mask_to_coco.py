@@ -92,13 +92,13 @@ def convert_masks_to_coco(image_dir, mask_dir, output_path, pool_size=None, cate
             annotations.extend(annots)
             categories.update(cats)
     
-    categories = set([
+    categories = [
         {
             "id": int(category_id) if category is None else category[0], 
             "name": f"category_{category_id}" if category is None else category[1]
         }
-        for category_id in sorted(categories)
-    ])
+        for category_id in set(sorted(categories))
+    ]
     
     coco_dataset = {
         "images": images,
