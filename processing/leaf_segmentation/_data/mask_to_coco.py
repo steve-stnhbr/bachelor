@@ -66,7 +66,7 @@ def process_single_image(args):
     
     return image_info, annotations, list(unique_categories) if fixed_category_id is None else [fixed_category_id]
 
-def convert_masks_to_coco(image_dir, mask_dir, output_path, pool_size=None, category=None, default_categories):
+def convert_masks_to_coco(image_dir, mask_dir, output_path, pool_size=None, category=None, default_categories=False):
     image_paths = sorted(glob.glob(os.path.join(image_dir, "*.png")))
     mask_paths = sorted(glob.glob(os.path.join(mask_dir, "*.png")))
     
