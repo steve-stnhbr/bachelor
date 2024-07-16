@@ -10,6 +10,7 @@ import tqdm
 from multiprocessing import Pool, cpu_count
 
 VERBOSE = False
+DEFAULT_COCO_CATEGORIES = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'backpack', 'umbrella', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis', 'snowboard', 'sports ball', 'kite', 'baseball bat', 'baseball glove', 'skateboard', 'surfboard', 'tennis racket', 'bottle', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake', 'chair', 'couch', 'potted plant', 'bed', 'dining table', 'toilet', 'tv', 'laptop', 'mouse', 'remote', 'keyboard', 'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush'] 
 
 def create_coco_annotation(mask, image_id, category_id, annotation_id):
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -65,7 +66,7 @@ def process_single_image(args):
     
     return image_info, annotations, list(unique_categories) if fixed_category_id is None else [fixed_category_id]
 
-def convert_masks_to_coco(image_dir, mask_dir, output_path, pool_size=None, category=None):
+def convert_masks_to_coco(image_dir, mask_dir, output_path, pool_size=None, category=None, default_categories):
     image_paths = sorted(glob.glob(os.path.join(image_dir, "*.png")))
     mask_paths = sorted(glob.glob(os.path.join(mask_dir, "*.png")))
     
@@ -92,7 +93,9 @@ def convert_masks_to_coco(image_dir, mask_dir, output_path, pool_size=None, cate
             annotations.extend(annots)
             categories.update(cats)
     
-    if category is None:
+    if default_categories:
+        categories = DEFAULT_COCO_CATEGORIES
+    elif category is None:
         categories = [
             {
                 "id": int(category_id), 
@@ -127,8 +130,9 @@ def convert_masks_to_coco(image_dir, mask_dir, output_path, pool_size=None, cate
 @click.option("-p", '--pool_size', type=int, default=None)
 @click.option('--fixed-category-id', type=int)
 @click.option('--fixed-category-name', type=str)
-def main(images, masks, output, pool_size, fixed_category_id, fixed_category_name):
-    convert_masks_to_coco(images, masks, output, pool_size=pool_size, category=(fixed_category_id, fixed_category_name))
+@click.option('--default-categories', is_flag=True)
+def main(images, masks, output, pool_size, fixed_category_id, fixed_category_name, default_categories):
+    convert_masks_to_coco(images, masks, output, pool_size=pool_size, category=(fixed_category_id, fixed_category_name), default_categories)
 
 if __name__ == "__main__":
     main()
