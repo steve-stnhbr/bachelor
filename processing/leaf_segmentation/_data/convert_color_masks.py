@@ -57,15 +57,15 @@ def main(input_dir, output_dir, image_pattern, mask_pattern, image_subdir, mask_
     os.makedirs(mask_output_path, exist_ok=True)
     
     with Pool(int(cpu_count() * .8)) as p:
-        # list(
+        list(
         #     tqdm.tqdm(
                 p.imap(
                     partial(process_images, output_dir=output_dir, image_subdir=image_output_path, mask_subdir=mask_output_path),
                     files
                 ),
-                total=len(files)
+                #total=len(files)
         #     )
-        # )
+        )
         
         
 if __name__ == '__main__':
