@@ -1,8 +1,8 @@
 MODEL:
   BACKBONE:
-    FREEZE_AT: 0
+    #FREEZE_AT: 0
     NAME: "build_resnet_backbone"
-  WEIGHTS: "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
+  #WEIGHTS: "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
   PIXEL_MEAN: [123.675, 116.280, 103.530]
   PIXEL_STD: [58.395, 57.120, 57.375]
   RESNETS:
@@ -40,7 +40,7 @@ INPUT:
   FORMAT: "RGB"
   DATASET_MAPPER_NAME: "coco_instance_lsj"
 TEST:
-  EVAL_PERIOD: 2000
+  EVAL_PERIOD: 200
 DATALOADER:
   FILTER_EMPTY_ANNOTATIONS: True
   NUM_WORKERS: 4

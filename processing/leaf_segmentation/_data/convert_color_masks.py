@@ -23,7 +23,7 @@ def process_images(files, output_dir, image_subdir, mask_subdir):
     gray_mask_image = Image.fromarray(gray_mask.astype(np.uint8))
     gray_mask_image.save(os.path.join(mask_subdir, file_name))
     
-    shutil.move(image_file, os.path.join(image_subdir, file_name))
+    shutil.copy(image_file, os.path.join(image_subdir, file_name))
     
 
 @click.command()
@@ -59,7 +59,7 @@ def main(input_dir, output_dir, image_pattern, mask_pattern, image_subdir, mask_
     os.makedirs(image_output_path, exist_ok=True)
     os.makedirs(mask_output_path, exist_ok=True)
     
-    with Pool(int(cpu_count() * .8)) as p:
+    with Pool(int(cpu_count() * .5)) as p:
         list(
              tqdm.tqdm(
                 p.imap(
