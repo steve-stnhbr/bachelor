@@ -1,6 +1,7 @@
 import os
 import click
 import shutil
+import uuid
 
 @click.command()
 @click.option('-i', '--input', type=str)
@@ -26,7 +27,8 @@ def main(input, output, indicator, negative, case):
             file_path = os.path.join(input, dir, file)
             if os.path.isdir(file_path):
                 continue
-            shutil.copy(file_path, out)
+            file_name = uuid.uuid4().hex + os.path.splitext(file)[1]
+            shutil.copy(file_path, os.path.join(out, file_name))
 
 if __name__ == '__main__':
     main()

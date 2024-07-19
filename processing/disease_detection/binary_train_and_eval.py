@@ -12,15 +12,16 @@ from functools import partial
 import skimage.color as skimage_color
 import cv2
 from models import alexnet_model, vgg19_model, lenet_model
+from lib.vit_keras.vit_keras import vit
 
 L_RATIO = .8
 TWO_PATHS_SECOND_BLOCK = True
 INPUT_SHAPE = (224, 224, 3)
 CLASSES = 2
 
-TRAIN_DATA_PATH = os.path.join("_data", "train_b")
-VAL_DATA_PATH = os.path.join("_data", "val_b")
-TEST_DATA_PATH = os.path.join("_data", "test_b")
+TRAIN_DATA_PATH = os.path.join("_data", "combined", "train")
+VAL_DATA_PATH = os.path.join("_data", "combined", "val")
+TEST_DATA_PATH = os.path.join("_data", "combined", "test")
 
 def load_transform(paths):
     return cai.datasets.load_images_from_files(paths, target_size=INPUT_SHAPE[:2], lab=True, rescale=True, smart_resize=True)
@@ -32,31 +33,29 @@ def execute(model, name=None, lab=False, batch_size=32, workers=16):
 
     opt = keras.optimizers.SGD(learning_rate=0.01, momentum=0.9, nesterov=True)
     model.compile(
-        loss='categorical_crossentropy',
+        loss='binary_crossentropy',
         optimizer=opt,
-        metrics=['accuracy']
+        metrics=[
+            keras.metrics.BinaryAccuracy(),
+            tf.keras.metrics.Recall(),
+            tf.keras.metrics.AUC()
+        ],
     )
-
     
     print("Creating datagen")
-    # train_datagen = PlantLeafsDataGenBinary(TRAIN_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
-    # val_datagen = PlantLeafsDataGenBinary(VAL_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
-    # test_datagen = PlantLeafsDataGenBinary(TEST_DATA_PATH, transforms=[load_transform] if lab else None, batch_size=batch_size, workers=workers, use_multiprocessing=True)
 
-    train_datagen = gen_dataset(TRAIN_DATA_PATH, batch_size=batch_size, lab=lab)
-    val_datagen = gen_dataset(VAL_DATA_PATH, batch_size=batch_size, lab=lab)
-    test_datagen = gen_dataset(TEST_DATA_PATH, batch_size=batch_size, lab=lab)
+    train_datagen = gen_dataset(TRAIN_DATA_PATH, batch_size=batch_size, lab=lab, input_shape=INPUT_SHAPE)
+    val_datagen = gen_dataset(VAL_DATA_PATH, batch_size=batch_size, lab=lab, input_shape=INPUT_SHAPE)
+    test_datagen = gen_dataset(TEST_DATA_PATH, batch_size=batch_size, lab=lab, input_shape=INPUT_SHAPE)
 
-    test = train_datagen.take(5).as_numpy_iterator()
+    test = train_datagen.take(1).as_numpy_iterator()
     for el in test:
         print(el[0].shape, el[1].shape)
 
-    print("Dataset sizes [train, val, test]", len(train_datagen), len(val_datagen), len(test_datagen))
-
     callbacks = [
         keras.callbacks.EarlyStopping(patience=5),
-        keras.callbacks.ModelCheckpoint(filepath='checkpoints/model##name##.{epoch:02d}.keras'.replace("##name##", name)),
-        keras.callbacks.TensorBoard(log_dir='./logs'),
+        keras.callbacks.ModelCheckpoint(filepath='checkpoints/##name##/model##name##.{epoch:02d}.keras'.replace("##name##", name)),
+        keras.callbacks.TensorBoard(log_dir=f'./logs{name}'),
         keras.callbacks.ModelCheckpoint(filepath='out/best##name##.keras'.replace('##name##', name), save_best_only=True, mode='max', monitor='val_accuracy')
     ]
     print(f"Beginning training of model {name}")
@@ -68,15 +67,29 @@ def execute(model, name=None, lab=False, batch_size=32, workers=16):
     result = model.evaluate(test_datagen)
     print(result)
 
-def gen_dataset(path, batch_size, lab):
-    def map_data(x, y):
-        return (x, to_categorical(y, num_classes=2))
-    datagen = keras.utils.image_dataset_from_directory(path, batch_size=batch_size, image_size=INPUT_SHAPE[:2], crop_to_aspect_ratio=True, labels="inferred", label_mode="binary")
+def gen_dataset(path, batch_size, lab, input_shape, aug=True):
+    data_augmentation = tf.keras.Sequential([
+        keras.layers.RandomFlip("horizontal_and_vertical"),
+        keras.layers.RandomRotation(.8),
+        keras.layers.RandomBrightness(.4),
+        keras.layers.RandomContrast(.4),
+        keras.layers.RandomZoom((-.2, .2), (-.2, .2)),
+        keras.layers.Resizing(INPUT_SHAPE[0], INPUT_SHAPE[1])
+    ])
+    @tf.function()
+    def augment(image, label):
+        if (augment):
+            return data_augmentation(image), to_categorical(label, num_classes=CLASSES)
+        else:
+            return x, to_categorical(label, num_classes=CLASSES)
+    datagen = keras.utils.image_dataset_from_directory(path, batch_size=batch_size, image_size=input_shape[:2], crop_to_aspect_ratio=True, labels="inferred", label_mode="binary")
     if lab:
         datagen = datagen.map(
             lambda x, y: (transform_wrapper(x, target_size=INPUT_SHAPE[:2], rescale=True, smart_resize=True, lab=True), y)
         )
-    datagen = datagen.map(map_data, num_parallel_calls=tf.data.AUTOTUNE, deterministic=False).prefetch(tf.data.AUTOTUNE)
+    datagen = datagen\
+        .map(augment, num_parallel_calls=tf.data.AUTOTUNE, deterministic=False)\
+        .prefetch(tf.data.AUTOTUNE)
     return datagen
 
 @click.command()
@@ -147,7 +160,18 @@ def main(workers, batch_size):
                 weights=None
             ),
             "VGG19"
-        )
+        ),
+        (
+            vit.vit_l32(
+                image_size=INPUT_SHAPE[:2],
+                activation='sigmoid',
+                pretrained=False,
+                include_top=True,
+                pretrained_top=False,
+                classes=CLASSES
+            ),
+            "VisionTransformer"
+        ),
     ]
 
     for lab in [True]:
