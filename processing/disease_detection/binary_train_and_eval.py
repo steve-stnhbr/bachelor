@@ -26,12 +26,15 @@ TEST_DATA_PATH = os.path.join("_data", "combined", "test")
 def load_transform(paths):
     return cai.datasets.load_images_from_files(paths, target_size=INPUT_SHAPE[:2], lab=True, rescale=True, smart_resize=True)
 
-def execute(model, name=None, lab=False, batch_size=32, workers=16):
+def execute(model, name=None, lab=False, batch_size=32, workers=16, resume):
     if name is None:
         name = type(model).__name__
     print(f"Starting training for {name}")
+    if resume:
+        model = keras.models.load_model(tf.train.latest_checkpoint(f"checkpoints/{name}")
 
-    opt = keras.optimizers.SGD(learning_rate=0.01, momentum=0.9, nesterov=True)
+#    opt = keras.optimizers.SGD(learning_rate=0.01, momentum=0.9, nesterov=True)
+    opt = keras.optimizers.SGD()
     model.compile(
         loss='binary_crossentropy',
         optimizer=opt,
@@ -55,7 +58,7 @@ def execute(model, name=None, lab=False, batch_size=32, workers=16):
     callbacks = [
         keras.callbacks.EarlyStopping(patience=5),
         keras.callbacks.ModelCheckpoint(filepath='checkpoints/##name##/model##name##.{epoch:02d}.keras'.replace("##name##", name)),
-        keras.callbacks.TensorBoard(log_dir=f'./logs{name}'),
+        keras.callbacks.TensorBoard(log_dir=f'./logs/{name}'),
         keras.callbacks.ModelCheckpoint(filepath='out/best##name##.keras'.replace('##name##', name), save_best_only=True, mode='max', monitor='val_accuracy')
     ]
     print(f"Beginning training of model {name}")
@@ -95,8 +98,21 @@ def gen_dataset(path, batch_size, lab, input_shape, aug=True):
 @click.command()
 @click.option("-w", "--workers", type=int)
 @click.option("-b", "--batch_size", type=int)
-def main(workers, batch_size):
+@click.option('-r', '--resume', is_flag=True)
+@click.option("-s", "--start", type=int)
+def main(workers, batch_size, resume, start):
     models = [
+        (
+            vit.vit_l32(
+                image_size=INPUT_SHAPE[:2],
+                activation='sigmoid',
+                pretrained=False,
+                include_top=True,
+                pretrained_top=False,
+                classes=CLASSES
+            ),
+            "VisionTransformer"
+        ),
         (
             keras.applications.ResNet152V2(
                 include_top = True,
@@ -161,22 +177,12 @@ def main(workers, batch_size):
             ),
             "VGG19"
         ),
-        (
-            vit.vit_l32(
-                image_size=INPUT_SHAPE[:2],
-                activation='sigmoid',
-                pretrained=False,
-                include_top=True,
-                pretrained_top=False,
-                classes=CLASSES
-            ),
-            "VisionTransformer"
-        ),
     ]
-
-    for lab in [True]:
+    if start is not None:
+        models = models[start:]
+    for lab in [False]:
         for model, name in models:
-            execute(model, f"{name}_{'lab' if lab else 'rgb'}", lab, workers=workers, batch_size=batch_size)
+            execute(model, f"{name}_{'lab' if lab else 'rgb'}", lab, workers=workers, batch_size=batch_size, resume=resume)
 
 
 def transform(imgs, target_size=(224,224), smart_resize=False, lab=False, rescale=False, bipolar=False):
