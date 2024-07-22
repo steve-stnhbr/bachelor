@@ -9,8 +9,8 @@ def main(input_file):
         print("Multiple files not supported yet!")
         input_files = input_file.split(",")
 
-    for summary in summary_iterator(input_file):
-        print(summary)
+    for event in summary_iterator(input_file):
+        print(event.step)
 
 if __name__ == '__main__':
     main()
