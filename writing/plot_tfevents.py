@@ -10,7 +10,7 @@ def main(input_file):
         input_files = input_file.split(",")
 
     for event in summary_iterator(input_file):
-        print(event.step)
+        print(event.summary.value)
 
 if __name__ == '__main__':
     main()
