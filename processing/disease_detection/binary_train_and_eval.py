@@ -26,12 +26,24 @@ TEST_DATA_PATH = os.path.join("_data", "combined", "test")
 def load_transform(paths):
     return cai.datasets.load_images_from_files(paths, target_size=INPUT_SHAPE[:2], lab=True, rescale=True, smart_resize=True)
 
-def execute(model, name=None, lab=False, batch_size=32, workers=16, resume):
+def get_latest_checkpoint(dir):
+    if not os.path.isdir(dir):
+        return None
+    ckpts = [file for file in os.listdir(dir) if file.endswith("keras")]
+    ckpts.sort()
+    return os.path.join(dir, ckpts[-1])
+
+def execute(model, name=None, lab=False, batch_size=32, workers=16, resume=False):
     if name is None:
         name = type(model).__name__
     print(f"Starting training for {name}")
     if resume:
-        model = keras.models.load_model(tf.train.latest_checkpoint(f"checkpoints/{name}")
+        print(f"Loading model file from checkpoints/{name}")
+        #model_file = tf.train.latest_checkpoint(f"checkpoints/{name}")
+        model_file = get_latest_checkpoint(f"checkpoints/{name}")
+        if model_file is not None:
+            print(f"Loading model from file {model_file}")
+            model = keras.models.load_model(model_file)
 
 #    opt = keras.optimizers.SGD(learning_rate=0.01, momentum=0.9, nesterov=True)
     opt = keras.optimizers.SGD()
