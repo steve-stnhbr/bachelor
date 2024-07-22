@@ -11,3 +11,6 @@ def main(input_file):
 
     for summary in (input_file):
         print(summary)
+
+if __name__ == '__main__':
+    main()
