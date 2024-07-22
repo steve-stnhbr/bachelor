@@ -9,7 +9,7 @@ def main(input_file):
         print("Multiple files not supported yet!")
         input_files = input_file.split(",")
 
-    for summary in (input_file):
+    for summary in summary_iterator(input_file):
         print(summary)
 
 if __name__ == '__main__':
