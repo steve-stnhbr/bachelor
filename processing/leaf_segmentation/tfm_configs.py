@@ -5,6 +5,21 @@ from official.vision.configs import maskrcnn as maskrcnn_cfg
 from official.vision.configs import backbones
 from official.vision.configs import decoders
 
+@exp_factory.register_config_factory('maskrcnn_resnet_fpn')
+def maskrcnn_resnet_fpn(path, classes=2, image_size=(640, 640)):
+    # Create a base experiment config
+    exp_config = exp_factory.get_exp_config('maskrcnn_resnetfpn_coco')
+    
+    exp_config.task.init_checkpoint = None
+    exp_config.task.init_checkpoint_module = None
+
+    exp_config.task.model.input_size = [image_size[1], image_size[0], 3]
+
+    # Modify the config as needed
+    exp_config.task.model.num_classes = classes  # Adjust based on your number of classes
+
+    return config_from_task(exp_config.task, path)
+
 @exp_factory.register_config_factory('maskrcnn_vit_fpn')
 def maskrcnn_vit_fpn(path, classes=2, image_size=(640, 640)):
     task = maskrcnn_cfg.MaskRCNNTask(
@@ -149,5 +164,11 @@ def config_from_task(task, path, batch_size=8):
     # Disable COCO-specific configurations
     config.task.annotation_file = None
     config.task.use_coco_metrics = False
+    
+#    exp_config.trainer.optimizer_config.warmup.linear.warmup_steps = 200
+#    exp_config.trainer.optimizer_config.learning_rate.type = 'cosine'
+#    exp_config.trainer.optimizer_config.learning_rate.cosine.decay_steps = train_steps
+#    exp_config.trainer.optimizer_config.learning_rate.cosine.initial_learning_rate = 0.07
+#    exp_config.trainer.optimizer_config.warmup.linear.warmup_learning_rate = 0.05
     
     return config
