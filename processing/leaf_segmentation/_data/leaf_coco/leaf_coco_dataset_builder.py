@@ -6,6 +6,8 @@ import tensorflow as tf
 import numpy as np
 from PIL import Image
 
+IMAGE_SIZE = (512, 512)
+
 def masks_to_boxes(masks, area_threshold=50):
     # if masks.numel() == 0:
     #     return torch.zeros((0, 4), device=masks.device, dtype=torch.float)
@@ -20,8 +22,6 @@ def masks_to_boxes(masks, area_threshold=50):
     areas = np.zeros((n, ), dtype=np.float16)
 
     for index, mask in enumerate(masks):
-        if mask.sum() < area_threshold:
-            continue
         y, x = np.nonzero(mask)
         bounding_boxes[index, 0] = np.min(x) / width
         bounding_boxes[index, 1] = np.min(y) / height
@@ -126,8 +126,11 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
                 mask_path = os.path.join(masks_dir, filename)
                 
                 # Load image and mask
-                image = np.array(Image.open(image_path))
-                labels = np.array(Image.open(mask_path))
+                image = np.array(Image.open(image_path).convert("RGB").resize(IMAGE_SIZE))
+                labels = np.array(Image.open(mask_path).convert("L").resize(IMAGE_SIZE))
+                
+                #print("image", image.shape)
+                #print("labels", labels.shape)
                 
                 # Ensure labels is 2D (H, W) and convert to 3D (H, W, 1)
                 if labels.ndim == 2:
@@ -135,6 +138,12 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
                     
                 masks = class_labels_to_masks(labels)
                 bboxes, areas = masks_to_boxes(masks)
+                
+                #print("masks", masks.shape)
+                #print("bboxes", bboxes.shape)
+                
+                if len(masks) != len(bboxes):
+                    raise Exception("# of masks and bboxes are not aligned")
 
                 width, height, _ = image.shape
 

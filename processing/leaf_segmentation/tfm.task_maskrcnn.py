@@ -20,11 +20,11 @@ IMAGE_SIZE = (640, 640)
 BATCH_SIZE = 4
 TFDS_NAME = 'leaf_instance_dataset'
 INPUT_PATH = "/home/stefan.steinheber/tensorflow_datasets/leaf_instance_dataset/1.0.0/"
-MODEL = "retina_net"
+MODEL = "bbii"
 
 def build_experiment_config():
     # Create a base experiment config
-    exp_config = exp_factory.get_exp_config('retinanet_resnetfpn_coco')
+    exp_config = exp_factory.get_exp_config('maskrcnn_resnetfpn_coco')
 
     # exp_config.task.model.backbone = backbones_cfg.Backbone(
     #     type='vit',
@@ -147,14 +147,14 @@ show_batch(raw_records)
 
 send_pushover_notification("Starting Training", "Tensorflow Models")
 
-with intercept_stdout(partial(send_pushover_notification, title="Tensorflow Models Training", priority=-1)):
-    model, eval_logs = tfm.core.train_lib.run_experiment(
-        distribution_strategy=distribution_strategy,
-        task=task,
-        mode='train',
-        params=exp_config,
-        model_dir=model_dir,
-        run_post_eval=False)
+
+model, eval_logs = tfm.core.train_lib.run_experiment(
+    distribution_strategy=distribution_strategy,
+    task=task,
+    mode='train',
+    params=exp_config,
+    model_dir=model_dir,
+    run_post_eval=False)
 
 send_pushover_notification("Finished Training", "Tensorflow Models")
 

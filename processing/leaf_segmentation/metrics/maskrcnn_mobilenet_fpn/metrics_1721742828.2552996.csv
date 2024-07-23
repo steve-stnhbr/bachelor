@@ -1,0 +1,2 @@
+frcnn_box,frcnn_cls,mask,model,rpn_box,rpn_score,total,training,step,mode
+0.48404703,0.09664444,0.5061679,1.2538303,0.08772562,0.07924519,1.5913755,1.5913755,200,train

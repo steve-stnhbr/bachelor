@@ -1,0 +1,3 @@
+frcnn_box,frcnn_cls,mask,model,rpn_box,rpn_score,total,training,step,mode,"steps_per_second': 14.49743959695003, 'validation"
+0.47154304,0.093059056,0.49139923,1.2278295,0.09189581,0.07993242,1.5653132,1.5653132,200,train,
+,,,,,,,,200,eval,0.0
