@@ -25,6 +25,8 @@ SAVE_DIR = "/opt/imgs"
 NAME_FORMAT = "IM_{}.jpg"
 NAME_REGEX = r"IM_(\d*)\.jpg"
 
+CAPTURE_COOLDOWN = 5
+
 # Calculate the screen size in bytes
 screensize = WIDTH * HEIGHT * (BPP // 8)
 
@@ -65,24 +67,32 @@ def main():
     else:
         last_img = img_list[-1]
         last_index = int(re.match(NAME_REGEX, last_img).group(1))
+    print("Last Index:", last_index)
 
     fb = np.memmap('/dev/fb0', dtype='uint16',mode='w+', shape=(WIDTH,HEIGHT))
     print("Initialized Framebuffer")
+    cooldown = 0
     while True:
         start = time.time()
         frame = cam.capture_array()
+        frame = np.fliplr(frame)
         fb[:] = image_to_565_hex_array(frame)
         sleep = FRAME_TIME - (time.time() - start)
-        if ioe.input(14) == io.HIGH:
+        if ioe.input(14) == io.HIGH and cooldown == 0:
             last_index += 1
             name = os.path.join(SAVE_DIR, NAME_FORMAT.format(last_index))
             cam.capture_file(name)
             print("Capturing image", name)
             fb[:] = 0xffff
+            cooldown = CAPTURE_COOLDOWN
         if sleep > 0:
-            time.sleep(sleep)
+            #time.sleep(sleep)
+            pass
         else:
-            print("Lagging behind {} seconds".format(-sleep))
+            #print("Lagging behind {} seconds".format(-sleep))
+            pass
+        if cooldown > 0:
+            cooldown = cooldown - 1
 
 if __name__ == '__main__':
     main()
