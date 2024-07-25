@@ -13,6 +13,8 @@ import skimage.color as skimage_color
 import cv2
 from models import alexnet_model, vgg19_model, lenet_model
 from lib.vit_keras.vit_keras import vit
+import pandas as pd
+from datetime import datetime
 
 L_RATIO = .8
 TWO_PATHS_SECOND_BLOCK = True
@@ -22,6 +24,50 @@ CLASSES = 2
 TRAIN_DATA_PATH = os.path.join("_data", "combined", "train")
 VAL_DATA_PATH = os.path.join("_data", "combined", "val")
 TEST_DATA_PATH = os.path.join("_data", "combined", "test")
+
+class MetricsToCSVCallback(keras.callbacks.Callback):
+    def __init__(self, filepath, frequency, save_freq=100):
+        super().__init__()
+        self.filepath = filepath
+        self.frequency = frequency
+        self.save_freq = save_freq
+        self.data = []
+        
+    def on_train_begin(self, logs=None):
+        self.epochs = self.params['epochs']
+        self.steps = self.params['steps']
+        
+    def on_epoch_begin(self, epoch, logs=None):
+        self.current_epoch = epoch
+
+    def on_train_batch_end(self, batch, logs=None):
+        logs = logs or {}
+        step = self.current_epoch * self.steps + batch
+        
+        if batch % self.frequency != 0:
+            return
+        
+        # Capture all available metrics
+        metrics = {name: logs.get(name, 0) for name in self.model.metrics_names}
+        metrics.update({'epoch': self.current_epoch, 'step': step})
+        metrics.update(self.model.get_metrics_result())
+        
+        self.data.append(metrics)
+        
+        # Save to CSV periodically
+        if step % self.save_freq == 0:
+            self.save_to_csv()
+
+    def on_epoch_end(self, epoch, logs=None):
+        self.save_to_csv()
+
+    def save_to_csv(self):
+        df = pd.DataFrame(self.data)
+        df.to_csv(self.filepath, index=False)
+        print(f"Metrics saved to {self.filepath}")
+
+    def on_train_end(self, logs=None):
+        self.save_to_csv()
 
 def load_transform(paths):
     return cai.datasets.load_images_from_files(paths, target_size=INPUT_SHAPE[:2], lab=True, rescale=True, smart_resize=True)
@@ -33,7 +79,7 @@ def get_latest_checkpoint(dir):
     ckpts.sort()
     return os.path.join(dir, ckpts[-1])
 
-def execute(model, name=None, lab=False, batch_size=32, workers=16, resume=False):
+def execute(model, name=None, lab=False, batch_size=32, workers=16, resume=False, epochs=25):
     if name is None:
         name = type(model).__name__
     print(f"Starting training for {name}")
@@ -71,11 +117,13 @@ def execute(model, name=None, lab=False, batch_size=32, workers=16, resume=False
         keras.callbacks.EarlyStopping(patience=5),
         keras.callbacks.ModelCheckpoint(filepath='checkpoints/##name##/model##name##.{epoch:02d}.keras'.replace("##name##", name)),
         keras.callbacks.TensorBoard(log_dir=f'./logs/{name}'),
-        keras.callbacks.ModelCheckpoint(filepath='out/best##name##.keras'.replace('##name##', name), save_best_only=True, mode='max', monitor='val_accuracy')
+        keras.callbacks.ModelCheckpoint(filepath='out/best##name##.keras'.replace('##name##', name), save_best_only=True, mode='max', monitor='val_accuracy'),
+        MetricsToCSVCallback(f"metrics/{name}.csv", 100),
     ]
     print(f"Beginning training of model {name}")
 
-    model.fit(train_datagen, epochs=15, callbacks=callbacks, validation_data=val_datagen)
+    history = model.fit(train_datagen, epochs=epochs, callbacks=callbacks, validation_data=val_datagen)
+    pd.DataFrame(history.history).to_csv(f"metrics/final_{name}.csv")
 
     print("Training finished, starting test evaluation")
 
@@ -112,7 +160,8 @@ def gen_dataset(path, batch_size, lab, input_shape, aug=True):
 @click.option("-b", "--batch_size", type=int)
 @click.option('-r', '--resume', is_flag=True)
 @click.option("-s", "--start", type=int)
-def main(workers, batch_size, resume, start):
+@click.option('-e', '--epochs', type=int)
+def main(workers, batch_size, resume, start, epochs):
     models = [
         (
             vit.vit_l32(
@@ -194,7 +243,13 @@ def main(workers, batch_size, resume, start):
         models = models[start:]
     for lab in [False]:
         for model, name in models:
-            execute(model, f"{name}_{'lab' if lab else 'rgb'}", lab, workers=workers, batch_size=batch_size, resume=resume)
+            execute(model, 
+                    f"{name}_{'lab' if lab else 'rgb'}", 
+                    lab, 
+                    workers=workers, 
+                    batch_size=batch_size, 
+                    resume=resume, 
+                    epochs=epochs)
 
 
 def transform(imgs, target_size=(224,224), smart_resize=False, lab=False, rescale=False, bipolar=False):

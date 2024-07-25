@@ -127,7 +127,7 @@ class LeafInstanceDataset(tfds.core.GeneratorBasedBuilder):
                 
                 # Load image and mask
                 image = np.array(Image.open(image_path).convert("RGB").resize(IMAGE_SIZE))
-                labels = np.array(Image.open(mask_path).convert("L").resize(IMAGE_SIZE))
+                labels = np.array(Image.open(mask_path).convert("L").resize(IMAGE_SIZE, resample=Image.NEAREST))
                 
                 #print("image", image.shape)
                 #print("labels", labels.shape)
