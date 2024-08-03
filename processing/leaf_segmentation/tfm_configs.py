@@ -129,7 +129,7 @@ def config_from_task(task, path, batch_size=8):
         task=task,
         trainer=cfg.TrainerConfig(
             train_steps=584_200,
-            validation_steps=278,
+            validation_steps=512,
             steps_per_loop=1000,
             summary_interval=1000,
             checkpoint_interval=1000,
@@ -145,7 +145,7 @@ def config_from_task(task, path, batch_size=8):
                     'type': 'stepwise',
                     'stepwise': {
                         'boundaries': [15000, 20000],
-                        'values': [0.12, 0.012, 0.0012],
+                        'values': [0.12, 0.012, 0.0054],
                     }
                 },
                 'warmup': {
@@ -179,6 +179,12 @@ def config_from_task(task, path, batch_size=8):
     # Disable COCO-specific configurations
     config.task.annotation_file = None
     config.task.use_coco_metrics = True
+    config.task.use_wod_metrics = False
+    config.task.use_approx_instance_metrics = False
+    
+    config.task.losses.frcnn_class_use_binary_cross_entropy = True
+    
+    config.trainer.validation_interval = 5000
     
 #    exp_config.trainer.optimizer_config.warmup.linear.warmup_steps = 200
 #    exp_config.trainer.optimizer_config.learning_rate.type = 'cosine'
