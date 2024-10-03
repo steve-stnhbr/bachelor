@@ -6,12 +6,13 @@ from official.vision.configs import backbones
 from official.vision.configs import decoders
 
 @exp_factory.register_config_factory('maskrcnn_resnet_fpn')
-def maskrcnn_resnet_fpn(path, classes=2, image_size=(640, 640)):
+def maskrcnn_resnet_fpn(path, classes=2, image_size=(640, 640), pretrained=True):
     # Create a base experiment config
     exp_config = exp_factory.get_exp_config('maskrcnn_resnetfpn_coco')
     
-    exp_config.task.init_checkpoint = None
-    exp_config.task.init_checkpoint_module = None
+    if not pretrained:
+        exp_config.task.init_checkpoint = None
+        exp_config.task.init_checkpoint_module = None
 
     exp_config.task.model.input_size = [image_size[1], image_size[0], 3]
 
@@ -21,12 +22,13 @@ def maskrcnn_resnet_fpn(path, classes=2, image_size=(640, 640)):
     return config_from_task(exp_config.task, path)
 
 @exp_factory.register_config_factory('maskrcnn_mobilenet_fpn')
-def maskrcnn_mobilenet_fpn(path, classes=2, image_size=(640, 640)):
+def maskrcnn_mobilenet_fpn(path, classes=2, image_size=(640, 640), pretrained=True):
     # Create a base experiment config
     exp_config = exp_factory.get_exp_config('maskrcnn_mobilenet_coco')
     
-    exp_config.task.init_checkpoint = None
-    exp_config.task.init_checkpoint_module = None
+    if not pretrained:
+        exp_config.task.init_checkpoint = None
+        exp_config.task.init_checkpoint_module = None
 
     exp_config.task.model.input_size = [image_size[1], image_size[0], 3]
 
@@ -36,7 +38,7 @@ def maskrcnn_mobilenet_fpn(path, classes=2, image_size=(640, 640)):
     return config_from_task(exp_config.task, path)
 
 @exp_factory.register_config_factory('maskrcnn_vit_fpn')
-def maskrcnn_vit_fpn(path, classes=2, image_size=(640, 640)):
+def maskrcnn_vit_fpn(path, classes=2, image_size=(640, 640), pretrained=True):
     task = maskrcnn_cfg.MaskRCNNTask(
         model=maskrcnn_cfg.MaskRCNN(
             input_size = [image_size[1], image_size[0], 3],
@@ -112,11 +114,12 @@ def maskrcnn_vit_fpn(path, classes=2, image_size=(640, 640)):
 
 
 @exp_factory.register_config_factory('retinanet_resnet_fpn')
-def retinanet_resnet_fpn(path, batch_size=8, image_size=(640, 640)):
+def retinanet_resnet_fpn(path, batch_size=8, image_size=(640, 640), pretrained=True):
     exp_config = exp_factory.get_exp_config('retinanet_resnetfpn_coco')
 
-    exp_config.task.init_checkpoint = None
-    exp_config.task.init_checkpoint_module = None
+    if not pretrained:
+        exp_config.task.init_checkpoint = None
+        exp_config.task.init_checkpoint_module = None
 
     exp_config.task.model.input_size = [image_size[1], image_size[0], 3]
 
