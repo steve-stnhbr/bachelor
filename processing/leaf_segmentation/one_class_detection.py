@@ -1,5 +1,10 @@
+import os
+import torch
+import numpy as np
+import torch.nn as nn
+from PIL import Image
 from torchvision import datasets, transforms
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 
 class SingleClassDataset(Dataset):
     def __init__(self, folder_path, transform=None):
@@ -31,15 +36,14 @@ transform = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
-dataset = SingleClassDataset(folder_path, transform=transform)
+dataset_train = SingleClassDataset(folder_path, transform=transform)
 
 # Create a DataLoader
-from torch.utils.data import DataLoader
-dataloader_train = DataLoader(dataset, batch_size=32, shuffle=True)
+dataloader_train = DataLoader(dataset_train, batch_size=32, shuffle=True)
 
 data_test = '_data/urban_street0_25/images_test'
 dataset_test = datasets.ImageFolder(data_test, transform=transform)
-dataloader_test = DataLoader(dataset, batch_size=32, shuffle=True)
+dataloader_test = DataLoader(dataset_test, batch_size=32, shuffle=True)
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -68,7 +72,7 @@ def calculate_metrics(actual, predicted):
 class Autoencoder:
     class AutoencoderNetwork(nn.Module):
         def __init__(self):
-            super(AutoencoderNetwork, self).__init__()
+            super(self).__init__()
             self.encoder = nn.Sequential(
                 nn.Conv2d(3, 16, 3, stride=2, padding=1),
                 nn.ReLU(),
@@ -91,12 +95,12 @@ class Autoencoder:
             return x
 
     def __init__(self):
-        self.model = AutoencoderNetwork()
+        self.model = self.AutoencoderNetwork()
     
     def train(self):
         self.model.to(device)
         criterion = nn.MSELoss()
-        optimizer = optim.Adam(model.parameters(), lr=1e-3)
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-3)
         print("starting training")
         # Training loop
         num_epochs = 50
@@ -105,7 +109,7 @@ class Autoencoder:
                 img, _ = data
                 img = img.to(device)  # Move input data to GPU
                 
-                recon = model(img)
+                recon = self.model(img)
                 loss = criterion(recon, img)
                 
                 optimizer.zero_grad()
@@ -113,7 +117,7 @@ class Autoencoder:
                 optimizer.step()
 
             print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.4f}')
-            torch.save(model, "out/autoencoder_latest.pth")
+            torch.save(self.model, "out/autoencoder_latest.pth")
     
     def predict(self, img):
         return self.model(img) #TODO
@@ -132,3 +136,50 @@ class Autoencoder:
 
         return calculate_metrics(y_true, y_pred)
         
+class OneClassSVM:
+
+    def __init__(self):
+        from sklearn.svm import OneClassSVM
+        from sklearn.preprocessing import StandardScaler
+        self.scaler = StandardScaler()
+        self.oc_svm = OneClassSVM(kernel='rbf', nu=0.1, gamma='scale')
+
+    def train(self):
+        imgs, labels = dataloader_train
+        X_features = extract_features(imgs)
+        X_train_scaled = self.scaler.fit_transform(X_features)
+        self.oc_svm.fit(X_train_scaled)
+
+    def test(self):
+        imgs, labels = dataloader_test
+        X_features = extract_features(imgs)
+        X_test_scaled = self.scaler.transform(X_features)
+        y_pred_test = self.oc_svm.predict(X_test_scaled)
+
+        return calculate_metrics(labels, y_pred_test)
+
+
+def extract_features(img, return_nodes=None):
+    import torch
+    import torchvision.models as models
+    from torchvision.models.feature_extraction import create_feature_extractor
+    # Load a pre-trained ResNet model
+    model = models.resnet50(pretrained=True)
+    model.eval()
+
+    # Define the layers you want to extract features from
+    if return_nodes is None: 
+        return_nodes = {
+            'layer1': 'feature1',
+            'layer2': 'feature2',
+            'layer3': 'feature3',
+            'layer4': 'feature4'
+        }
+
+    # Create a feature extractor
+    feature_extractor = create_feature_extractor(model, return_nodes=return_nodes)
+
+    with torch.no_grad():
+        features = feature_extractor(img)
+    
+    return features
