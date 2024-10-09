@@ -9,3 +9,5 @@
 **/*.index
 **/.ipynb_checkpoints
 **/*.tfevents*
+**/variables*
+**/tfdbg*
