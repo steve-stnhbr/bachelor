@@ -71,6 +71,21 @@ def calculate_metrics(actual, predicted):
         'f1_score': f1
     }
 
+def test_loop(predict):
+    y_true = []
+    y_pred = []
+    with torch.no_grad():
+        for data in dataloader_test:
+            img, label = data
+            recon = predict(img)
+            y_true.append(label)
+            y_pred.append(recon)
+#    y_true = np.array(y_true)
+#    y_true = torch.nn.functional.one_hot(torch.Tensor(list(itertools.chain(*y_true))).long())
+    y_true = list(itertools.chain(*y_true))
+    y_pred = list(itertools.chain(*y_pred))
+    return calculate_metrics(y_true, y_pred)
+
 class Autoencoder:
     class AutoencoderNetwork(nn.Module):
         def __init__(self):
