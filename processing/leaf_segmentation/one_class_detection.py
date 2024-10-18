@@ -35,7 +35,7 @@ folder_path = '_data/urban_street0_25/images'
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
 
 dataset_train = SingleClassDataset(folder_path, transform=transform)
