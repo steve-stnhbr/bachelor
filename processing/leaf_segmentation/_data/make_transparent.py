@@ -41,7 +41,7 @@ def process(name, images_dir, masks_dir, output_dir, crop=False):
 @click.argument("images_dir")
 @click.argument("masks_dir")
 @click.argument("output_dir")
-@click.options('-c', '--crop', is_flag=True, default=False)
+@click.option('-c', '--crop', is_flag=True, default=False)
 @click.option("-p", "--processors", type=int, default=8)
 def main(images_dir, masks_dir, output_dir, processors, crop):
     os.makedirs(output_dir, exist_ok=True)
