@@ -32,6 +32,6 @@ def augment_scale(foreground, bg_h, mask, fg_h, fg_w, bg_w):
         o_w, o_h = int(scale * fg_w), int(scale * fg_h)
         if bg_w - o_w > 0 and bg_h - o_h > 0 and o_w > 0 and o_h > 0:
             break
-    foreground = foreground.resize((o_w, o_h), Image.ANTIALIAS)
-    mask = mask.resize((o_w, o_h), Image.ANTIALIAS)
+    foreground = foreground.resize((o_w, o_h), Image.LANCZOS)
+    mask = mask.resize((o_w, o_h), Image.LANCZOS)
     return foreground, mask, o_h, o_w

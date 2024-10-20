@@ -7,16 +7,16 @@ BLENDING_LIST = [
     "none",
     # "box",
     "motion",
-    # "mixed",
+    "mixed",
     # "illumination",
-    # "gamma_correction",
+    "gamma_correction",
 ]
 
 # Parameters for images
-MIN_NO_OF_OBJECTS = 1
-MAX_NO_OF_OBJECTS = 4
-MIN_NO_OF_DISTRACTOR_OBJECTS = 2
-MAX_NO_OF_DISTRACTOR_OBJECTS = 4
+MIN_NO_OF_OBJECTS = 8
+MAX_NO_OF_OBJECTS = 15
+MIN_NO_OF_DISTRACTOR_OBJECTS = 4
+MAX_NO_OF_DISTRACTOR_OBJECTS = 9
 MAX_ATTEMPTS_TO_SYNTHESIZE = 20
 
 # Parameters for objects in images
@@ -34,9 +34,10 @@ MINFILTER_SIZE = 3
 
 # Other
 OBJECT_CATEGORIES = [
-    {"id": 0, "name": "box"},
+    {"id": 0, "name": "leaf"},
+    {"id": 1, "name": "box"},
     {"id": 2, "name": "distractor"},
 ]  # note: distractor needs to be second position
-IGNORE_LABELS = [OBJECT_CATEGORIES[1]["id"]]  # list of category ID for which no annotations will be generated
+IGNORE_LABELS = [OBJECT_CATEGORIES[2]["id"]]  # list of category ID for which no annotations will be generated
 INVERTED_MASK = False  # Set to true if white pixels represent background
 SUPPORTED_IMG_FILE_TYPES = (".jpg", "jpeg", ".png", ".gif")
