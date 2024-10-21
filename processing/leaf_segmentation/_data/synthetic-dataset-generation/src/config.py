@@ -1,15 +1,15 @@
 # Parameters for generator
-NUMBER_OF_WORKERS = 20
+NUMBER_OF_WORKERS = 24
 BLENDING_LIST = [
     "gaussian",
     # "poisson",  # takes a lot of time and results are not that good
     # "poisson-fast",  # only with Docker GPU
-    "none",
+#    "none",
     # "box",
-    "motion",
-    "mixed",
+#    "motion",
+#    "mixed",
     # "illumination",
-    "gamma_correction",
+#    "gamma_correction",
 ]
 
 # Parameters for images
@@ -35,9 +35,9 @@ MINFILTER_SIZE = 3
 # Other
 OBJECT_CATEGORIES = [
     {"id": 0, "name": "leaf"},
-    {"id": 1, "name": "box"},
+    {"id": 1, "name": "leaf"},
     {"id": 2, "name": "distractor"},
 ]  # note: distractor needs to be second position
-IGNORE_LABELS = [OBJECT_CATEGORIES[2]["id"]]  # list of category ID for which no annotations will be generated
+IGNORE_LABELS = [OBJECT_CATEGORIES[1]["id"]]  # list of category ID for which no annotations will be generated
 INVERTED_MASK = False  # Set to true if white pixels represent background
 SUPPORTED_IMG_FILE_TYPES = (".jpg", "jpeg", ".png", ".gif")

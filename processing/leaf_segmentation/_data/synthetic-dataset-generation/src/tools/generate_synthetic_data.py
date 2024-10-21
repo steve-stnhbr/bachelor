@@ -16,7 +16,7 @@ DATA_DIR = ROOT / "data"
 
 
 if __name__ == "__main__":
-    dataset_name = "demo_dataset"  # Give your dataset a name
+    dataset_name = "leaves"  # Give your dataset a name
     output_dir = (DATA_DIR / dataset_name).resolve()
     if output_dir.exists():
         shutil.rmtree(output_dir.as_posix())
@@ -37,9 +37,9 @@ if __name__ == "__main__":
         distractor_json=str(distractor_json),
         background_json=str(background_json),
         number_of_images={
-            "train": 5,
-            "validation": 0,
-            "test": 0,
+            "train": 4_000,
+            "validation": 800,
+            "test": 800,
         },  # multiplied by blending methods,
         dontocclude=True,  # enable occlusion checking of objects
         rotation=True,  # enable random rotation of objects
