@@ -150,7 +150,7 @@ def render_configurations(
     else:
         p = Pool(NUMBER_OF_WORKERS, init_worker)
         try:
-            p.map(partial_func, params_list)
+            _ = list(tqdm.tqdm(p.imap(partial_func, params_list), total=len(params_list)))
         except KeyboardInterrupt:
             print("....\nCaught KeyboardInterrupt, terminating workers")
             p.terminate()
