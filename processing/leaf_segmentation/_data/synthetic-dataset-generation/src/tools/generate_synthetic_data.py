@@ -41,7 +41,7 @@ if __name__ == "__main__":
             "validation": 800,
             "test": 800,
         },  # multiplied by blending methods,
-        dontocclude=True,  # enable occlusion checking of objects
+        dontocclude=False,  # enable occlusion checking of objects
         rotation=True,  # enable random rotation of objects
         scale=True,  # enable random scaling of objects
         multithreading=True,  # enable multithreading for faster dataset generation
