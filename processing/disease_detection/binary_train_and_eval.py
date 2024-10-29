@@ -15,6 +15,8 @@ from models import alexnet_model, vgg19_model, lenet_model
 from lib.vit_keras.vit_keras import vit
 import pandas as pd
 from datetime import datetime
+from net_flops import net_flops
+#from keras_flops import get_flops
 
 L_RATIO = .8
 TWO_PATHS_SECOND_BLOCK = True
@@ -161,7 +163,8 @@ def gen_dataset(path, batch_size, lab, input_shape, aug=True):
 @click.option('-r', '--resume', is_flag=True)
 @click.option("-s", "--start", type=int)
 @click.option('-e', '--epochs', type=int)
-def main(workers, batch_size, resume, start, epochs):
+@click.option('-f', '--print_flops', is_flag=True)
+def main(workers, batch_size, resume, start, epochs, print_flops):
     models = [
         (
             vit.vit_l32(
@@ -239,6 +242,10 @@ def main(workers, batch_size, resume, start, epochs):
             "VGG19"
         ),
     ]
+    if print_flops:
+        for model, name in models:
+            print(f"Name: {name}")
+            net_flops(model)
     if start is not None:
         models = models[start:]
     for lab in [False]:
