@@ -1,3 +1,4 @@
+import os
 import tensorflow as tf
 from official.core import config_definitions as cfg
 from official.core import exp_factory
@@ -19,7 +20,7 @@ def maskrcnn_resnet_fpn(path, classes=2, image_size=(640, 640), pretrained=True)
     # Modify the config as needed
     exp_config.task.model.num_classes = classes  # Adjust based on your number of classes
 
-    return config_from_task(exp_config.task, path)
+    return config_from_task(exp_config.task, path=path)
 
 @exp_factory.register_config_factory('maskrcnn_mobilenet_fpn')
 def maskrcnn_mobilenet_fpn(path, classes=2, image_size=(640, 640), pretrained=True):
@@ -127,11 +128,89 @@ def retinanet_resnet_fpn(path, batch_size=8, image_size=(640, 640), pretrained=T
     return config
 
 
-def config_from_task(task, path, batch_size=8):
+@exp_factory.register_config_factory('custom_maskrcnn_resnetfpn_coco')
+def custom_maskrcnn_resnetfpn_coco(ann_file, data_root, classes=2, batch_size=8, image_size=(640, 640), pretrained=True) -> cfg.ExperimentConfig:
+    """COCO object detection with Mask R-CNN."""
+    steps_per_epoch = 500
+    coco_val_samples = 5000
+    train_batch_size = 64
+    eval_batch_size = 8
+
+    config = cfg.ExperimentConfig(
+      runtime=cfg.RuntimeConfig(
+          mixed_precision_dtype='bfloat16', enable_xla=True),
+      task=MaskRCNNTask(
+          init_checkpoint='gs://cloud-tpu-checkpoints/vision-2.0/resnet50_imagenet/ckpt-28080',
+          init_checkpoint_modules='backbone',
+          annotation_file=ann_file,
+          model=MaskRCNN(
+              num_classes=classes, 
+              input_size=[image_size[1], image_size[0], 3], 
+              include_mask=True),
+          losses=Losses(l2_weight_decay=0.00004),
+          train_data=DataConfig(
+              input_path=os.path.join(data_root, 'train*'),
+              is_training=True,
+              global_batch_size=train_batch_size,
+              parser=Parser(
+                  aug_rand_hflip=True, aug_scale_min=0.8, aug_scale_max=1.25)),
+          validation_data=DataConfig(
+              input_path=os.path.join(data_root, 'val*'),
+              is_training=False,
+              global_batch_size=eval_batch_size,
+              drop_remainder=False)),
+      trainer=cfg.TrainerConfig(
+          train_steps=22500,
+          validation_steps=coco_val_samples // eval_batch_size,
+          validation_interval=steps_per_epoch,
+          steps_per_loop=steps_per_epoch,
+          summary_interval=steps_per_epoch,
+          checkpoint_interval=steps_per_epoch,
+          optimizer_config=optimization.OptimizationConfig({
+              'optimizer': {
+                  'type': 'sgd',
+                  'sgd': {
+                      'momentum': 0.9
+                  }
+              },
+              'learning_rate': {
+                  'type': 'stepwise',
+                  'stepwise': {
+                      'boundaries': [15000, 20000],
+                      'values': [0.12, 0.012, 0.0012],
+                  }
+              },
+              'warmup': {
+                  'type': 'linear',
+                  'linear': {
+                      'warmup_steps': 500,
+                      'warmup_learning_rate': 0.0067
+                  }
+              }
+          })),
+      restrictions=[
+          'task.train_data.is_training != None',
+          'task.validation_data.is_training != None'
+      ])
+    return config
+
+@exp_factory.register_config_factory('custom_or_maskrcnn_resnetfpn_coco')
+def custom_or_maskrcnn_resnetfpn_coco(ann_file, train_data_dir, val_data_dir, classes=2, batch_size=8, image_size=(640, 640), pretrained=True):
+    exp_config = exp_factory.get_exp_config('maskrcnn_resnetfpn_coco')
+    if not pretrained:
+        exp_config.task.init_checkpoint=None
+    exp_config.task.annotation_file = ann_file
+    exp_config.task.train_data.input_path = train_data_dir
+    exp_config.task.validation_data.input_path = val_data_dir
+    
+    return config_from_task(exp_config.task, coco=True)
+
+
+def config_from_task(task, path=None, batch_size=8, coco=False):
     config = cfg.ExperimentConfig(
         task=task,
         trainer=cfg.TrainerConfig(
-            train_steps=584_200,
+            train_steps=750_000,
             validation_steps=512,
             steps_per_loop=1000,
             summary_interval=1000,
@@ -169,21 +248,23 @@ def config_from_task(task, path, batch_size=8):
     # Modify the config as needed
     config.task.model.num_classes = 2  # Adjust based on your number of classes
     
-    # Configure for custom dataset
-    config.task.train_data.input_path = path + "*train*"
-    config.task.validation_data.input_path = path + "*val*"
+    if path is not None:
+        # Configure for custom dataset
+        config.task.train_data.input_path = path + "*train*"
+        config.task.validation_data.input_path = path + "*val*"
     # config.task.train_data.tfds_name = "leaf_instance_dataset"
     # config.task.train_data.tfds_name = "train"
     # config.task.validation_data.tfds_name = "leaf_instance_dataset"
     # config.task.validation_data.tfds_name = "val"
     config.task.train_data.global_batch_size = batch_size
     config.task.validation_data.global_batch_size = batch_size
-
-    # Disable COCO-specific configurations
-    config.task.annotation_file = None
-    config.task.use_coco_metrics = True
-    config.task.use_wod_metrics = False
-    config.task.use_approx_instance_metrics = False
+    
+    if coco:
+        # Disable COCO-specific configurations
+        config.task.annotation_file = None
+        config.task.use_coco_metrics = True
+        config.task.use_wod_metrics = False
+        config.task.use_approx_instance_metrics = False
     
     config.task.losses.frcnn_class_use_binary_cross_entropy = True
     

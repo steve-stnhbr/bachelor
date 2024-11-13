@@ -119,7 +119,7 @@ def execute(model, name=None, lab=False, batch_size=32, workers=16, resume=False
         keras.callbacks.EarlyStopping(patience=5),
         keras.callbacks.ModelCheckpoint(filepath='checkpoints/##name##/model##name##.{epoch:02d}.keras'.replace("##name##", name)),
         keras.callbacks.TensorBoard(log_dir=f'./logs/{name}'),
-        keras.callbacks.ModelCheckpoint(filepath='out/best##name##.keras'.replace('##name##', name), save_best_only=True, mode='max', monitor='val_accuracy'),
+        keras.callbacks.ModelCheckpoint(filepath='out/best##name##.keras'.replace('##name##', name), save_best_only=True, mode='max'),
         MetricsToCSVCallback(f"metrics/{name}.csv", 100),
     ]
     print(f"Beginning training of model {name}")
