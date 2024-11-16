@@ -132,7 +132,7 @@ def execute(model, name=None, lab=False, batch_size=32, workers=16, resume=False
     result = model.evaluate(test_datagen)
     print(result)
 
-def gen_dataset(path, batch_size, lab, input_shape, aug=True):
+def gen_dataset(path, batch_size, lab, input_shape, aug=True, deterministic=False):
     data_augmentation = tf.keras.Sequential([
         keras.layers.RandomFlip("horizontal_and_vertical"),
         keras.layers.RandomRotation(.8),
@@ -153,7 +153,7 @@ def gen_dataset(path, batch_size, lab, input_shape, aug=True):
             lambda x, y: (transform_wrapper(x, target_size=INPUT_SHAPE[:2], rescale=True, smart_resize=True, lab=True), y)
         )
     datagen = datagen\
-        .map(augment, num_parallel_calls=tf.data.AUTOTUNE, deterministic=False)\
+        .map(augment, num_parallel_calls=tf.data.AUTOTUNE, deterministic=deterministic)\
         .prefetch(tf.data.AUTOTUNE)
     return datagen
 
