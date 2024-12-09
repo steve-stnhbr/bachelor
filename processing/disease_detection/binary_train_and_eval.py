@@ -23,17 +23,14 @@ TWO_PATHS_SECOND_BLOCK = True
 INPUT_SHAPE = (224, 224, 3)
 CLASSES = 2
 
-TRAIN_DATA_PATH = os.path.join("_data", "combined", "train")
-VAL_DATA_PATH = os.path.join("_data", "combined", "val")
-TEST_DATA_PATH = os.path.join("_data", "combined", "test")
-
 class MetricsToCSVCallback(keras.callbacks.Callback):
-    def __init__(self, filepath, frequency, save_freq=100):
+    def __init__(self, filepath, frequency, save_freq=100, verbose=False):
         super().__init__()
         self.filepath = filepath
         self.frequency = frequency
         self.save_freq = save_freq
         self.data = []
+        self.verbose = verbose
         
     def on_train_begin(self, logs=None):
         self.epochs = self.params['epochs']
@@ -66,7 +63,8 @@ class MetricsToCSVCallback(keras.callbacks.Callback):
     def save_to_csv(self):
         df = pd.DataFrame(self.data)
         df.to_csv(self.filepath, index=False)
-        print(f"Metrics saved to {self.filepath}")
+        if self.verbose:
+            print(f"Metrics saved to {self.filepath}")
 
     def on_train_end(self, logs=None):
         self.save_to_csv()
@@ -81,7 +79,7 @@ def get_latest_checkpoint(dir):
     ckpts.sort()
     return os.path.join(dir, ckpts[-1])
 
-def execute(model, name=None, lab=False, batch_size=32, workers=16, resume=False, epochs=25):
+def execute(model, name=None, lab=False, batch_size=32, workers=16, resume=False, epochs=25, data_root="_data/combined"):
     if name is None:
         name = type(model).__name__
     print(f"Starting training for {name}")
@@ -93,19 +91,13 @@ def execute(model, name=None, lab=False, batch_size=32, workers=16, resume=False
             print(f"Loading model from file {model_file}")
             model = keras.models.load_model(model_file)
 
-#    opt = keras.optimizers.SGD(learning_rate=0.01, momentum=0.9, nesterov=True)
-    opt = keras.optimizers.SGD()
-    model.compile(
-        loss='binary_crossentropy',
-        optimizer=opt,
-        metrics=[
-            keras.metrics.BinaryAccuracy(),
-            tf.keras.metrics.Recall(),
-            tf.keras.metrics.AUC()
-        ],
-    )
     
     print("Creating datagen")
+    
+
+    TRAIN_DATA_PATH = os.path.join(data_root, "train")
+    VAL_DATA_PATH = os.path.join(data_root, "val")
+    TEST_DATA_PATH = os.path.join(data_root, "test")
 
     train_datagen = gen_dataset(TRAIN_DATA_PATH, batch_size=batch_size, lab=lab, input_shape=INPUT_SHAPE)
     val_datagen = gen_dataset(VAL_DATA_PATH, batch_size=batch_size, lab=lab, input_shape=INPUT_SHAPE)
@@ -114,7 +106,42 @@ def execute(model, name=None, lab=False, batch_size=32, workers=16, resume=False
     test = train_datagen.take(1).as_numpy_iterator()
     for el in test:
         print(el[0].shape, el[1].shape)
+        
+    # Calculate total number of samples dynamically
+    num_samples = train_datagen.cardinality().numpy() * batch_size
 
+    # Compute total training steps
+    total_steps = (num_samples // batch_size) * epochs
+
+    
+    scheduler = keras.optimizers.schedules.CosineDecay(
+        0.001,
+        total_steps,
+        alpha=1e-9,
+        name="CosineDecay",
+        warmup_target=0.01,
+        warmup_steps=num_samples // (batch_size * 4),
+    )
+    
+    def get_lr_metric(optimizer):
+        def lr(y_true, y_pred):
+            return optimizer.learning_rate # I use ._decayed_lr method instead of .lr
+        return lr
+
+    opt = keras.optimizers.AdamW(learning_rate=scheduler)
+    lr_metric = get_lr_metric(opt)
+    
+    model.compile(
+        loss='binary_crossentropy',
+        optimizer=opt,
+        metrics=[
+            keras.metrics.BinaryAccuracy(),
+            tf.keras.metrics.Recall(),
+            tf.keras.metrics.AUC(),
+            lr_metric
+        ],
+    )
+        
     callbacks = [
         keras.callbacks.EarlyStopping(patience=5),
         keras.callbacks.ModelCheckpoint(filepath='checkpoints/##name##/model##name##.{epoch:02d}.keras'.replace("##name##", name)),
@@ -164,7 +191,8 @@ def gen_dataset(path, batch_size, lab, input_shape, aug=True, deterministic=Fals
 @click.option("-s", "--start", type=int)
 @click.option('-e', '--epochs', type=int)
 @click.option('-f', '--print_flops', is_flag=True)
-def main(workers, batch_size, resume, start, epochs, print_flops):
+@click.option('-d', '--data_root', type=str, default="_data/combined")
+def main(workers, batch_size, resume, start, epochs, print_flops, data_root):
     models = [
         (
             vit.vit_l32(
@@ -256,7 +284,8 @@ def main(workers, batch_size, resume, start, epochs, print_flops):
                     workers=workers, 
                     batch_size=batch_size, 
                     resume=resume, 
-                    epochs=epochs)
+                    epochs=epochs,
+                    data_root=data_root)
 
 
 def transform(imgs, target_size=(224,224), smart_resize=False, lab=False, rescale=False, bipolar=False):
