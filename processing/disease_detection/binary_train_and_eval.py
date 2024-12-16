@@ -143,7 +143,7 @@ def execute(model, name=None, lab=False, batch_size=32, workers=16, resume=False
     )
         
     callbacks = [
-        keras.callbacks.EarlyStopping(patience=5),
+        keras.callbacks.EarlyStopping(patience=5, min_delta=.01),
         keras.callbacks.ModelCheckpoint(filepath='checkpoints/##name##/model##name##.{epoch:02d}.keras'.replace("##name##", name)),
         keras.callbacks.TensorBoard(log_dir=f'./logs/{name}'),
         keras.callbacks.ModelCheckpoint(filepath='out/best##name##.keras'.replace('##name##', name), save_best_only=True, mode='max'),
@@ -160,20 +160,60 @@ def execute(model, name=None, lab=False, batch_size=32, workers=16, resume=False
     print(result)
 
 def gen_dataset(path, batch_size, lab, input_shape, aug=True, deterministic=False):
+    class ConditionalRandomBrightness(keras.layers.Layer):
+        def __init__(self, factor=0.2, **kwargs):
+            super().__init__(**kwargs)
+            self.random_brightness = keras.layers.RandomBrightness(factor)
+
+        def call(self, inputs):
+            # Create a mask for non-black pixels (any channel > 0)
+            non_black_mask = tf.reduce_any(inputs > 0, axis=-1, keepdims=True)
+
+            # Apply the brightness transformation
+            transformed = self.random_brightness(inputs)
+
+            # Combine original and transformed pixels
+            outputs = tf.where(non_black_mask, transformed, inputs)
+            return outputs
+        
+        def compute_output_shape(self, input_shape):
+            # Output shape is the same as the input shape
+            return input_shape
+
+    class ConditionalRandomContrast(keras.layers.Layer):
+        def __init__(self, factor=0.2, **kwargs):
+            super().__init__(**kwargs)
+            self.random_contrast = keras.layers.RandomContrast(factor)
+
+        def call(self, inputs):
+            # Create a mask for non-black pixels (any channel > 0)
+            non_black_mask = tf.reduce_any(inputs > 0, axis=-1, keepdims=True)
+
+            # Apply the brightness transformation
+            transformed = self.random_contrast(inputs)
+
+            # Combine original and transformed pixels
+            outputs = tf.where(non_black_mask, transformed, inputs)
+            return outputs
+        
+        def compute_output_shape(self, input_shape):
+            # Output shape is the same as the input shape
+            return input_shape
+    
     data_augmentation = tf.keras.Sequential([
         keras.layers.RandomFlip("horizontal_and_vertical"),
-        keras.layers.RandomRotation(.8),
-        keras.layers.RandomBrightness(.4),
-        keras.layers.RandomContrast(.4),
-        keras.layers.RandomZoom((-.2, .2), (-.2, .2)),
+        keras.layers.RandomRotation(.8, fill_mode="constant"),
+        #ConditionalRandomBrightness(.4),
+        #ConditionalRandomContrast(.4),
+        keras.layers.RandomZoom((-.2, .2), (-.2, .2), fill_mode="constant"),
         keras.layers.Resizing(INPUT_SHAPE[0], INPUT_SHAPE[1])
     ])
     @tf.function()
     def augment(image, label):
-        if (augment):
+        if (aug):
             return data_augmentation(image), to_categorical(label, num_classes=CLASSES)
         else:
-            return x, to_categorical(label, num_classes=CLASSES)
+            return image, to_categorical(label, num_classes=CLASSES)
     datagen = keras.utils.image_dataset_from_directory(path, batch_size=batch_size, image_size=input_shape[:2], crop_to_aspect_ratio=True, labels="inferred", label_mode="binary")
     if lab:
         datagen = datagen.map(
@@ -252,14 +292,6 @@ def main(workers, batch_size, resume, start, epochs, print_flops, data_root):
                 weights=None
             ),
             "AlexNet"
-        ),
-        (
-            lenet_model(
-                img_shape=INPUT_SHAPE, 
-                n_classes=CLASSES, 
-                weights=None
-            ),
-            "LeNet"
         ),
         (
             vgg19_model(
